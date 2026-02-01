@@ -69,6 +69,9 @@ public class User extends BaseEntity implements UserDetails {
   @Builder.Default
   private boolean updateProfile = false;
 
+  @Column(name = "_lock_reason", columnDefinition = "TEXT")
+  private String lockReason;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "_role" , nullable = false)
   @Builder.Default

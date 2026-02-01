@@ -1,14 +1,15 @@
 package com.hust.lms.streaming.dto.request.user;
 
+import com.hust.lms.streaming.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
 public class UserCreatingRequest {
 
   @NotBlank(message = "Email không được để trống")
@@ -24,6 +25,9 @@ public class UserCreatingRequest {
   private String fullName;
 
   @NotBlank(message = "Số điện thoại không được để trống")
-  @Pattern(regexp = "^0\\d{9}$", message = "Số điện thoại không hợp lệ (Phải có 10 số, bắt đầu bằng số 0)")
+  @Pattern(regexp = "^0\\d{9}$", message = "Số điện thoại không hợp lệ")
   private String phone;
+
+  @NotNull(message = "Vai trò (Role) không được để trống")
+  private Role role;
 }
