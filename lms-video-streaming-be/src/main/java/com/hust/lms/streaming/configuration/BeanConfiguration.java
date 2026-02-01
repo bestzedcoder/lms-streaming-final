@@ -16,16 +16,16 @@ public class BeanConfiguration {
   public ObjectMapper objectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();
 
-    // 1. Đăng ký Module để xử lý Java 8 Date (LocalDate, LocalDateTime)
+    // Đăng ký Module để xử lý Java 8 Date (LocalDate, LocalDateTime)
     objectMapper.registerModule(new JavaTimeModule());
 
-    // 2. Cấu hình tắt chế độ in ngày tháng dạng Timestamp (số mili giây)
+    // Cấu hình tắt chế độ in ngày tháng dạng Timestamp (số mili giây)
     objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-    // 3. Nếu Client gửi field lạ không có trong DTO -> Không báo lỗi
+    // Nếu Client gửi field lạ không có trong DTO -> Không báo lỗi
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-    // 4. Bỏ qua các field null khi trả về JSON (Tiết kiệm băng thông)
+    // Bỏ qua các field null khi trả về JSON (Tiết kiệm băng thông)
     objectMapper.setSerializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL);
 
     return objectMapper;
