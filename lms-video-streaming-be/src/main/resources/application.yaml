@@ -1,0 +1,89 @@
+
+server:
+  port: ${PORT}
+  servlet:
+    context-path: ${API_PREFIX}
+
+spring:
+  application:
+    name: LMS Streaming Platform
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      port: ${REDIS_PORT}
+      host: ${REDIS_HOST}
+      password: ${REDIS_PASSWORD}
+      timeout: 6000
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URIS}
+    username: ${ELASTIC_USERNAME}
+    password: ${ELASTIC_PASSWORD}
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  output:
+    ansi:
+      enabled: ALWAYS
+
+app:
+  security:
+    jwt:
+      secretKey: ${JWT_SECRET_KEY}
+      accessExpiration: ${JWT_ACCESS_EXPIRATION}
+      refreshExpiration: ${JWT_REFRESH_EXPIRATION}
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME}
+    api-key: ${CLOUDINARY_API_KEY}
+    api-secret: ${CLOUDINARY_API_SECRET}
+
+
+logging:
+  # 1. Cấu hình Pattern (Khuôn mẫu) hiển thị
+  pattern:
+    # Giải thích màu sắc:
+    # - Thời gian: Mờ (faint) để không rối mắt.
+    # - Mức độ (INFO/ERROR): Tô màu tự động (INFO xanh lá, WARN vàng, ERROR đỏ rực).
+    # - PID: Màu tím (Magenta).
+    # - Thread: Mờ, nằm trong ngoặc vuông [ ].
+    # - Tên Class: Màu xanh dương (Cyan), giới hạn 40 ký tự để thẳng hàng.
+    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
+
+  # 2. Cấu hình mức độ Log (Level)
+  level:
+    root: INFO # Mặc định chỉ hiện thông tin quan trọng
+
+    # Code của bạn (Quan trọng nhất) -> Bật DEBUG để soi từng tí
+    com.hust: DEBUG
+
+    # Database (Hibernate) -> Hiện câu Query SQL
+    org.hibernate.SQL: DEBUG
+
+    # Nếu muốn hiện cả tham số trong câu Query (dấu ? thay bằng giá trị thật)
+    # Cảnh báo: Log sẽ trôi rất nhanh, chỉ bật khi debug lỗi DB
+    # org.hibernate.orm.jdbc.bind: TRACE
+
+    # Tắt bớt log rác của các thư viện khác
+    org.springframework.web: INFO
+    org.apache.kafka: WARN
+
