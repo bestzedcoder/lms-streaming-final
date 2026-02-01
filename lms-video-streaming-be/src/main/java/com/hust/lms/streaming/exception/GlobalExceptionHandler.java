@@ -18,7 +18,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  // Bắt lỗi Đăng nhập sai (Sai pass hoặc email không tồn tại)
+  // Bắt lỗi Đăng nhập sai
   @ExceptionHandler(BadCredentialsException.class)
   public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException e, WebRequest request) {
     ErrorResponse error = ErrorResponse.builder()
@@ -77,15 +77,43 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }
 
+  // Bắt lỗi xử lý logic nghiệp vụ sai
+  @ExceptionHandler(BadRequestException.class)
+  public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException e, WebRequest request) {
+    ErrorResponse error = ErrorResponse.builder()
+        .timestamp(LocalDateTime.now())
+        .code(HttpStatus.BAD_REQUEST.value())
+        .success(false)
+        .message(e.getMessage())
+        .path(request.getDescription(false).replace("uri=", ""))
+        .build();
+    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+  }
+
+  // Bắt lỗi khi không tồn tại tài nguyên cần tìm kiếm
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException e, WebRequest request) {
+    ErrorResponse error = ErrorResponse.builder()
+        .timestamp(LocalDateTime.now())
+        .code(HttpStatus.NOT_FOUND.value())
+        .success(false)
+        .message(e.getMessage())
+        .path(request.getDescription(false).replace("uri=", ""))
+        .build();
+    return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+  }
+
+  // Bắt các lỗi còn lại
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGlobalException(Exception e, WebRequest request) {
     ErrorResponse error = ErrorResponse.builder()
         .timestamp(LocalDateTime.now())
-        .code(HttpStatus.INTERNAL_SERVER_ERROR.value()) // 500
+        .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
         .success(false)
         .message("Lỗi hệ thống: " + e.getMessage())
         .path(request.getDescription(false).replace("uri=", ""))
         .build();
     return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
   }
+
 }
