@@ -1,5 +1,6 @@
 package com.hust.lms.streaming.configuration;
 
+import com.hust.lms.streaming.enums.Role;
 import com.hust.lms.streaming.middleware.JwtFilter;
 import com.hust.lms.streaming.security.CustomAccessDeniedHandler;
 import com.hust.lms.streaming.security.CustomAuthenticationEntryPoint;
@@ -46,7 +47,7 @@ public class SecurityConfiguration {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/auth/login" , "/auth/register" , "/auth/verify","/public/**").permitAll()
-            .requestMatchers("/users/**").hasRole("ADMIN")
+            .requestMatchers("/users/**").hasRole(Role.ADMIN.name())
             .anyRequest().authenticated()
         )
         .addFilterBefore(jwtFilter , UsernamePasswordAuthenticationFilter.class);

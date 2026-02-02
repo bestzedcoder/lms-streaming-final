@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
         .timestamp(LocalDateTime.now())
         .code(HttpStatus.FORBIDDEN.value()) // 403
         .success(false)
-        .message("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.")
+        .message(e.getMessage())
         .path(request.getDescription(false).replace("uri=", ""))
         .build();
     return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);

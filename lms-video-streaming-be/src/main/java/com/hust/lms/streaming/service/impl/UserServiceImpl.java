@@ -1,20 +1,31 @@
 package com.hust.lms.streaming.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.hust.lms.streaming.dto.common.PageResponse;
 import com.hust.lms.streaming.dto.request.user.LockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UnlockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UserCreatingRequest;
 import com.hust.lms.streaming.dto.request.user.UserUpdatingRequest;
 import com.hust.lms.streaming.dto.response.user.UserResponse;
 import com.hust.lms.streaming.enums.Role;
+import com.hust.lms.streaming.event.custom.UserEvent;
+import com.hust.lms.streaming.event.enums.UserEventType;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.exception.ResourceNotFoundException;
 import com.hust.lms.streaming.mapper.UserMapper;
 import com.hust.lms.streaming.model.User;
+import com.hust.lms.streaming.redis.RedisService;
 import com.hust.lms.streaming.repository.UserRepository;
 import com.hust.lms.streaming.service.UserService;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +34,45 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
+  private final RedisService redisService;
   private final UserMapper userMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
-  public List<UserResponse> findAll() {
-    return this.userRepository.findAll().stream().map(this.userMapper::mapUserToUserResponse).toList();
+  public PageResponse<UserResponse> findAll(int page, int limit, String email) {
+
+    String key = String.format("lms:user:search:page:%d:limit:%d:email:%s", page, limit, email == null ? "" : email);
+
+    PageResponse<UserResponse> dataCache = this.redisService.getValue(key, new TypeReference<PageResponse<UserResponse>>() {});
+    if (dataCache != null) {
+      return dataCache;
+    }
+
+    int pageNo = page > 0 ? page - 1 : 0;
+    Pageable pageable = PageRequest.of(pageNo, limit, Sort.by("createdAt").descending());
+
+    Page<User> userPage;
+    if (email != null && !email.isBlank()) {
+      userPage = this.userRepository.findByEmailContainingIgnoreCase(email, pageable);
+    } else {
+      userPage = this.userRepository.findAll(pageable);
+    }
+
+    List<UserResponse> items = userPage.getContent().stream()
+        .map(this.userMapper::mapUserToUserResponse)
+        .toList();
+
+    PageResponse<UserResponse> response = PageResponse.<UserResponse>builder()
+        .result(items)
+        .currentPages(page)
+        .pageSizes(limit)
+        .totalElements(userPage.getTotalElements())
+        .totalPages(userPage.getTotalPages())
+        .build();
+
+    this.redisService.saveKeyAndValue(key, response, 300, TimeUnit.SECONDS);
+
+    return response;
   }
 
   @Override
@@ -56,6 +101,7 @@ public class UserServiceImpl implements UserService {
     user.setUpdateProfile(true);
     user.setEnabled(true);
     this.userRepository.save(user);
+    this.eventPublisher.publishEvent(new UserEvent(UserEventType.CREATED, user.getEmail()));
   }
 
   @Override
@@ -64,6 +110,7 @@ public class UserServiceImpl implements UserService {
     user.setFullName(request.getFullName());
     user.setPhone(request.getPhone());
     this.userRepository.save(user);
+    this.eventPublisher.publishEvent(new UserEvent(UserEventType.UPDATED, user.getEmail()));
   }
 
   @Override
@@ -74,6 +121,7 @@ public class UserServiceImpl implements UserService {
       // TO-DO: logic xóa ảnh
     }
     this.userRepository.delete(user);
+    this.eventPublisher.publishEvent(new UserEvent(UserEventType.DELETED, user.getEmail()));
   }
 
   @Override
@@ -84,6 +132,7 @@ public class UserServiceImpl implements UserService {
     user.setLocked(true);
     user.setLockReason(request.getReason());
     this.userRepository.save(user);
+    this.eventPublisher.publishEvent(new UserEvent(UserEventType.LOCKED, user.getEmail()));
   }
 
   @Override
@@ -92,5 +141,6 @@ public class UserServiceImpl implements UserService {
     User user = this.userRepository.findById(uuid).orElseThrow(() -> new ResourceNotFoundException("User", "id", uuid));
     user.setLocked(false);
     this.userRepository.save(user);
+    this.eventPublisher.publishEvent(new UserEvent(UserEventType.UNLOCKED, user.getEmail()));
   }
 }

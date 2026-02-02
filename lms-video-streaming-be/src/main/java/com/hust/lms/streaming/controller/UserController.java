@@ -1,7 +1,7 @@
 package com.hust.lms.streaming.controller;
 
-import com.hust.lms.streaming.dto.common.BaseListResponse;
 import com.hust.lms.streaming.dto.common.BaseResponse;
+import com.hust.lms.streaming.dto.common.PageResponse;
 import com.hust.lms.streaming.dto.request.user.LockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UnlockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UserCreatingRequest;
@@ -10,7 +10,6 @@ import com.hust.lms.streaming.dto.response.user.UserResponse;
 import com.hust.lms.streaming.service.UserService;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -31,15 +31,12 @@ public class UserController {
   private final UserService userService;
 
   @GetMapping
-  public ResponseEntity<BaseListResponse<?>> getUsers() {
-    List<UserResponse> res = this.userService.findAll();
-    return ResponseEntity.ok(BaseListResponse.<UserResponse>builder()
-            .code(HttpStatus.OK.value())
-            .success(true)
-            .data(res)
-            .message("Lấy danh sách người dùng thành công!")
-            .timestamp(LocalDateTime.now())
-        .build());
+  public ResponseEntity<PageResponse<?>> getUsers(
+      @RequestParam(value = "page", defaultValue = "1") int page,
+      @RequestParam(value = "limit", defaultValue = "10") int limit,
+      @RequestParam(value = "email", required = false) String email) {
+    PageResponse<UserResponse> res = this.userService.findAll(page, limit, email);
+    return ResponseEntity.ok(res);
   }
 
   @GetMapping("{uuid}")

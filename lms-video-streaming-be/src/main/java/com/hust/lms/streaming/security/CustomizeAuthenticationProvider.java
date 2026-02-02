@@ -1,6 +1,7 @@
 package com.hust.lms.streaming.security;
 
 
+import com.hust.lms.streaming.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -34,7 +35,8 @@ public class CustomizeAuthenticationProvider implements AuthenticationProvider {
     }
 
     if (!userDetails.isAccountNonLocked()) {
-      throw new LockedException("Tài khoản đã bị khóa do vi phạm chính sách!");
+      String reason = ((User)userDetails).getLockReason();
+      throw new LockedException("Tài khoản đã bị khóa do vi phạm chính sách:\n" + reason);
     }
 
     return new UsernamePasswordAuthenticationToken(
