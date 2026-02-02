@@ -1,6 +1,7 @@
 package com.hust.lms.streaming.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.hust.lms.streaming.common.Gen;
 import com.hust.lms.streaming.dto.common.PageResponse;
 import com.hust.lms.streaming.dto.request.user.LockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UnlockAccountRequest;
@@ -97,13 +98,14 @@ public class UserServiceImpl implements UserService {
     User user = new User();
     user.setEmail(request.getEmail());
     user.setFullName(request.getFullName());
-    user.setPassword(this.passwordEncoder.encode(request.getPassword()));
+    String rawPassword = Gen.genPasswordRaw(16);
+    user.setPassword(this.passwordEncoder.encode(rawPassword));
     user.setPhone(request.getPhone());
     user.setRole(request.getRole());
     user.setUpdateProfile(true);
     user.setEnabled(true);
     this.userRepository.save(user);
-    this.eventPublisher.publishEvent(new UserEvent(UserEventType.CREATED, user.getEmail()));
+    this.eventPublisher.publishEvent(new UserEvent(UserEventType.CREATED, user.getEmail() , rawPassword));
   }
 
   @Override

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông tin tài khoản mới</title>
+  <style>
+    /* CSS Reset cơ bản cho Email Client */
+    body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; }
+    table { border-collapse: collapse; width: 100%; }
+
+    /* Container chính */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Header - Màu thương hiệu (Ví dụ: Đỏ của Youtube hoặc Xanh của Udemy) */
+    .header {
+      background-color: #1a202c; /* Màu tối Dark Mode */
+      padding: 20px;
+      text-align: center;
+    }
+    .header h1 {
+      color: #ffffff;
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 1px;
+    }
+
+    /* Nội dung chính */
+    .content { padding: 30px; color: #333333; line-height: 1.6; }
+    .greeting { font-size: 18px; font-weight: bold; margin-bottom: 20px; }
+
+    /* Khung chứa thông tin đăng nhập */
+    .credentials-box {
+      background-color: #f8f9fa;
+      border: 1px dashed #cbd5e0;
+      border-radius: 6px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .credentials-label {
+      font-size: 14px;
+      color: #718096;
+      margin-bottom: 5px;
+      display: block;
+    }
+    .credentials-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2d3748;
+      margin-bottom: 15px;
+      display: block;
+    }
+    /* Mật khẩu dùng font monospace để dễ đọc ký tự đặc biệt */
+    .password-value {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #e2e8f0;
+      padding: 5px 10px;
+      border-radius: 4px;
+      color: #c53030; /* Màu đỏ nhấn mạnh */
+      letter-spacing: 1px;
+    }
+
+    /* Nút bấm (CTA) */
+    .btn-container { text-align: center; margin-top: 30px; }
+    .btn {
+      display: inline-block;
+      background-color: #3182ce; /* Màu xanh chủ đạo */
+      color: #ffffff;
+      padding: 12px 30px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .btn:hover { background-color: #2b6cb0; }
+
+    /* Cảnh báo bảo mật */
+    .security-note {
+      margin-top: 30px;
+      font-size: 13px;
+      color: #e53e3e;
+      background-color: #fff5f5;
+      padding: 10px;
+      border-left: 4px solid #e53e3e;
+    }
+
+    /* Footer */
+    .footer {
+      background-color: #f7fafc;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #718096;
+      border-top: 1px solid #edf2f7;
+    }
+  </style>
+</head>
+<body>
+<table role="presentation">
+  <tr>
+    <td>
+      <div class="container">
+        <div class="header">
+          <h1>LMS STREAMING</h1>
+        </div>
+
+        <div class="content">
+          <div class="greeting">Xin chào <span th:text="${name}">Học viên</span>,</div>
+
+          <p>Chào mừng bạn gia nhập nền tảng học tập trực tuyến <strong>LMS Streaming</strong>. Tài khoản của bạn đã được quản trị viên khởi tạo thành công.</p>
+          <p>Dưới đây là thông tin đăng nhập của bạn:</p>
+
+          <div class="credentials-box">
+            <span class="credentials-label">Email đăng nhập:</span>
+            <span class="credentials-value" th:text="${email}">user@example.com</span>
+
+            <span class="credentials-label">Mật khẩu tạm thời:</span>
+            <span class="credentials-value password-value" th:text="${password}">XyZ@1234</span>
+          </div>
+
+          <div class="security-note">
+            <strong>⚠️ Lưu ý quan trọng:</strong> Vì lý do bảo mật, vui lòng đổi mật khẩu ngay sau lần đăng nhập đầu tiên. Tuyệt đối không chia sẻ mật khẩu này cho bất kỳ ai.
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>Đây là email tự động, vui lòng không trả lời email này.</p>
+          <p>&copy; 2026 LMS Streaming Platform. All rights reserved.</p>
+          <p>Hỗ trợ: support@lms-streaming.com</p>
+        </div>
+      </div>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

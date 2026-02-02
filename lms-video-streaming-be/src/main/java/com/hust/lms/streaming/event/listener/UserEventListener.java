@@ -1,6 +1,7 @@
 package com.hust.lms.streaming.event.listener;
 
 import com.hust.lms.streaming.event.custom.UserEvent;
+import com.hust.lms.streaming.mail.MailService;
 import com.hust.lms.streaming.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class UserEventListener {
   private final RedisService redisService;
-
+  private final MailService mailService;
   @Async
   @EventListener
   public void handleUserEvent(UserEvent event) {
@@ -21,6 +22,7 @@ public class UserEventListener {
 
     switch (event.getType()) {
       case CREATED:
+        this.mailService.sendNewAccountCredentials(event.getEmail() , event.getData());
       case UPDATED:
       case DELETED:
       case LOCKED:

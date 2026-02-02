@@ -13,4 +13,10 @@ import lombok.Setter;
 public class UserEvent {
   private UserEventType type;
   private String email;
+  private String data;
+
+  public UserEvent(UserEventType type, String email) {
+    this.type = type;
+    this.email = email;
+  }
 }
