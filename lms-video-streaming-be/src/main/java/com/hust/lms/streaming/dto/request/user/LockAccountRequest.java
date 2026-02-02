@@ -8,7 +8,6 @@ import org.hibernate.validator.constraints.UUID;
 
 @Getter
 public class LockAccountRequest {
-
   @NotBlank(message = "ID không được để trống")
   @UUID(message = "ID không đúng định dạng")
   private String uuid;

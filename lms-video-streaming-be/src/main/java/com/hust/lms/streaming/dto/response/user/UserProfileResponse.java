@@ -1,5 +1,21 @@
 package com.hust.lms.streaming.dto.response.user;
 
-public class UserProfileResponse {
+import com.hust.lms.streaming.enums.Role;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserProfileResponse {
+  private String uuid;
+  private String fullName;
+  private String phone;
+  private String email;
+  private Role role;
+  private String avatarUrl;
+  private boolean updateProfile;
 }

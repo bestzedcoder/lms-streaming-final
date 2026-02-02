@@ -17,6 +17,7 @@ import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.redis.RedisService;
 import com.hust.lms.streaming.repository.UserRepository;
 import com.hust.lms.streaming.service.UserService;
+import com.hust.lms.streaming.upload.CloudinaryService;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +38,7 @@ public class UserServiceImpl implements UserService {
   private final RedisService redisService;
   private final UserMapper userMapper;
   private final ApplicationEventPublisher eventPublisher;
+  private final CloudinaryService cloudinaryService;
 
   @Override
   public PageResponse<UserResponse> findAll(int page, int limit, String email) {
@@ -107,6 +109,10 @@ public class UserServiceImpl implements UserService {
   @Override
   public void update(UUID uuid, UserUpdatingRequest request) {
     User user = this.userRepository.findById(uuid).orElseThrow(() -> new ResourceNotFoundException("User", "id", uuid));
+    if (user.getRole().equals(Role.ADMIN) || request.getRole().equals(Role.ADMIN)) {
+      throw new BadRequestException("Tài khoản hoặc dữ liệu cập nhật không hợp lệ");
+    }
+    user.setRole(request.getRole());
     user.setFullName(request.getFullName());
     user.setPhone(request.getPhone());
     this.userRepository.save(user);
@@ -118,7 +124,7 @@ public class UserServiceImpl implements UserService {
     User user = this.userRepository.findById(uuid).orElseThrow(() -> new ResourceNotFoundException("User", "id", uuid));
     if (user.getRole().equals(Role.ADMIN)) throw new BadRequestException("Không thể xóa tài khoản admin.");
     if (user.getAvatarUrl() != null) {
-      // TO-DO: logic xóa ảnh
+      this.cloudinaryService.deleteImage(user.getPublicId());
     }
     this.userRepository.delete(user);
     this.eventPublisher.publishEvent(new UserEvent(UserEventType.DELETED, user.getEmail()));
@@ -128,7 +134,7 @@ public class UserServiceImpl implements UserService {
   public void lock(LockAccountRequest request) {
     UUID uuid = UUID.fromString(request.getUuid());
     User user = this.userRepository.findById(uuid).orElseThrow(() -> new ResourceNotFoundException("User", "id", uuid));
-    if (user.getRole().equals(Role.ADMIN)) throw new BadRequestException("Tài khoản admin không được phép khóa");
+    if (user.getRole().equals(Role.ADMIN)) throw new BadRequestException("Không thể thao tác lock và unlock với tài khoản admin");
     user.setLocked(true);
     user.setLockReason(request.getReason());
     this.userRepository.save(user);
@@ -139,6 +145,7 @@ public class UserServiceImpl implements UserService {
   public void unlock(UnlockAccountRequest request) {
     UUID uuid = UUID.fromString(request.getUuid());
     User user = this.userRepository.findById(uuid).orElseThrow(() -> new ResourceNotFoundException("User", "id", uuid));
+    if (user.getRole().equals(Role.ADMIN)) throw new BadRequestException("Không thể thao tác lock và unlock với tài khoản admin");
     user.setLocked(false);
     this.userRepository.save(user);
     this.eventPublisher.publishEvent(new UserEvent(UserEventType.UNLOCKED, user.getEmail()));
