@@ -1,7 +1,10 @@
 package com.hust.lms.streaming.middleware;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hust.lms.streaming.dto.common.ErrorResponse;
+import com.hust.lms.streaming.model.User;
+import com.hust.lms.streaming.redis.RedisService;
 import com.hust.lms.streaming.security.JwtUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -12,7 +15,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,6 +37,7 @@ public class JwtFilter extends OncePerRequestFilter {
   private final JwtUtils jwtUtils;
   private final UserDetailsService userDetailsService;
   private final ObjectMapper objectMapper;
+  private final RedisService redisService;
 
   @Override
   protected void doFilterInternal(
@@ -54,7 +60,16 @@ public class JwtFilter extends OncePerRequestFilter {
       userEmail = jwtUtils.extractUsername(jwt);
 
       if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        // Kiểm tra trong blacklist
+        String tokenBlock = this.redisService.getValue("lms:auth:blacklist:email" + userEmail, new TypeReference<String>() {});
+        if (tokenBlock != null && tokenBlock.equals(jwt)) {
+          throw new BadRequestException("Phiên đăng nhập không hợp lệ, vui lòng login lại");
+        }
+
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+        if (!((User)userDetails).isAccountNonLocked()) {
+          throw new LockedException("Tài khoản của bạn đã bị khóa!");
+        }
         if (jwtUtils.isTokenValid(jwt, userDetails)) {
           UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
               userDetails,
@@ -73,6 +88,10 @@ public class JwtFilter extends OncePerRequestFilter {
     } catch (MalformedJwtException | SignatureException | IllegalArgumentException e) {
       log.error("JWT Invalid: {}", e.getMessage());
       sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "Token không hợp lệ.");
+    } catch (LockedException e) {
+      sendError(response, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+    } catch (BadRequestException e) {
+      sendError(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
     } catch (Exception e) {
       log.error("JWT Filter Error: {}", e.getMessage());
       sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi xác thực hệ thống: " + e.getMessage());

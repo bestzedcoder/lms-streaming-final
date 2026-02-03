@@ -3,6 +3,7 @@ package com.hust.lms.streaming.security;
 import com.hust.lms.streaming.model.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@Slf4j
 public class JwtUtils {
 
   @Value("${app.security.jwt.secretKey}")
@@ -77,6 +79,24 @@ public class JwtUtils {
         .build()
         .parseClaimsJws(token)
         .getBody();
+  }
+
+  public boolean validateJwtToken(String token) {
+    try {
+      Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token);
+      return true;
+    } catch (MalformedJwtException e) {
+      log.error("Invalid JWT token: {}", e.getMessage());
+    } catch (ExpiredJwtException e) {
+      log.error("JWT token is expired: {}", e.getMessage());
+    } catch (UnsupportedJwtException e) {
+      log.error("JWT token is unsupported: {}", e.getMessage());
+    } catch (IllegalArgumentException e) {
+      log.error("JWT claims string is empty: {}", e.getMessage());
+    } catch (io.jsonwebtoken.security.SignatureException e) {
+      log.error("Invalid JWT signature: {}", e.getMessage());
+    }
+    return false;
   }
 
   private SecretKey getSignInKey() {

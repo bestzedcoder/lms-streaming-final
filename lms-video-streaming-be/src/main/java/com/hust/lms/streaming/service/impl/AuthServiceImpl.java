@@ -1,13 +1,14 @@
 package com.hust.lms.streaming.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.hust.lms.streaming.common.CookieUtils;
 import com.hust.lms.streaming.common.Gen;
 import com.hust.lms.streaming.dto.request.auth.ForgotPasswordRequest;
-import com.hust.lms.streaming.dto.request.auth.RefreshRequest;
 import com.hust.lms.streaming.dto.request.auth.ResetPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.SignUpRequest;
 import com.hust.lms.streaming.dto.request.auth.VerifyAccountRequest;
 import com.hust.lms.streaming.dto.response.auth.LoginResponse;
+import com.hust.lms.streaming.dto.response.auth.RefreshResponse;
 import com.hust.lms.streaming.enums.Role;
 import com.hust.lms.streaming.event.custom.AuthEvent;
 import com.hust.lms.streaming.event.enums.AuthEventType;
@@ -18,6 +19,8 @@ import com.hust.lms.streaming.redis.RedisService;
 import com.hust.lms.streaming.repository.UserRepository;
 import com.hust.lms.streaming.security.JwtUtils;
 import com.hust.lms.streaming.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +41,7 @@ public class AuthServiceImpl implements AuthService {
   private final PasswordEncoder passwordEncoder;
   private final RedisService redisService;
   private final ApplicationEventPublisher eventPublisher;
+  private final CookieUtils cookieUtils;
 
   @Value("${app.security.jwt.accessExpiration}")
   private long accessTokenExpireTime;
@@ -45,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
   private long refreshTokenExpireTime;
 
   @Override
-  public LoginResponse login(String email, String password) {
+  public LoginResponse login(HttpServletResponse response,String email, String password) {
 
     Authentication authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
     Authentication authentication = authenticationManager.authenticate(authenticationToken);
@@ -57,11 +61,19 @@ public class AuthServiceImpl implements AuthService {
     String accessToken = jwtUtils.generateAccessToken(user);
     String refreshToken = jwtUtils.generateRefreshToken(user);
     this.redisService.saveKeyAndValue("lms:auth:access-token:username:" + user.getEmail(), accessToken , accessTokenExpireTime , TimeUnit.SECONDS);
-    this.redisService.saveKeyAndValue("lms:auth:refresh-token:username:" + user.getEmail(), refreshToken , refreshTokenExpireTime , TimeUnit.SECONDS);
+//    ResponseCookie cookie =  ResponseCookie.from("refreshToken" , refreshToken)
+//        .maxAge(this.refreshTokenExpireTime)
+//        .secure(false)
+//        .httpOnly(true)
+//        .path("/api/auth")
+//        .sameSite("Lax")
+//        .build();
+//    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+    this.cookieUtils.setCookieValue(response, "refreshToken", refreshToken, this.refreshTokenExpireTime, "/api/auth");
 
     return LoginResponse.builder()
         .accessToken(accessToken)
-        .refreshToken(refreshToken)
         .build();
   }
 
@@ -146,12 +158,33 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  public String refresh(RefreshRequest request) {
-    return "";
+  public RefreshResponse refresh(HttpServletRequest request) {
+    String token = this.cookieUtils.getCookieValue(request, "refreshToken");
+    if (token == null || !this.jwtUtils.validateJwtToken(token)) {
+      throw new BadRequestException("Token không hợp lệ!");
+    }
+    String email = this.jwtUtils.extractUsername(token);
+    User user = this.userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+    String newToken = this.jwtUtils.generateAccessToken(user);
+    this.redisService.saveKeyAndValue("lms:auth:access-token:username:" + user.getEmail(), newToken , accessTokenExpireTime , TimeUnit.SECONDS);
+    return RefreshResponse.builder().accessToken(newToken).build();
   }
 
   @Override
-  public void logout() {
+  public void logout(HttpServletResponse response) {
+    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    String token = this.redisService.getValue("lms:auth:access-token:username:" + user.getEmail(), new TypeReference<String>() {});
 
+//    ResponseCookie cookie =  ResponseCookie.from("refreshToken" , null)
+//        .maxAge(0)
+//        .secure(false)
+//        .httpOnly(true)
+//        .path("/api/auth")
+//        .sameSite("Lax")
+//        .build();
+//    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    this.cookieUtils.setCookieValue(response, "refreshToken", null, 0, "/api/auth");
+
+    this.eventPublisher.publishEvent(new AuthEvent(AuthEventType.LOGOUT , user.getEmail() , token));
   }
 }

@@ -3,13 +3,16 @@ package com.hust.lms.streaming.controller;
 import com.hust.lms.streaming.dto.common.BaseResponse;
 import com.hust.lms.streaming.dto.request.auth.ForgotPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.LoginRequest;
-import com.hust.lms.streaming.dto.request.auth.RefreshRequest;
 import com.hust.lms.streaming.dto.request.auth.ResetPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.SignUpRequest;
 import com.hust.lms.streaming.dto.request.auth.VerifyAccountRequest;
 import com.hust.lms.streaming.dto.response.auth.LoginResponse;
+import com.hust.lms.streaming.dto.response.auth.RefreshResponse;
 import com.hust.lms.streaming.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,8 +29,8 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("login")
-  public ResponseEntity<BaseResponse<?>> login(@RequestBody @Valid LoginRequest req) {
-    LoginResponse res = this.authService.login(req.getEmail() , req.getPassword());
+  public ResponseEntity<BaseResponse<?>> login(@RequestBody @Valid LoginRequest req, @NotNull HttpServletResponse response) {
+    LoginResponse res = this.authService.login(response , req.getEmail() , req.getPassword());
     return ResponseEntity.ok(BaseResponse.builder()
             .message("Đăng nhập thành công!")
             .code(HttpStatus.OK.value())
@@ -86,8 +89,8 @@ public class AuthController {
   }
 
   @PostMapping("logout")
-  public ResponseEntity<BaseResponse<?>> logout() {
-    this.authService.logout();
+  public ResponseEntity<BaseResponse<?>> logout(@NotNull HttpServletResponse response) {
+    this.authService.logout(response);
     return ResponseEntity.ok(BaseResponse.builder()
         .code(HttpStatus.OK.value())
         .success(true)
@@ -98,13 +101,13 @@ public class AuthController {
   }
 
   @PostMapping("refresh")
-  public ResponseEntity<BaseResponse<?>> refresh(@RequestBody @Valid RefreshRequest req) {
-    String accessToken = this.authService.refresh(req);
+  public ResponseEntity<BaseResponse<?>> refresh(@NotNull HttpServletRequest request) {
+    RefreshResponse accessToken = this.authService.refresh(request);
     return ResponseEntity.ok(BaseResponse.builder()
         .code(HttpStatus.OK.value())
         .success(true)
         .message("Refresh token thành công!")
-        .data(null)
+        .data(accessToken)
         .timestamp(LocalDateTime.now())
         .build());
   }

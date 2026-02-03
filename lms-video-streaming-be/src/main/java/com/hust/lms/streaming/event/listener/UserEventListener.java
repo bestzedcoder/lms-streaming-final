@@ -20,20 +20,24 @@ public class UserEventListener {
   public void handleUserEvent(UserEvent event) {
     log.info("User Event received: type={}, email={}", event.getType(), event.getEmail());
 
-    switch (event.getType()) {
-      case CREATED:
-        this.mailService.sendNewAccountCredentials(event.getEmail() , event.getData());
-      case UPDATED:
-      case DELETED:
-      case LOCKED:
-      case UNLOCKED:
-        this.redisService.deleteByPattern("lms:user:search:*");
-        log.info("Cleared user list cache due to event: {}", event.getType());
-        break;
+    try {
+      switch (event.getType()) {
+        case CREATED:
+          this.mailService.sendNewAccountCredentials(event.getEmail() , event.getData());
+        case UPDATED:
+        case DELETED:
+        case LOCKED:
+        case UNLOCKED:
+          this.redisService.deleteByPattern("lms:user:search:*");
+          log.info("Cleared user list cache due to event: {}", event.getType());
+          break;
 
-      default:
-        log.warn("No handler for event type: {}", event.getType());
-        break;
+        default:
+          log.warn("No handler for event type: {}", event.getType());
+          break;
+      }
+    } catch (Exception e) {
+      log.error("Error processing UserEvent: {}", e.getMessage(), e);
     }
   }
 }
