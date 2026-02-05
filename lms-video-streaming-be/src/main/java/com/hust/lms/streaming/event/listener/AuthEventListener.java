@@ -1,7 +1,8 @@
 package com.hust.lms.streaming.event.listener;
 
 import com.hust.lms.streaming.event.custom.AuthEvent;
-import com.hust.lms.streaming.mail.MailService;
+import com.hust.lms.streaming.queue.RabbitMQProducer;
+import com.hust.lms.streaming.queue.message.MailMessage;
 import com.hust.lms.streaming.redis.RedisService;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +16,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthEventListener {
-  private final MailService mailService;
   private final RedisService redisService;
+  private final RabbitMQProducer producer;
 
   @Value("${app.security.jwt.accessExpiration}")
   private long accessTokenExpire;
@@ -29,7 +30,7 @@ public class AuthEventListener {
     try {
       switch (event.getType()) {
         case REGISTER:
-          mailService.sendAccountActivationCode(event.getEmail(), event.getData());
+          this.sendToQueue(event.getEmail(), event.getType().name(), event.getData());
           this.redisService.deleteByPattern("lms:user:search:*");
           break;
 
@@ -39,14 +40,14 @@ public class AuthEventListener {
           this.redisService.deleteByPattern("lms:user:search:*");
           break;
         case FORGOT_PASSWORD:
-          mailService.sendPasswordResetCode(event.getEmail(), event.getData());
+          this.sendToQueue(event.getEmail(), event.getType().name(), event.getData());
           break;
 
         case RESET_PASSWORD:
           this.redisService.deleteKey("lms:auth:otp-forgot-password:code:username:" + event.getEmail());
           this.redisService.deleteKey("lms:auth:otp-forgot-password:attempt:username:" + event.getEmail());
           this.redisService.deleteByPattern("lms:user:search:*");
-          mailService.sendNewPassword(event.getEmail(), event.getData());
+          this.sendToQueue(event.getEmail(), event.getType().name(), event.getData());
           break;
 
         case LOGOUT:
@@ -61,6 +62,13 @@ public class AuthEventListener {
       log.error("Error processing AuthEvent: {}", e.getMessage(), e);
     }
   }
+
+  private void sendToQueue(String email, String type, String data) {
+    this.producer.sendEmail(
+        MailMessage.<String>builder().to(email).type(type).data(data).build()
+    );
+  }
+
   private void handleLogout(AuthEvent event) {
     String token = event.getData();
 

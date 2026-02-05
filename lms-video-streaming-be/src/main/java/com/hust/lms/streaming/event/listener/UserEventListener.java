@@ -1,7 +1,8 @@
 package com.hust.lms.streaming.event.listener;
 
 import com.hust.lms.streaming.event.custom.UserEvent;
-import com.hust.lms.streaming.mail.MailService;
+import com.hust.lms.streaming.queue.RabbitMQProducer;
+import com.hust.lms.streaming.queue.message.MailMessage;
 import com.hust.lms.streaming.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +15,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class UserEventListener {
   private final RedisService redisService;
-  private final MailService mailService;
+  private final RabbitMQProducer producer;
+
   @Async
   @EventListener
   public void handleUserEvent(UserEvent event) {
@@ -23,7 +25,9 @@ public class UserEventListener {
     try {
       switch (event.getType()) {
         case CREATED:
-          this.mailService.sendNewAccountCredentials(event.getEmail() , event.getData());
+          this.producer.sendEmail(
+              MailMessage.<String>builder().to(event.getEmail()).type(event.getType().name()).data(event.getData()).build()
+          );
         case UPDATED:
         case DELETED:
         case LOCKED:

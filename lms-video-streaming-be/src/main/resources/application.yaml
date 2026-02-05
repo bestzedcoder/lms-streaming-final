@@ -27,6 +27,18 @@ spring:
       host: ${REDIS_HOST}
       password: ${REDIS_PASSWORD}
       timeout: 6000
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    listener:
+      simple:
+        retry:
+          max-attempts: 3 # gửi tối đa 3 lần
+          initial-interval: 2000 # mỗi lần cách 2s
+          enabled: true
+          multiplier: 1
   elasticsearch:
     uris: ${ELASTICSEARCH_URIS}
     username: ${ELASTIC_USERNAME}

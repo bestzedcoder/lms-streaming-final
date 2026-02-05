@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -23,7 +22,6 @@ public class MailServiceImpl implements MailService {
   private final TemplateEngine templateEngine;
 
   @Override
-  @Async
   public void sendNewAccountCredentials(String toEmail, String rawPassword) {
     Map<String, Object> variables = new HashMap<>();
     variables.put("email", toEmail);
@@ -34,7 +32,6 @@ public class MailServiceImpl implements MailService {
   }
 
   @Override
-  @Async
   public void sendAccountActivationCode(String toEmail, String otpCode) {
     Map<String, Object> variables = new HashMap<>();
     variables.put("name", extractNameFromEmail(toEmail));
@@ -44,7 +41,6 @@ public class MailServiceImpl implements MailService {
   }
 
   @Override
-  @Async
   public void sendPasswordResetCode(String toEmail, String otpCode) {
     Map<String, Object> variables = new HashMap<>();
     variables.put("email", toEmail);
@@ -54,7 +50,6 @@ public class MailServiceImpl implements MailService {
   }
 
   @Override
-  @Async
   public void sendNewPassword(String toEmail, String newPassword) {
     Map<String, Object> variables = new HashMap<>();
     variables.put("email", toEmail);
