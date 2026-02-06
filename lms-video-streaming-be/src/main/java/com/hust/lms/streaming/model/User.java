@@ -7,12 +7,16 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,14 +34,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Setter
 @Entity
 @SuperBuilder
-@Table(name = "_user")
+@Table(name = "users")
 public class User extends BaseEntity implements UserDetails {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "_id")
   private UUID id;
 
-  @Column(name = "_email" , nullable = false , unique = true)
+  @Column(name = "_email" , nullable = false , unique = true , updatable = false)
   private String email;
 
   @Column(name = "_password" , nullable = false)
@@ -59,15 +63,16 @@ public class User extends BaseEntity implements UserDetails {
   private String publicId;
 
   @Column(name = "_active" , nullable = false)
-  private boolean enabled;
+  @Builder.Default
+  private Boolean enabled = false;
 
   @Column(name = "_locked" , nullable = false)
   @Builder.Default
-  private boolean locked = false;
+  private Boolean locked = false;
 
   @Column(name = "_update_profile" , nullable = false)
   @Builder.Default
-  private boolean updateProfile = false;
+  private Boolean updateProfile = false;
 
   @Column(name = "_lock_reason", columnDefinition = "TEXT")
   private String lockReason;
@@ -111,4 +116,9 @@ public class User extends BaseEntity implements UserDetails {
   public boolean isEnabled() {
     return this.enabled;
   }
+
+
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+  @Builder.Default
+  private List<Enrollment> enrollments = new ArrayList<>();
 }

@@ -18,8 +18,8 @@ public class UserMapper {
     response.setRole(user.getRole());
     response.setLockReason(user.getLockReason());
     response.setActive(user.isEnabled());
-    response.setLocked(user.isLocked());
-    response.setUpdateProfile(user.isUpdateProfile());
+    response.setLocked(user.getLocked());
+    response.setUpdateProfile(user.getUpdateProfile());
     return response;
   }
 
@@ -31,7 +31,7 @@ public class UserMapper {
     response.setPhone(user.getPhone());
     response.setAvatarUrl(user.getAvatarUrl());
     response.setRole(user.getRole());
-    response.setUpdateProfile(user.isUpdateProfile());
+    response.setUpdateProfile(user.getUpdateProfile());
     return response;
   }
 
