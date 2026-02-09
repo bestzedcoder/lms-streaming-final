@@ -20,6 +20,10 @@ public class UserMapper {
     response.setActive(user.isEnabled());
     response.setLocked(user.getLocked());
     response.setUpdateProfile(user.getUpdateProfile());
+    response.setUpdatedAt(user.getUpdatedAt());
+    response.setUpdatedBy(user.getUpdatedBy());
+    response.setCreatedAt(user.getCreatedAt());
+    response.setCreatedBy(user.getCreatedBy());
     return response;
   }
 

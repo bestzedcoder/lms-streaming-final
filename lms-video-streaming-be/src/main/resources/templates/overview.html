@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HUST LMS Streaming - System Architecture</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&amp;display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --primary-color: #0d6efd;
+      --secondary-color: #6c757d;
+      --dark-bg: #0f172a;
+      --card-bg: #ffffff;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      padding: 100px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('https://img.freepik.com/free-vector/gradient-network-connection-background_23-2148879890.jpg');
+      opacity: 0.1;
+      background-size: cover;
+    }
+
+    /* Section Styling */
+    section {
+      padding: 80px 0;
+    }
+
+    .section-title {
+      font-weight: 700;
+      margin-bottom: 50px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      width: 50%;
+      height: 4px;
+      background: var(--primary-color);
+      bottom: -10px;
+      left: 25%;
+      border-radius: 2px;
+    }
+
+    /* Cards */
+    .tech-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: none;
+      border-radius: 12px;
+      height: 100%;
+    }
+
+    .tech-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .icon-box {
+      width: 60px;
+      height: 60px;
+      background: rgba(13, 110, 253, 0.1);
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    /* Diagram Container */
+    .diagram-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      overflow-x: auto;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--dark-bg);
+      color: white;
+      padding: 40px 0;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="#"><i class="fas fa-play-circle text-primary me-2"></i>HUST LMS Streaming</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="#overview">Tổng quan</a></li>
+        <li class="nav-item"><a class="nav-link" href="#architecture">Kiến trúc</a></li>
+        <li class="nav-item"><a class="nav-link" href="#flow">Luồng xử lý</a></li>
+        <li class="nav-item"><a class="nav-link" href="#security">Bảo mật</a></li>
+        <li class="nav-item"><a class="nav-link" href="#techstack">Công nghệ</a></li>
+        <li class="nav-item"><a class="nav-link" href="#team">Team</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<header class="hero-section text-center">
+  <div class="container position-relative z-1">
+    <h1 class="display-4 fw-bold mb-3">Hệ thống LMS Streaming Hiệu Năng Cao</h1>
+    <p class="lead mb-4">Nền tảng học tập trực tuyến với công nghệ Adaptive Bitrate Streaming (HLS), Microservices Architecture và Bảo mật đa lớp.</p>
+    <a href="#architecture" class="btn btn-primary btn-lg px-4 me-2">Xem Kiến Trúc</a>
+    <a href="https://github.com/bestzedcoder/lms-streaming-final" class="btn btn-outline-light btn-lg px-4" target="_blank"><i class="fab fa-github me-2"></i>Source Code</a>
+  </div>
+</header>
+
+<section id="overview" class="bg-white">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h2 class="section-title text-start">Tổng Quan Hệ Thống</h2>
+        <p class="text-muted">Dự án xây dựng một nền tảng quản lý học tập (LMS) tập trung vào trải nghiệm video mượt mà, hỗ trợ hàng nghìn người dùng đồng thời.</p>
+        <ul class="list-unstyled mt-4">
+          <li class="mb-3 d-flex align-items-start">
+            <i class="fas fa-check-circle text-success mt-1 me-3"></i>
+            <div><strong>Adaptive Bitrate Streaming:</strong> Tự động điều chỉnh chất lượng video (360p, 720p, 1080p) dựa trên tốc độ mạng của người dùng.</div>
+          </li>
+          <li class="mb-3 d-flex align-items-start">
+            <i class="fas fa-check-circle text-success mt-1 me-3"></i>
+            <div><strong>Event-Driven Architecture:</strong> Sử dụng RabbitMQ để xử lý bất đồng bộ các tác vụ nặng như Encode Video, Gửi Email.</div>
+          </li>
+          <li class="mb-3 d-flex align-items-start">
+            <i class="fas fa-check-circle text-success mt-1 me-3"></i>
+            <div><strong>Scalable Storage:</strong> Quản lý file tập trung, phân tách file gốc và file streaming (HLS).</div>
+          </li>
+        </ul>
+      </div>
+      <div class="col-lg-6">
+        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=800&amp;q=80" class="img-fluid rounded-3 shadow" alt="Dashboard Preview" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="architecture" class="bg-light">
+  <div class="container text-center">
+    <h2 class="section-title">Kiến Trúc Hệ Thống (High-Level)</h2>
+    <p class="text-muted mb-5">Mô hình phân tán giúp hệ thống chịu tải tốt và dễ dàng mở rộng.</p>
+
+    <div class="diagram-container">
+      <div class="mermaid" th:inline="none">
+        graph TD
+        Client[User / Browser] -- HTTPS --> LB[Load Balancer / Nginx]
+        LB --> API[API Gateway / Spring Boot]
+
+        subgraph "Core Services"
+        API -- REST --> AuthService[Auth Service]
+        API -- REST --> CourseService[Course Service]
+        API -- REST --> UploadService[Video Upload Service]
+        end
+
+        subgraph "Async Processing (RabbitMQ)"
+        UploadService -- Publish Event --> MQ[(RabbitMQ)]
+        MQ -- Consume --> Worker[Video Transcoder Worker]
+        MQ -- Consume --> Mailer[Email Worker]
+        end
+
+        subgraph "Data & Storage"
+        Worker -- FFmpeg HLS --> S3[MinIO / S3 Storage]
+        API -- Query --> DB[(PostgreSQL)]
+        API -- Cache --> Redis[(Redis Cache)]
+        Client -- Stream HLS --> CDN[CDN / Media Server]
+        CDN -- Pull --> S3
+        end
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="flow">
+  <div class="container">
+    <h2 class="section-title text-center w-100">Quy Trình Xử Lý Video (Streaming Flow)</h2>
+    <p class="text-center text-muted mb-5">Từ lúc giảng viên upload video đến khi học viên xem được.</p>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="diagram-container border-start border-5 border-primary">
+          <div class="mermaid" th:inline="none">
+            sequenceDiagram
+            actor Teacher
+            participant API as API Server
+            participant DB as PostgreSQL
+            participant S3 as Storage (Temp)
+            participant MQ as RabbitMQ
+            participant Worker as Transcode Worker
+            participant S3Final as Storage (HLS)
+
+            Teacher->>API: 1. Upload Video (Multipart)
+            API->>S3: 2. Lưu file gốc (Raw)
+            API->>DB: 3. Tạo Record (Status: PENDING)
+            API->>MQ: 4. Gửi sự kiện (VIDEO_UPLOADED)
+            API-->>Teacher: 5. Trả về "Đang xử lý"
+
+            MQ->>Worker: 6. Worker nhận Job
+            Worker->>DB: 7. Update Status: PROCESSING
+            Worker->>Worker: 8. FFmpeg: Convert to HLS (.m3u8, .ts)
+            Worker->>S3Final: 9. Upload file HLS & Thumbnail
+            Worker->>S3: 10. Xóa file gốc (Cleanup)
+            Worker->>DB: 11. Update Status: READY, URL HLS
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="security" class="bg-light">
+  <div class="container">
+    <h2 class="section-title text-center w-100">Cơ Chế Bảo Mật</h2>
+    <div class="row g-4 mt-3">
+      <div class="col-md-4">
+        <div class="card tech-card p-4">
+          <div class="icon-box"><i class="fas fa-key"></i></div>
+          <h5>Authentication (JWT)</h5>
+          <p class="text-muted">Sử dụng JSON Web Token (Access & Refresh Token) để xác thực không trạng thái (Stateless), tích hợp Redis Blacklist để xử lý Logout.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card tech-card p-4">
+          <div class="icon-box"><i class="fas fa-shield-alt"></i></div>
+          <h5>Role-Based Access Control</h5>
+          <p class="text-muted">Phân quyền chặt chẽ (Admin, Instructor, Student) bằng Spring Security. Middleware kiểm tra quyền sở hữu khóa học trước khi sửa/xóa.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card tech-card p-4">
+          <div class="icon-box"><i class="fas fa-lock"></i></div>
+          <h5>Secure Streaming</h5>
+          <p class="text-muted">Video HLS được bảo vệ, URL có thời hạn (Signed URL) hoặc Token-based Auth để ngăn chặn việc tải lậu (Hotlinking).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="techstack">
+  <div class="container">
+    <h2 class="section-title text-center w-100">Công Nghệ Sử Dụng</h2>
+    <div class="row g-4 mt-4 text-center">
+      <div class="col-6 col-md-2">
+        <img src="https://img.icons8.com/color/96/000000/spring-logo.png" alt="Spring" class="mb-2" style="height: 60px;" />
+        <h6 class="fw-bold">Spring Boot 3</h6>
+      </div>
+      <div class="col-6 col-md-2">
+        <img src="https://img.icons8.com/color/96/000000/java-coffee-cup-logo--v1.png" alt="Java" class="mb-2" style="height: 60px;" />
+        <h6 class="fw-bold">Java 17/21</h6>
+      </div>
+      <div class="col-6 col-md-2">
+        <img src="https://img.icons8.com/color/96/000000/postgreesql.png" alt="PostgreSQL" class="mb-2" style="height: 60px;" />
+        <h6 class="fw-bold">PostgreSQL</h6>
+      </div>
+      <div class="col-6 col-md-2">
+        <img src="https://img.icons8.com/color/96/000000/redis.png" alt="Redis" class="mb-2" style="height: 60px;" />
+        <h6 class="fw-bold">Redis</h6>
+      </div>
+      <div class="col-6 col-md-2">
+        <img src="https://img.icons8.com/color/96/000000/rabbit.png" alt="RabbitMQ" class="mb-2" style="height: 60px;" />
+        <h6 class="fw-bold">RabbitMQ</h6>
+      </div>
+      <div class="col-6 col-md-2">
+        <img src="https://img.icons8.com/color/96/000000/docker.png" alt="Docker" class="mb-2" style="height: 60px;" />
+        <h6 class="fw-bold">Docker</h6>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="database" class="bg-light">
+  <div class="container">
+    <h2 class="section-title text-center w-100">Thiết Kế Cơ Sở Dữ Liệu</h2>
+    <p class="text-center text-muted mb-4">Lược đồ ERD tối ưu cho Streaming và caching tiến độ học tập.</p>
+    <div class="diagram-container">
+      <div class="mermaid" th:inline="none">
+        erDiagram
+        USER ||--o{ ENROLLMENT : has
+        USER ||--o{ INSTRUCTOR : is_a
+        COURSE ||--o{ ENROLLMENT : has
+        COURSE ||--o{ SECTION : contains
+        INSTRUCTOR ||--o{ COURSE : teaches
+        SECTION ||--o{ LESSON : contains
+        LESSON ||--o| VIDEO : has_one
+        LESSON ||--o{ RESOURCE : has_many
+        ENROLLMENT {
+        uuid id
+        decimal price_paid
+        double progress
+        datetime completed_at
+        }
+        VIDEO {
+        uuid id
+        string hls_url
+        string status
+        int duration
+        }
+        LESSON_PROGRESS {
+        uuid id
+        int last_watched_second
+        bool is_completed
+        }
+        USER ||--o{ LESSON_PROGRESS : tracks
+        LESSON ||--o{ LESSON_PROGRESS : tracks
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="team">
+  <div class="container text-center">
+    <h2 class="section-title">Người Thực Hiện</h2>
+    <div class="row justify-content-center mt-5">
+      <div class="col-md-4">
+        <div class="card border-0 shadow-lg text-center p-4">
+          <div class="mb-3">
+            <img src="https://placehold.co/150" class="rounded-circle shadow-sm" alt="Avatar" width="120" height="120" />
+          </div>
+          <h4 class="fw-bold">Quách Hải Linh</h4>
+          <p class="text-primary fw-bold">Backend Engineer / Solution Architect</p>
+          <p class="text-muted small">Chuyên sâu về Java Spring Boot, Distributed Systems và Video Engineering. Đam mê xây dựng các hệ thống chịu tải cao.</p>
+          <div class="d-flex justify-content-center gap-3 mt-3">
+            <a href="#" class="btn btn-outline-dark btn-sm rounded-circle"><i class="fab fa-github"></i></a>
+            <a href="#" class="btn btn-outline-primary btn-sm rounded-circle"><i class="fab fa-linkedin"></i></a>
+            <a href="#" class="btn btn-outline-danger btn-sm rounded-circle"><i class="fas fa-envelope"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="text-center">
+  <div class="container">
+    <p class="mb-0">&copy; 2024 HUST LMS Streaming Project. Designed by Huy.</p>
+    <small class="text-muted">Powered by Spring Boot & Bootstrap 5</small>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'default' });
+</script>
+</body>
+</html>

@@ -71,31 +71,31 @@ app:
 
 
 logging:
-  # 1. Cấu hình Pattern (Khuôn mẫu) hiển thị
+  file:
+    name: logs/app.log
+
+  logback:
+    rollingpolicy:
+      file-name-pattern: ${logging.file.name}.%d{yyyy-MM-dd}.%i.log
+      max-file-size: 10MB
+      max-history: 30
+      total-size-cap: 1GB
+
   pattern:
-    # Giải thích màu sắc:
-    # - Thời gian: Mờ (faint) để không rối mắt.
-    # - Mức độ (INFO/ERROR): Tô màu tự động (INFO xanh lá, WARN vàng, ERROR đỏ rực).
-    # - PID: Màu tím (Magenta).
-    # - Thread: Mờ, nằm trong ngoặc vuông [ ].
-    # - Tên Class: Màu xanh dương (Cyan), giới hạn 40 ký tự để thẳng hàng.
+    # Giữ nguyên cấu hình console đẹp của bạn
     console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
+    # File log chỉ lưu nội dung message (%m) để dòng log REQ/RESP sạch nhất có thể
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level : %m%n"
 
-  # 2. Cấu hình mức độ Log (Level)
   level:
-    root: INFO # Mặc định chỉ hiện thông tin quan trọng
+    # 1. Chỉnh root về WARN để tắt toàn bộ log INFO của Spring, Hibernate, v.v.
+    root: WARN
 
-    # Code của bạn (Quan trọng nhất) -> Bật DEBUG để soi từng tí
-    com.hust: DEBUG
+    # 2. Chỉ bật INFO cho đúng package chứa LoggingFilter của bạn
+    # Hãy đảm bảo đường dẫn này khớp hoàn toàn với package com.hust.lms.streaming.middleware
+    com.hust.lms.streaming.middleware: INFO
 
-    # Database (Hibernate) -> Hiện câu Query SQL
-    org.hibernate.SQL: INFO
-
-    # Nếu muốn hiện cả tham số trong câu Query (dấu ? thay bằng giá trị thật)
-    # Cảnh báo: Log sẽ trôi rất nhanh, chỉ bật khi debug lỗi DB
-    # org.hibernate.orm.jdbc.bind: TRACE
-
-    # Tắt bớt log rác của các thư viện khác
-    org.springframework.web: INFO
-    org.apache.kafka: WARN
-
+    # Tắt các log thừa có thể lọt vào
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.apache.catalina: WARN

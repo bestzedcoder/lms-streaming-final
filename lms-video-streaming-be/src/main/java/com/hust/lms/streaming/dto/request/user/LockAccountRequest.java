@@ -10,7 +10,7 @@ import org.hibernate.validator.constraints.UUID;
 public class LockAccountRequest {
   @NotBlank(message = "ID không được để trống")
   @UUID(message = "ID không đúng định dạng")
-  private String uuid;
+  private String id;
 
   @NotBlank(message = "Lý do không được để trống")
   @Size(max = 500, message = "Lý do không được vượt quá 500 ký tự")

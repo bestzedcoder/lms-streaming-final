@@ -1,6 +1,7 @@
 package com.hust.lms.streaming.dto.response.user;
 
 import com.hust.lms.streaming.enums.Role;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +22,8 @@ public class UserResponse {
   private boolean active;
   private boolean locked;
   private boolean updateProfile;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
+  private String updatedBy;
+  private String createdBy;
 }
