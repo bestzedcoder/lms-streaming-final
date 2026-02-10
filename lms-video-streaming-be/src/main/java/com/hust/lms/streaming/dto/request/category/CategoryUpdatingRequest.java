@@ -1,5 +1,6 @@
 package com.hust.lms.streaming.dto.request.category;
 
+import com.hust.lms.streaming.dto.validation.NoHtml;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -14,6 +15,7 @@ public class CategoryUpdatingRequest {
       regexp = "^[a-zA-Z0-9\\sÀ-ỹ_&-]+$",
       message = "Tên danh mục chứa ký tự không hợp lệ (Chỉ chấp nhận chữ, số và ký tự _, &, -)"
   )
+  @NoHtml(message = "Tên danh mục chứa ký tự không hợp lệ")
   private String name;
 
   @NotBlank(message = "Slug không được để trống")
@@ -22,6 +24,7 @@ public class CategoryUpdatingRequest {
       regexp = "^[a-z0-9-]+$",
       message = "Slug chỉ được chứa chữ thường, số và dấu gạch ngang"
   )
+  @NoHtml(message = "Slug chứa ký tự không hợp lệ")
   private String slug;
 
   //  @NotBlank(message = "Icon không được để trống")

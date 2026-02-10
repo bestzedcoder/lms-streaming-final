@@ -45,7 +45,6 @@ public class LoggingFilter extends OncePerRequestFilter {
     }
   }
 
-  // Trong class LoggingFilter.java
   private void logRequestResponse(ContentCachingRequestWrapper req, ContentCachingResponseWrapper resp, long time) {
     // Thu thập các thông tin cần thiết
     String method = req.getMethod();
@@ -78,7 +77,7 @@ public class LoggingFilter extends OncePerRequestFilter {
     if (content == null || content.length == 0) return "[]";
 
     String charset = (encoding != null) ? encoding : StandardCharsets.UTF_8.name();
-    String body = new String(content, StandardCharsets.UTF_8); // Luôn dùng UTF-8 để tránh lỗi font log
+    String body = new String(content, StandardCharsets.UTF_8);
 
     // Làm sạch format: xóa xuống dòng, tab
     body = body.replaceAll("[\\n\\t\\r]", " ").trim();

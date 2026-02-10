@@ -9,7 +9,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -48,6 +47,7 @@ public class SecurityConfiguration {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/auth/login", "/auth/register", "/auth/verify-account", "/auth/forgot-password", "/auth/reset-password", "/auth/refresh", "/public/**", "/overview/**").permitAll()
             .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
+            .requestMatchers("/instructor/**").hasRole(Role.INSTRUCTOR.name())
             .anyRequest().authenticated()
         )
         .addFilterBefore(jwtFilter , UsernamePasswordAuthenticationFilter.class);

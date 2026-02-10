@@ -1,10 +1,9 @@
 package com.hust.lms.streaming.dto.request.auth;
 
+import com.hust.lms.streaming.dto.validation.NoHtml;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 
 @Getter
@@ -19,5 +18,6 @@ public class SignUpRequest {
 
   @NotBlank(message = "Họ tên không được để trống")
   @Size(min = 2, max = 100, message = "Họ tên phải từ 2 đến 100 ký tự")
+  @NoHtml(message = "Họ tên chứa ký tự không hợp lệ")
   private String fullName;
 }

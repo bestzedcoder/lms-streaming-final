@@ -1,5 +1,6 @@
 package com.hust.lms.streaming.dto.request.user;
 
+import com.hust.lms.streaming.dto.validation.NoHtml;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -18,5 +19,6 @@ public class LockAccountRequest {
       regexp = "^[\\p{L}\\p{N}\\s.,;?\\-()_]+$",
       message = "Lý do chứa ký tự không hợp lệ"
   )
+  @NoHtml(message = "Lý do chứa ký tự không hợp lệ")
   private String reason;
 }
