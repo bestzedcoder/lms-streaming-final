@@ -31,12 +31,18 @@ public class UserController {
   private final UserService userService;
 
   @GetMapping
-  public ResponseEntity<PageResponse<?>> getUsers(
+  public ResponseEntity<BaseResponse<?>> getUsers(
       @RequestParam(value = "page", defaultValue = "1") int page,
       @RequestParam(value = "limit", defaultValue = "10") int limit,
       @RequestParam(value = "email", required = false) String email) {
     PageResponse<UserResponse> res = this.userService.findAll(page, limit, email);
-    return ResponseEntity.ok(res);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(HttpStatus.OK.value())
+            .message("Lấy danh sách người dùng thành công!")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
   }
 
   @GetMapping("{uuid}")

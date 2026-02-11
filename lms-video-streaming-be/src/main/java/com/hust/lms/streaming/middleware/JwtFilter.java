@@ -15,12 +15,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -61,20 +60,20 @@ public class JwtFilter extends OncePerRequestFilter {
 
       if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
         // Kiểm tra trong blacklist
-        String tokenBlock = this.redisService.getValue("lms:auth:blacklist:email" + userEmail, new TypeReference<String>() {});
-        if (tokenBlock != null && tokenBlock.equals(jwt)) {
-          throw new BadRequestException("Phiên đăng nhập không hợp lệ, vui lòng login lại");
+        String isLogout = this.redisService.getValue("lms:auth:blacklist:" + userEmail, new TypeReference<String>() {});
+        if (isLogout != null && isLogout.equals("LOGOUT")) {
+          throw new BadCredentialsException("Phiên không hợp lệ vui lòng đăng nhập lại!");
         }
 
-        UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-        if (!((User)userDetails).isAccountNonLocked()) {
+        User currentUser = (User) this.userDetailsService.loadUserByUsername(userEmail);
+        if (!currentUser.isAccountNonLocked()) {
           throw new LockedException("Tài khoản của bạn đã bị khóa!");
         }
-        if (jwtUtils.isTokenValid(jwt, userDetails)) {
+        if (jwtUtils.isTokenValid(jwt, currentUser)) {
           UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-              userDetails,
+              currentUser.getId(),
               null,
-              userDetails.getAuthorities()
+              currentUser.getAuthorities()
           );
 
           authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -82,16 +81,11 @@ public class JwtFilter extends OncePerRequestFilter {
         }
       }
       filterChain.doFilter(request, response);
-    } catch (ExpiredJwtException e) {
-      log.error("JWT Expired: {}", e.getMessage());
-      sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "Phiên đăng nhập đã hết hạn.");
-    } catch (MalformedJwtException | SignatureException | IllegalArgumentException e) {
+    }  catch (ExpiredJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
       log.error("JWT Invalid: {}", e.getMessage());
-      sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "Token không hợp lệ.");
-    } catch (LockedException e) {
-      sendError(response, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
-    } catch (BadRequestException e) {
-      sendError(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+      sendError(response, 1000, "Token không hợp lệ.");
+    } catch (LockedException | BadCredentialsException e) {
+      sendError(response, 1001, e.getMessage());
     } catch (Exception e) {
       log.error("JWT Filter Error: {}", e.getMessage());
       sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi xác thực hệ thống: " + e.getMessage());
@@ -102,7 +96,7 @@ public class JwtFilter extends OncePerRequestFilter {
    * Hàm helper để trả về JSON ErrorResponse ngay lập tức
    */
   private void sendError(HttpServletResponse response, int statusCode, String message) throws IOException {
-    response.setStatus(statusCode);
+    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
 

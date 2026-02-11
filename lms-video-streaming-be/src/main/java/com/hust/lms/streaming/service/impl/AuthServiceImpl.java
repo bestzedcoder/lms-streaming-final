@@ -14,6 +14,7 @@ import com.hust.lms.streaming.event.custom.AuthEvent;
 import com.hust.lms.streaming.event.enums.AuthEventType;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.exception.ResourceNotFoundException;
+import com.hust.lms.streaming.mapper.AuthMapper;
 import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.redis.RedisService;
 import com.hust.lms.streaming.repository.UserRepository;
@@ -21,6 +22,7 @@ import com.hust.lms.streaming.security.JwtUtils;
 import com.hust.lms.streaming.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,11 +58,15 @@ public class AuthServiceImpl implements AuthService {
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-    User user = (User) authentication.getPrincipal();
+    String authId =  authentication.getPrincipal().toString();
 
-    String accessToken = jwtUtils.generateAccessToken(user);
-    String refreshToken = jwtUtils.generateRefreshToken(user);
-    this.redisService.saveKeyAndValue("lms:auth:access-token:username:" + user.getEmail(), accessToken , accessTokenExpireTime , TimeUnit.SECONDS);
+    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
+
+    String accessToken = jwtUtils.generateAccessToken(currentUser);
+    String refreshToken = jwtUtils.generateRefreshToken(currentUser);
+
+    this.redisService.deleteKey("lms:auth:blacklist:" + currentUser.getUsername());
+
 //    ResponseCookie cookie =  ResponseCookie.from("refreshToken" , refreshToken)
 //        .maxAge(this.refreshTokenExpireTime)
 //        .secure(false)
@@ -72,9 +78,7 @@ public class AuthServiceImpl implements AuthService {
 
     this.cookieUtils.setCookieValue(response, "refreshToken", refreshToken, this.refreshTokenExpireTime, "/api/auth");
 
-    return LoginResponse.builder()
-        .accessToken(accessToken)
-        .build();
+    return AuthMapper.toLoginResponse(accessToken, currentUser);
   }
 
   @Override
@@ -111,7 +115,7 @@ public class AuthServiceImpl implements AuthService {
     if (!otp.equals(request.getCode())) {
       attempt--;
       this.redisService.saveKeyAndValue("lms:auth:otp-active:attempt:username:" + user.getEmail(), attempt , 5 , TimeUnit.MINUTES);
-      throw new BadRequestException(String.format("Xác thực thật bại, bạn còn %d để thử", attempt));
+      throw new BadRequestException(String.format("Xác thực thật bại, bạn còn %d lần để thử", attempt));
     }
 
     user.setEnabled(true);
@@ -148,7 +152,7 @@ public class AuthServiceImpl implements AuthService {
     if (!otp.equals(request.getCode())) {
       attempt--;
       this.redisService.saveKeyAndValue("lms:auth:otp-forgot-password:attempt:username:" + user.getEmail(), attempt , 3 , TimeUnit.MINUTES);
-      throw new BadRequestException(String.format("Xác thực thật bại, bạn còn %d để thử", attempt));
+      throw new BadRequestException(String.format("Xác thực thật bại, bạn còn %d lần để thử", attempt));
     }
 
     String newPassword = Gen.genPasswordRaw(16);
@@ -172,8 +176,9 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public void logout(HttpServletResponse response) {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    String token = this.redisService.getValue("lms:auth:access-token:username:" + user.getEmail(), new TypeReference<String>() {});
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+
+    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
 
 //    ResponseCookie cookie =  ResponseCookie.from("refreshToken" , null)
 //        .maxAge(0)
@@ -183,8 +188,9 @@ public class AuthServiceImpl implements AuthService {
 //        .sameSite("Lax")
 //        .build();
 //    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
     this.cookieUtils.setCookieValue(response, "refreshToken", null, 0, "/api/auth");
 
-    this.eventPublisher.publishEvent(new AuthEvent(AuthEventType.LOGOUT , user.getEmail() , token));
+    this.eventPublisher.publishEvent(new AuthEvent(AuthEventType.LOGOUT , currentUser.getEmail() , String.valueOf(accessTokenExpireTime)));
   }
 }

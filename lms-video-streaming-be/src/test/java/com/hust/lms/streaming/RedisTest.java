@@ -22,7 +22,7 @@ public class RedisTest {
     BaseResponse<UserResponse> res = new BaseResponse<>();
     res.setCode(200);
     res.setMessage("success");
-    res.setData(UserResponse.builder().uuid("Hello").email("test@gmail.com").build());
+    res.setData(UserResponse.builder().email("test@gmail.com").build());
     res.setTimestamp(LocalDateTime.now());
     res.setSuccess(true);
 

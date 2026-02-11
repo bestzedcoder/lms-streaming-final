@@ -36,12 +36,12 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleLockedException(LockedException e, WebRequest request) {
     ErrorResponse error = ErrorResponse.builder()
         .timestamp(LocalDateTime.now())
-        .code(HttpStatus.FORBIDDEN.value()) // 403
+        .code(1001) // 403
         .success(false)
         .message(e.getMessage())
         .path(request.getDescription(false).replace("uri=", ""))
         .build();
-    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
   }
 
   // Bắt lỗi Tài khoản chưa kích hoạt
@@ -49,12 +49,12 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleDisabledException(DisabledException e, WebRequest request) {
     ErrorResponse error = ErrorResponse.builder()
         .timestamp(LocalDateTime.now())
-        .code(HttpStatus.FORBIDDEN.value())
+        .code(1001)
         .success(false)
         .message("Tài khoản chưa được kích hoạt.")
         .path(request.getDescription(false).replace("uri=", ""))
         .build();
-    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
   }
 
   // Bắt lỗi Validate dữ liệu

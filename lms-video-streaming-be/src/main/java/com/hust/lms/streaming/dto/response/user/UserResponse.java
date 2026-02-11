@@ -2,6 +2,7 @@ package com.hust.lms.streaming.dto.response.user;
 
 import com.hust.lms.streaming.enums.Role;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class UserResponse {
-  private String uuid;
+  private UUID id;
   private String fullName;
   private String phone;
   private String email;

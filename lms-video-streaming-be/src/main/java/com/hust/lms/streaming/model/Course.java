@@ -1,5 +1,6 @@
 package com.hust.lms.streaming.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hust.lms.streaming.enums.CourseStatus;
 import com.hust.lms.streaming.enums.LevelCourse;
 import com.hust.lms.streaming.model.common.BaseEntity;
@@ -84,10 +85,12 @@ public class Course extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "_category_id" , nullable = false , updatable = false)
+  @JsonIgnore
   private Category category;
 
   @ManyToOne
   @JoinColumn(name = "_instructor_id" , nullable = false , updatable = false)
+  @JsonIgnore
   private Instructor instructor;
 
   @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)

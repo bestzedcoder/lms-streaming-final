@@ -7,7 +7,6 @@ import com.hust.lms.streaming.redis.RedisService;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -18,9 +17,6 @@ import org.springframework.stereotype.Component;
 public class AuthEventListener {
   private final RedisService redisService;
   private final RabbitMQProducer producer;
-
-  @Value("${app.security.jwt.accessExpiration}")
-  private long accessTokenExpire;
 
   @Async
   @EventListener
@@ -70,12 +66,9 @@ public class AuthEventListener {
   }
 
   private void handleLogout(AuthEvent event) {
-    String token = event.getData();
+      long accessTokenExpire = Long.parseLong(event.getData());
 
-    if (token != null) {
-      String blacklistKey = "lms:auth:blacklist:email" + event.getEmail();
-      redisService.saveKeyAndValue(blacklistKey, token, accessTokenExpire, TimeUnit.SECONDS);
-      log.info("Token added to blacklist: {}", token);
-    }
+      String blacklistKey = "lms:auth:blacklist:" + event.getEmail();
+      redisService.saveKeyAndValue(blacklistKey, "LOGOUT", accessTokenExpire, TimeUnit.SECONDS);
   }
 }

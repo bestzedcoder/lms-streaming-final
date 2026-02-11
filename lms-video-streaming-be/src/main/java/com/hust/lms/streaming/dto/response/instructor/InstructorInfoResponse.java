@@ -1,7 +1,6 @@
-package com.hust.lms.streaming.dto.response.category;
+package com.hust.lms.streaming.dto.response.instructor;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,14 +8,13 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class CategoryResponse {
-  private UUID id;
-  private String name;
-  private String slug;
-  private String icon;
+@NoArgsConstructor
+public class InstructorInfoResponse {
+  private String title;
+  private String bio;
+  private int totalStudents;
+  private int totalCourses;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
-  private String updatedBy;
 }

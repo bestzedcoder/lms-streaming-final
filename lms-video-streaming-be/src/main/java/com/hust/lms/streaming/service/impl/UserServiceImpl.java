@@ -37,7 +37,6 @@ public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final RedisService redisService;
-  private final UserMapper userMapper;
   private final ApplicationEventPublisher eventPublisher;
   private final CloudinaryService cloudinaryService;
 
@@ -62,7 +61,7 @@ public class UserServiceImpl implements UserService {
     }
 
     List<UserResponse> items = userPage.getContent().stream()
-        .map(this.userMapper::mapUserToUserResponse)
+        .map(UserMapper::mapUserToUserResponse)
         .toList();
 
     PageResponse<UserResponse> response = PageResponse.<UserResponse>builder()
@@ -81,7 +80,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public UserResponse findById(UUID id) {
     User user = this.userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-    return this.userMapper.mapUserToUserResponse(user);
+    return UserMapper.mapUserToUserResponse(user);
   }
 
 

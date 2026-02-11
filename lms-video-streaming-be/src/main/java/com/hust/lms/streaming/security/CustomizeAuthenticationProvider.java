@@ -24,25 +24,25 @@ public class CustomizeAuthenticationProvider implements AuthenticationProvider {
     String username = authentication.getName();
     String rawPassword = authentication.getCredentials().toString();
 
-    UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+    User currentUser = (User) this.userDetailsService.loadUserByUsername(username);
 
-    if (!passwordEncoder.matches(rawPassword, userDetails.getPassword())) {
+    if (!passwordEncoder.matches(rawPassword, currentUser.getPassword())) {
       throw new BadCredentialsException("Mật khẩu không chính xác!");
     }
 
-    if (!userDetails.isEnabled()) {
+    if (!currentUser.isEnabled()) {
       throw new DisabledException("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email!");
     }
 
-    if (!userDetails.isAccountNonLocked()) {
-      String reason = ((User)userDetails).getLockReason();
+    if (!currentUser.isAccountNonLocked()) {
+      String reason = currentUser.getLockReason();
       throw new LockedException("Tài khoản đã bị khóa do vi phạm chính sách:\n" + reason);
     }
 
     return new UsernamePasswordAuthenticationToken(
-        userDetails,
+        currentUser.getId(),
         null,
-        userDetails.getAuthorities()
+        currentUser.getAuthorities()
     );
   }
 

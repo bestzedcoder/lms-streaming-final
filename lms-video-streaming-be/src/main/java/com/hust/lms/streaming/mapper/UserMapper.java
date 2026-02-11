@@ -4,13 +4,18 @@ import com.hust.lms.streaming.dto.response.user.UserProfileResponse;
 import com.hust.lms.streaming.dto.response.user.UserPublicResponse;
 import com.hust.lms.streaming.dto.response.user.UserResponse;
 import com.hust.lms.streaming.model.User;
-import org.springframework.stereotype.Component;
 
-@Component
 public class UserMapper {
-  public UserResponse mapUserToUserResponse(User user) {
+
+  private UserMapper() {
+    throw new AssertionError("Utility class");
+  }
+
+  public static UserResponse mapUserToUserResponse(User user) {
+    if (user == null) return null;
+
     UserResponse response = new UserResponse();
-    response.setUuid(user.getId().toString());
+    response.setId(user.getId());
     response.setEmail(user.getEmail());
     response.setFullName(user.getFullName());
     response.setPhone(user.getPhone());
@@ -27,9 +32,11 @@ public class UserMapper {
     return response;
   }
 
-  public UserProfileResponse mapUserToUserProfileResponse(User user) {
+  public static UserProfileResponse mapUserToUserProfileResponse(User user) {
+    if (user == null) return null;
+
     UserProfileResponse response = new UserProfileResponse();
-    response.setUuid(user.getId().toString());
+    response.setId(user.getId());
     response.setFullName(user.getFullName());
     response.setEmail(user.getEmail());
     response.setPhone(user.getPhone());
@@ -39,9 +46,11 @@ public class UserMapper {
     return response;
   }
 
-  public UserPublicResponse mapUserToUserPublicResponse(User user) {
+  public static UserPublicResponse mapUserToUserPublicResponse(User user) {
+    if (user == null) return null;
+
     UserPublicResponse response = new UserPublicResponse();
-    response.setUuid(user.getId().toString());
+    response.setId(user.getId());
     response.setFullName(user.getFullName());
     response.setEmail(user.getEmail());
     response.setAvatarUrl(user.getAvatarUrl());

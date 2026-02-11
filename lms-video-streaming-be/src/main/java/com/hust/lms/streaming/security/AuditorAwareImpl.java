@@ -1,12 +1,13 @@
 package com.hust.lms.streaming.security;
 
-import com.hust.lms.streaming.model.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
+@RequiredArgsConstructor
 public class AuditorAwareImpl implements AuditorAware<String> {
 
   @Override
@@ -15,10 +16,8 @@ public class AuditorAwareImpl implements AuditorAware<String> {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     if (authentication != null && authentication.isAuthenticated()) {
-      Object principal = authentication.getPrincipal();
-      if (principal instanceof User user) {
-        return Optional.of(user.getEmail());
-      }
+      String authId = authentication.getPrincipal().toString();
+      return Optional.of(authId);
     }
 
     return Optional.of("system");

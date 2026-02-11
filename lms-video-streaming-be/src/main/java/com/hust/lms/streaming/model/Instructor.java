@@ -1,5 +1,6 @@
 package com.hust.lms.streaming.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hust.lms.streaming.model.common.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -36,6 +37,7 @@ public class Instructor extends BaseEntity {
   @OneToOne(fetch = FetchType.LAZY)
   @MapsId
   @JoinColumn(name = "user_id")
+  @JsonIgnore
   private User user;
 
   @Column(name = "_title")

@@ -10,6 +10,7 @@ import com.hust.lms.streaming.repository.UserRepository;
 import com.hust.lms.streaming.service.ProfileService;
 import com.hust.lms.streaming.upload.CloudinaryService;
 import com.hust.lms.streaming.upload.CloudinaryUploadResult;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,33 +23,41 @@ public class ProfileServiceImpl implements ProfileService {
   private final UserRepository userRepository;
   private final ApplicationEventPublisher eventPublisher;
   private final CloudinaryService cloudinaryService;
-  private final UserMapper userMapper;
 
   @Override
   public void upload(MultipartFile file) {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    if (user.getAvatarUrl() != null) {
-      this.cloudinaryService.deleteImage(user.getPublicId());
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+
+    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
+
+    if (currentUser.getAvatarUrl() != null) {
+      this.cloudinaryService.deleteImage(currentUser.getPublicId());
     }
     CloudinaryUploadResult res = this.cloudinaryService.uploadImage(file, "users");
-    user.setAvatarUrl(res.getUrl());
-    user.setPublicId(res.getPublicId());
-    this.userRepository.save(user);
+    currentUser.setAvatarUrl(res.getUrl());
+    currentUser.setPublicId(res.getPublicId());
+    this.userRepository.save(currentUser);
   }
 
   @Override
   public void profile(ProfileUpdatingRequest request) {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    user.setPhone(request.getPhone());
-    user.setFullName(request.getFullName());
-    user.setUpdateProfile(true);
-    this.userRepository.save(user);
-    this.eventPublisher.publishEvent(new UserEvent(UserEventType.UPDATED, user.getEmail()));
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+
+    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
+
+    currentUser.setPhone(request.getPhone());
+    currentUser.setFullName(request.getFullName());
+    currentUser.setUpdateProfile(true);
+    this.userRepository.save(currentUser);
+    this.eventPublisher.publishEvent(new UserEvent(UserEventType.UPDATED, currentUser.getEmail()));
   }
 
   @Override
   public UserProfileResponse me() {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    return this.userMapper.mapUserToUserProfileResponse(user);
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+
+    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
+
+    return UserMapper.mapUserToUserProfileResponse(currentUser);
   }
 }

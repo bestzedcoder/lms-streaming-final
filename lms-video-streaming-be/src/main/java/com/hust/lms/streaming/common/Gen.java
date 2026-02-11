@@ -9,6 +9,10 @@ public class Gen {
   private static final String OTP_CHARS = "0123456789";
   private static final SecureRandom random = new SecureRandom();
 
+  private Gen() {
+    throw new AssertionError("Utility class");
+  }
+
   /**
    * output: "550e8400-e29b-41d4-a716-446655440000"
    */

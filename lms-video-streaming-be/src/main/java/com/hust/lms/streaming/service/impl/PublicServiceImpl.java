@@ -12,11 +12,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PublicServiceImpl implements PublicService {
   private final CategoryRepository categoryRepository;
-  private final CategoryMapper categoryMapper;
 
   @Override
   public List<CategoryPublicResponse> getCategories() {
-    return this.categoryRepository.findAll().stream().map(this.categoryMapper::mapCategoryToCategoryPublicResponse).toList();
+    return this.categoryRepository.findAll().stream().map(CategoryMapper::mapCategoryToCategoryPublicResponse).toList();
   }
 
 }

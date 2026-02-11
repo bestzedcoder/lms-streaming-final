@@ -18,11 +18,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
   private final CategoryRepository categoryRepository;
-  private final CategoryMapper categoryMapper;
 
   @Override
   public List<CategoryResponse> findAll() {
-    return this.categoryRepository.findAll().stream().map(this.categoryMapper::mapCategoryToCategoryResponse).toList();
+    return this.categoryRepository.findAll().stream().map(CategoryMapper::mapCategoryToCategoryResponse).toList();
   }
 
   @Override

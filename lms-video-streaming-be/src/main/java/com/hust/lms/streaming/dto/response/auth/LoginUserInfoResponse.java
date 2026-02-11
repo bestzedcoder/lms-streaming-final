@@ -1,5 +1,6 @@
-package com.hust.lms.streaming.dto.response.user;
+package com.hust.lms.streaming.dto.response.auth;
 
+import com.hust.lms.streaming.enums.Role;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,9 +11,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserPublicResponse {
+public class LoginUserInfoResponse {
   private UUID id;
-  private String fullName;
   private String email;
+  private String fullName;
   private String avatarUrl;
+  private Role role;
 }

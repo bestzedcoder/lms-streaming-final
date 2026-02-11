@@ -17,8 +17,4 @@ public class PageResponse <T> {
   private int totalPages;
   private long totalElements;
   private List<T> result;
-  private boolean success;
-  private String message;
-  private int code;
-  private LocalDateTime timestamp;
 }
