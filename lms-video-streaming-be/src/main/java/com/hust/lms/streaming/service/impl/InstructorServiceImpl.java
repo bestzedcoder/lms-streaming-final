@@ -123,4 +123,11 @@ public class InstructorServiceImpl implements InstructorService {
     Course course = this.courseRepository.findById(id).orElse(null);
     return InstructorMapper.mapInstructorToInstructorCourseResponse(course);
   }
+
+  @Override
+  public Boolean isUploadInstructor() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    return this.instructorRepository.existsById(UUID.fromString(authId));
+  }
+
 }

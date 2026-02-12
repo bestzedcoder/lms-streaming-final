@@ -16,5 +16,6 @@ public class LoginUserInfoResponse {
   private String email;
   private String fullName;
   private String avatarUrl;
+  private boolean updateProfile;
   private Role role;
 }

@@ -1,8 +1,10 @@
 package com.hust.lms.streaming.mapper;
 
+import com.hust.lms.streaming.dto.response.user.UserCourseResponse;
 import com.hust.lms.streaming.dto.response.user.UserProfileResponse;
 import com.hust.lms.streaming.dto.response.user.UserPublicResponse;
 import com.hust.lms.streaming.dto.response.user.UserResponse;
+import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.User;
 
 public class UserMapper {
@@ -54,6 +56,19 @@ public class UserMapper {
     response.setFullName(user.getFullName());
     response.setEmail(user.getEmail());
     response.setAvatarUrl(user.getAvatarUrl());
+    return response;
+  }
+
+  public static UserCourseResponse mapCourseToUserCourseResponse(Course course) {
+    if (course == null) return null;
+    UserCourseResponse response = new UserCourseResponse();
+    response.setId(course.getId());
+    response.setSlug(course.getSlug());
+    response.setTitle(course.getTitle());
+    response.setDescription(course.getDescription());
+    response.setPrice(course.getPrice());
+    response.setSalePrice(course.getSalePrice());
+    response.setThumbnail(course.getThumbnail());
     return response;
   }
 }

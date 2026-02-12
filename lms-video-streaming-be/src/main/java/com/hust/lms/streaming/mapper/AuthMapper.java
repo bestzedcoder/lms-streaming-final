@@ -20,6 +20,7 @@ public class AuthMapper {
     userInfoResponse.setFullName(user.getFullName());
     userInfoResponse.setAvatarUrl(user.getAvatarUrl());
     userInfoResponse.setRole(user.getRole());
+    userInfoResponse.setUpdateProfile(user.getUpdateProfile());
     response.setUser(userInfoResponse);
     return response;
   }

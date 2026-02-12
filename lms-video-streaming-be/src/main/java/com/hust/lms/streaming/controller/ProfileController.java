@@ -1,11 +1,14 @@
 package com.hust.lms.streaming.controller;
 
+import com.hust.lms.streaming.dto.common.BaseListResponse;
 import com.hust.lms.streaming.dto.common.BaseResponse;
 import com.hust.lms.streaming.dto.request.user.ProfileUpdatingRequest;
+import com.hust.lms.streaming.dto.response.user.UserCourseResponse;
 import com.hust.lms.streaming.dto.response.user.UserProfileResponse;
 import com.hust.lms.streaming.service.ProfileService;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,12 +51,25 @@ public class ProfileController {
 
   @PostMapping("upload")
   public ResponseEntity<BaseResponse<?>> uploadAvatar(@RequestPart("file") MultipartFile file) {
-      this.profileService.upload(file);
+    String res =  this.profileService.upload(file);
     return ResponseEntity.ok(BaseResponse.builder()
         .code(HttpStatus.OK.value())
         .success(true)
+        .data(res)
         .message("Cập nhật avatar thành công!")
         .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("course-me")
+  public ResponseEntity<BaseListResponse<?>> courseMe() {
+    List<UserCourseResponse> res = this.profileService.getCourseMe();
+    return ResponseEntity.ok(BaseListResponse.<UserCourseResponse>builder()
+            .code(HttpStatus.OK.value())
+            .success(true)
+            .data(res)
+            .message("Lấy danh sách khóa học thành công!")
+            .timestamp(LocalDateTime.now())
         .build());
   }
 }

@@ -57,6 +57,19 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
   }
 
+  // Bắt lỗi truy cập admin trái phép
+  @ExceptionHandler(AdminException.class)
+  public ResponseEntity<ErrorResponse> handleAdminException(AdminException e, WebRequest request) {
+    ErrorResponse error = ErrorResponse.builder()
+        .timestamp(LocalDateTime.now())
+        .code(2000)
+        .success(false)
+        .message(e.getMessage())
+        .path(request.getDescription(false).replace("uri=", ""))
+        .build();
+    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+  }
+
   // Bắt lỗi Validate dữ liệu
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException e, WebRequest request) {

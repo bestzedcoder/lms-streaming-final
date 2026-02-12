@@ -43,6 +43,18 @@ public class InstructorController {
         .build());
   }
 
+  @GetMapping("check-info")
+  public ResponseEntity<BaseResponse<?>> checkInfo() {
+    Boolean res = this.instructorService.isUploadInstructor();
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Lấy thành công thông tin!")
+        .data(res)
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
   @GetMapping("{uuid}")
   public ResponseEntity<BaseResponse<?>> getCourse(@PathVariable("uuid") UUID uuid) {
     InstructorCourseResponse res = this.instructorService.getCourse(uuid);

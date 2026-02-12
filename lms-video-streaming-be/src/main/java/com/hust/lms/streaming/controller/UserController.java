@@ -80,7 +80,7 @@ public class UserController {
   }
 
   @PostMapping("unlock")
-  public ResponseEntity<BaseResponse<?>> lock(@RequestBody @Valid UnlockAccountRequest req) {
+  public ResponseEntity<BaseResponse<?>> unlock(@RequestBody @Valid UnlockAccountRequest req) {
     this.userService.unlock(req);
     return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.builder()
         .code(HttpStatus.OK.value())

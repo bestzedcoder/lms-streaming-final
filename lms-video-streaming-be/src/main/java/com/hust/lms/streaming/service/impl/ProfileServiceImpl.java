@@ -1,6 +1,7 @@
 package com.hust.lms.streaming.service.impl;
 
 import com.hust.lms.streaming.dto.request.user.ProfileUpdatingRequest;
+import com.hust.lms.streaming.dto.response.user.UserCourseResponse;
 import com.hust.lms.streaming.dto.response.user.UserProfileResponse;
 import com.hust.lms.streaming.event.custom.UserEvent;
 import com.hust.lms.streaming.event.enums.UserEventType;
@@ -10,6 +11,7 @@ import com.hust.lms.streaming.repository.UserRepository;
 import com.hust.lms.streaming.service.ProfileService;
 import com.hust.lms.streaming.upload.CloudinaryService;
 import com.hust.lms.streaming.upload.CloudinaryUploadResult;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -25,7 +27,7 @@ public class ProfileServiceImpl implements ProfileService {
   private final CloudinaryService cloudinaryService;
 
   @Override
-  public void upload(MultipartFile file) {
+  public String upload(MultipartFile file) {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
 
     User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
@@ -37,6 +39,7 @@ public class ProfileServiceImpl implements ProfileService {
     currentUser.setAvatarUrl(res.getUrl());
     currentUser.setPublicId(res.getPublicId());
     this.userRepository.save(currentUser);
+    return res.getUrl();
   }
 
   @Override
@@ -59,5 +62,12 @@ public class ProfileServiceImpl implements ProfileService {
     User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
 
     return UserMapper.mapUserToUserProfileResponse(currentUser);
+  }
+
+  @Override
+  public List<UserCourseResponse> getCourseMe() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
+    return currentUser.getEnrollments().stream().map(enrollment -> UserMapper.mapCourseToUserCourseResponse(enrollment.getCourse())).toList();
   }
 }
