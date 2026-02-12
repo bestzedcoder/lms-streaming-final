@@ -16,4 +16,5 @@ public interface InstructorService {
   Course updateCourse(UUID id, CourseUpdatingRequest request, MultipartFile image);
   InstructorInfoResponse getInfo();
   InstructorCourseResponse getCourse(UUID id);
+  Boolean isUploadInstructor();
 }
