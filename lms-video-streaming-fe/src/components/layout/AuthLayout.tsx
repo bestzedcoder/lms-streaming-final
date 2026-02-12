@@ -18,7 +18,6 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-4xl w-full bg-white rounded-2xl shadow-xl overflow-hidden flex min-h-[500px]">
-        {/* --- CỘT TRÁI (Ảnh) --- */}
         <div
           className="hidden md:flex md:w-1/2 bg-cover bg-center items-center justify-center relative"
           style={{ backgroundImage: `url('${image}')` }}
@@ -30,7 +29,6 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
           </div>
         </div>
 
-        {/* --- CỘT PHẢI (Form Content) --- */}
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-dark mb-2">{title}</h1>

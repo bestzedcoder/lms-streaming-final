@@ -101,7 +101,10 @@ axiosClient.interceptors.response.use(
           notify.error("Dữ liệu không hợp lệ", errorMessage);
           break;
         case 403:
-          notify.warning("Truy cập bị từ chối", errorMessage);
+          if (errorData?.code === 2000) {
+            useAuthStore.getState().logout();
+          }
+          notify.error("Truy cập không hợp lệ", errorMessage);
           break;
         case 404:
           notify.error("Không tìm thấy", "Tài nguyên không tồn tại.");

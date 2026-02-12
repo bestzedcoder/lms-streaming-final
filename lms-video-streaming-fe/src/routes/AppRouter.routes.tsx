@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import GlobalLoading from "../components/common/GlobalLoading";
 import LoginPage from "../pages/auth/LoginPage";
 import NotFoundPage from "../pages/error/NotFoundPage";
@@ -9,9 +9,18 @@ import VerifyAccountPage from "../pages/auth/VerifyAccountPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
 import AuthRoute from "./AuthRoute.routes";
-
-const StudentHome = () => <div>Trang chủ Học viên</div>;
-const AdminDashboard = () => <div>Admin Dashboard</div>;
+import HomePage from "../pages/student/HomePage";
+import StudentLayout from "../components/layout/StudentLayout";
+import ProfileLayout from "../components/layout/ProfileLayout";
+import InfoPage from "../pages/user/InfoPage";
+import EditProfilePage from "../pages/user/EditProfilePage";
+import EditPhotoPage from "../pages/user/EditPhotoPage";
+import InstructorLayout from "../components/layout/InstructorLayout";
+import InstructorDashboard from "../pages/instructor/InstructorDashboard";
+import InstructorSettingsPage from "../pages/instructor/InstructorSettingsPage";
+import AdminLayout from "../components/layout/AdminLayout";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import UserManagementPage from "../pages/admin/UserManagementPage";
 
 const AppRouter = () => {
   return (
@@ -27,16 +36,65 @@ const AppRouter = () => {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
 
-        <Route
-          element={
-            <PrivateRoute allowedRoles={["STUDENT", "INSTRUCTOR", "ADMIN"]} />
-          }
-        >
-          <Route path="/" element={<StudentHome />} />
+        <Route element={<StudentLayout />}>
+          <Route
+            path="/"
+            element={<Navigate to={"/student/dashboard"} replace />}
+          />
+          <Route path="/student/dashboard" element={<HomePage />} />
+          <Route
+            path="/student/courses"
+            element={<div>Trang danh sách khóa học</div>}
+          />
+          <Route
+            element={
+              <PrivateRoute allowedRoles={["STUDENT", "INSTRUCTOR", "ADMIN"]} />
+            }
+          >
+            <Route path="/user" element={<ProfileLayout />}>
+              <Route index element={<Navigate to="info" replace />} />
+
+              <Route path="info" element={<InfoPage />} />
+              <Route path="edit-profile" element={<EditProfilePage />} />
+              <Route path="edit-photo" element={<EditPhotoPage />} />
+              <Route
+                path="security"
+                element={<div>Trang đổi mật khẩu...</div>}
+              />
+            </Route>
+            <Route
+              path="/student/my-courses"
+              element={<div>Khóa học của tôi</div>}
+            />
+            {/* ... */}
+          </Route>
+        </Route>
+
+        <Route element={<PrivateRoute allowedRoles={["INSTRUCTOR"]} />}>
+          <Route path="/instructor" element={<InstructorLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<InstructorDashboard />} />
+            <Route
+              path="courses"
+              element={<div>Quản lý khóa học (Courses Page)</div>}
+            />
+            <Route path="students" element={<div>Quản lý học viên</div>} />
+            <Route path="analytics" element={<div>Phân tích chi tiết</div>} />
+            <Route path="earnings" element={<div>Ví & Doanh thu</div>} />
+            <Route path="settings" element={<InstructorSettingsPage />} />
+          </Route>
         </Route>
 
         <Route element={<PrivateRoute allowedRoles={["ADMIN"]} />}>
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route
+            path="/admin"
+            element={<Navigate to={"/admin/dashboard"} replace />}
+          />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<UserManagementPage />} />
+          </Route>
         </Route>
 
         <Route path="/forbidden" element={<ForbiddenPage />} />

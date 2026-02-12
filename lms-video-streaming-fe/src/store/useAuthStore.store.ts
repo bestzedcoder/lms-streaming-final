@@ -6,7 +6,6 @@ interface AuthState {
   user: User | null;
   accessToken: string | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
 
   // Actions
   login: (user: User, accessToken: string) => void;
@@ -21,7 +20,6 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       isAuthenticated: false,
-      isLoading: false,
 
       login: (user, token) => {
         set({

@@ -4,6 +4,7 @@ export interface User {
   email: string;
   fullName: string;
   avatarUrl?: string;
+  updateProfile: boolean;
   role: "STUDENT" | "INSTRUCTOR" | "ADMIN";
 }
 
