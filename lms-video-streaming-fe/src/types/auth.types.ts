@@ -37,3 +37,8 @@ export interface AuthResetPasswordRequest {
   email: string;
   code: string;
 }
+
+export interface AuthChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}

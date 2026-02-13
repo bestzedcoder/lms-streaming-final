@@ -6,6 +6,7 @@ import type {
   AuthVerifyAccountRequest,
   AuthForgotPasswordRequest,
   AuthResetPasswordRequest,
+  AuthChangePasswordRequest,
 } from "../types/auth.types";
 import type { ResponseData } from "../types/common.types";
 
@@ -40,5 +41,11 @@ export const authService = {
     data: AuthResetPasswordRequest,
   ): Promise<ResponseData> => {
     return axiosClient.post("/auth/reset-password", data);
+  },
+
+  changePassword: async (
+    data: AuthChangePasswordRequest,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("/auth/change-password", data);
   },
 };

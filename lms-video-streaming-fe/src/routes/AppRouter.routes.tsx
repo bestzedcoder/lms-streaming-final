@@ -21,6 +21,7 @@ import InstructorSettingsPage from "../pages/instructor/InstructorSettingsPage";
 import AdminLayout from "../components/layout/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import UserManagementPage from "../pages/admin/UserManagementPage";
+import ChangePasswordPage from "../pages/user/ChangePasswordPage";
 
 const AppRouter = () => {
   return (
@@ -57,10 +58,7 @@ const AppRouter = () => {
               <Route path="info" element={<InfoPage />} />
               <Route path="edit-profile" element={<EditProfilePage />} />
               <Route path="edit-photo" element={<EditPhotoPage />} />
-              <Route
-                path="security"
-                element={<div>Trang đổi mật khẩu...</div>}
-              />
+              <Route path="security" element={<ChangePasswordPage />} />
             </Route>
             <Route
               path="/student/my-courses"
