@@ -3,6 +3,7 @@ package com.hust.lms.streaming.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.hust.lms.streaming.common.CookieUtils;
 import com.hust.lms.streaming.common.Gen;
+import com.hust.lms.streaming.dto.request.auth.ChangePasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.ForgotPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.ResetPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.SignUpRequest;
@@ -192,5 +193,16 @@ public class AuthServiceImpl implements AuthService {
     this.cookieUtils.setCookieValue(response, "refreshToken", null, 0, "/api/auth");
 
     this.eventPublisher.publishEvent(new AuthEvent(AuthEventType.LOGOUT , currentUser.getEmail() , String.valueOf(accessTokenExpireTime)));
+  }
+
+  @Override
+  public void changePassword(ChangePasswordRequest request) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
+    if (!this.passwordEncoder.matches(request.getOldPassword(), currentUser.getPassword())) {
+      throw new BadRequestException("Mật khẩu cũ không chính xác");
+    }
+    currentUser.setPassword(this.passwordEncoder.encode(request.getNewPassword()));
+    this.userRepository.save(currentUser);
   }
 }

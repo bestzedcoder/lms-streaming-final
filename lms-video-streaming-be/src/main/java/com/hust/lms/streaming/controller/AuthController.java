@@ -1,6 +1,7 @@
 package com.hust.lms.streaming.controller;
 
 import com.hust.lms.streaming.dto.common.BaseResponse;
+import com.hust.lms.streaming.dto.request.auth.ChangePasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.ForgotPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.LoginRequest;
 import com.hust.lms.streaming.dto.request.auth.ResetPasswordRequest;
@@ -101,14 +102,25 @@ public class AuthController {
   }
 
   @PostMapping("refresh")
-  public ResponseEntity<BaseResponse<?>> refresh(@NotNull HttpServletRequest request) {
-    RefreshResponse accessToken = this.authService.refresh(request);
+  public ResponseEntity<BaseResponse<?>> refresh(@NotNull HttpServletRequest req) {
+    RefreshResponse accessToken = this.authService.refresh(req);
     return ResponseEntity.ok(BaseResponse.builder()
         .code(HttpStatus.OK.value())
         .success(true)
         .message("Refresh token thành công!")
         .data(accessToken)
         .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("change-password")
+  public ResponseEntity<BaseResponse<?>> changePassword(@RequestBody @Valid ChangePasswordRequest req) {
+    this.authService.changePassword(req);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(HttpStatus.OK.value())
+            .success(true)
+            .message("Thay đổi mật khẩu thành công")
+            .timestamp(LocalDateTime.now())
         .build());
   }
 }

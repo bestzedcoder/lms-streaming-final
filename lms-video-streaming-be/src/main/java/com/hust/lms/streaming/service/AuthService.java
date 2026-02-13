@@ -1,5 +1,6 @@
 package com.hust.lms.streaming.service;
 
+import com.hust.lms.streaming.dto.request.auth.ChangePasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.ForgotPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.ResetPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.SignUpRequest;
@@ -17,4 +18,5 @@ public interface AuthService {
   void resetPassword(ResetPasswordRequest request);
   RefreshResponse refresh(HttpServletRequest request);
   void logout(HttpServletResponse response);
+  void changePassword(ChangePasswordRequest request);
 }
