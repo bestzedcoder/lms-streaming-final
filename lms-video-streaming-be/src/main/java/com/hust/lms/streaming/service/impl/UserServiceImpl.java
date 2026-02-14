@@ -144,7 +144,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public void unlock(UnlockAccountRequest request) {
-    UUID uuid = UUID.fromString(request.getUuid());
+    UUID uuid = UUID.fromString(request.getId());
     User user = this.userRepository.findById(uuid).orElseThrow(() -> new ResourceNotFoundException("User", "id", uuid));
     if (user.getRole().equals(Role.ADMIN)) throw new BadRequestException("Không thể thao tác lock và unlock với tài khoản admin");
     user.setLocked(false);

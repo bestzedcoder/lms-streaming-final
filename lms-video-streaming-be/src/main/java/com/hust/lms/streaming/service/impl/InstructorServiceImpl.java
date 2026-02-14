@@ -1,24 +1,38 @@
 package com.hust.lms.streaming.service.impl;
 
 import com.hust.lms.streaming.dto.request.instructor.CourseCreatingRequest;
+import com.hust.lms.streaming.dto.request.instructor.CourseStatusRequest;
 import com.hust.lms.streaming.dto.request.instructor.CourseUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.InstructorUpdatingRequest;
+import com.hust.lms.streaming.dto.request.instructor.LessonCancelRequest;
+import com.hust.lms.streaming.dto.request.instructor.LessonCreatingRequest;
+import com.hust.lms.streaming.dto.request.instructor.LessonUpdatingRequest;
+import com.hust.lms.streaming.dto.request.instructor.SectionCancelRequest;
+import com.hust.lms.streaming.dto.request.instructor.SectionCreatingRequest;
+import com.hust.lms.streaming.dto.request.instructor.SectionUpdatingRequest;
+import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
+import com.hust.lms.streaming.enums.CourseStatus;
 import com.hust.lms.streaming.exception.BadRequestException;
-import com.hust.lms.streaming.exception.ResourceNotFoundException;
+import com.hust.lms.streaming.exception.ResourceAccessDeniedException;
 import com.hust.lms.streaming.mapper.InstructorMapper;
 import com.hust.lms.streaming.model.Category;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.Instructor;
+import com.hust.lms.streaming.model.Lesson;
+import com.hust.lms.streaming.model.Section;
 import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.repository.CategoryRepository;
 import com.hust.lms.streaming.repository.CourseRepository;
 import com.hust.lms.streaming.repository.InstructorRepository;
+import com.hust.lms.streaming.repository.LessonRepository;
+import com.hust.lms.streaming.repository.SectionRepository;
 import com.hust.lms.streaming.repository.UserRepository;
 import com.hust.lms.streaming.service.InstructorService;
 import com.hust.lms.streaming.upload.CloudinaryService;
 import com.hust.lms.streaming.upload.CloudinaryUploadResult;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,13 +47,17 @@ public class InstructorServiceImpl implements InstructorService {
   private final CategoryRepository categoryRepository;
   private final CloudinaryService cloudinaryService;
   private final UserRepository userRepository;
+  private final SectionRepository sectionRepository;
+  private final LessonRepository lessonRepository;
+
+  private User getCurrentUser() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    return this.userRepository.getReferenceById(UUID.fromString(authId));
+  }
 
   @Override
   public Instructor update(InstructorUpdatingRequest request) {
-    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-
-    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
-
+    User currentUser = this.getCurrentUser();
     Instructor instructor = this.instructorRepository.findById(currentUser.getId()).orElse(
         Instructor.builder()
             .user(currentUser)
@@ -53,14 +71,12 @@ public class InstructorServiceImpl implements InstructorService {
 
   @Override
   public Course createCourse(CourseCreatingRequest request, MultipartFile image) {
-    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-
-    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
+    User currentUser = this.getCurrentUser();
 
     Instructor instructor = this.instructorRepository.findById(currentUser.getId()).orElseThrow(() -> new BadRequestException("Chưa cập nhật thông tin giảng viên!"));
 
     if (this.courseRepository.existsBySlug(request.getSlug())) {
-      throw new BadRequestException("Khóa học tên khóa học đã tồn tại!");
+      throw new BadRequestException("Slug của khóa học đã tồn tại!");
     }
 
     Category category = this.categoryRepository.findBySlug(request.getCategorySlug()).orElseThrow(() -> new BadRequestException("Danh mục này không tồn tại!"));
@@ -86,14 +102,12 @@ public class InstructorServiceImpl implements InstructorService {
   }
 
   @Override
-  public Course updateCourse(UUID id, CourseUpdatingRequest request, MultipartFile image) {
-    Course course = this.courseRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Course", "id", id));
-    if (!course.getSlug().equals(request.getSlug()) && this.courseRepository.existsBySlug(request.getSlug())) {
-      throw new BadRequestException("Slug đã tồn tại");
-    }
+  public Course updateCourse(CourseUpdatingRequest request, MultipartFile image) {
+    UUID id = UUID.fromString(request.getId());
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    Course course = this.courseRepository.findByIdAndInstructorId(id, UUID.fromString(authId)).orElseThrow(ResourceAccessDeniedException::new);
 
     course.setTitle(request.getTitle());
-    course.setSlug(request.getSlug());
     course.setDescription(request.getDescription());
     course.setLevel(request.getLevel());
     course.setPrice(request.getPrice());
@@ -111,9 +125,7 @@ public class InstructorServiceImpl implements InstructorService {
   public InstructorInfoResponse getInfo() {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
 
-    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
-
-    Instructor instructor = this.instructorRepository.findById(currentUser.getId()).orElse(null);
+    Instructor instructor = this.instructorRepository.findById(UUID.fromString(authId)).orElse(null);
 
     return InstructorMapper.mapInstructorToInstructorInfoResponse(instructor);
   }
@@ -121,13 +133,166 @@ public class InstructorServiceImpl implements InstructorService {
   @Override
   public InstructorCourseResponse getCourse(UUID id) {
     Course course = this.courseRepository.findById(id).orElse(null);
-    return InstructorMapper.mapInstructorToInstructorCourseResponse(course);
+    return InstructorMapper.mapCourseToInstructorCourseResponse(course);
   }
 
   @Override
   public Boolean isUploadInstructor() {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
     return this.instructorRepository.existsById(UUID.fromString(authId));
+  }
+
+  @Override
+  public void addSection(SectionCreatingRequest request) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    UUID courseId = UUID.fromString(request.getCourseId());
+    Course course = this.courseRepository.findByIdAndInstructorId(courseId, UUID.fromString(authId)).orElseThrow(ResourceAccessDeniedException::new);
+
+    int countSection = course.getSections().size();
+    int sectionIndex = countSection == 0 ? 1 : course.getSections().get(countSection - 1).getOrderIndex() + 1;
+
+    Section section = Section.builder()
+        .title(request.getTitle())
+        .descriptionShort(request.getDescriptionShort())
+        .orderIndex(sectionIndex)
+        .course(course)
+        .build();
+
+    course.getSections().add(section);
+
+    this.courseRepository.save(course);
+  }
+
+  @Override
+  public void updateSection(SectionUpdatingRequest request) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    UUID courseId = UUID.fromString(request.getCourseId());
+    UUID sectionId = UUID.fromString(request.getSectionId());
+
+    if (!this.courseRepository.existsByIdAndInstructorId(courseId, UUID.fromString(authId))) {
+      throw new ResourceAccessDeniedException();
+    }
+
+    Section section = this.sectionRepository.findByIdAndCourseId(sectionId, courseId).orElseThrow(ResourceAccessDeniedException::new);
+
+    section.setTitle(request.getTitle());
+    section.setDescriptionShort(request.getDescriptionShort());
+
+    this.sectionRepository.save(section);
+  }
+
+  @Override
+  public void deleteSection(SectionCancelRequest request) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    UUID courseId = UUID.fromString(request.getCourseId());
+    UUID sectionId = UUID.fromString(request.getSectionId());
+
+    if (!this.courseRepository.existsByIdAndInstructorId(courseId, UUID.fromString(authId))) {
+      throw new ResourceAccessDeniedException();
+    }
+
+    Section section = this.sectionRepository.findByIdAndCourseId(sectionId, courseId).orElseThrow(ResourceAccessDeniedException::new);
+
+    if (!section.getLessons().isEmpty()) {
+      throw new BadRequestException("Phải xóa hết bài học trước khi xóa chương học");
+    }
+
+    this.sectionRepository.delete(section);
+  }
+
+  @Override
+  public void addLesson(LessonCreatingRequest request) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    UUID courseId = UUID.fromString(request.getCourseId());
+    UUID sectionId = UUID.fromString(request.getSectionId());
+
+    if (!this.courseRepository.existsByIdAndInstructorId(courseId, UUID.fromString(authId))) {
+      throw new ResourceAccessDeniedException();
+    }
+
+    Section section = this.sectionRepository.findByIdAndCourseId(sectionId, courseId).orElseThrow(ResourceAccessDeniedException::new);
+
+    int countLesson = section.getLessons().size();
+    int lessonIndex = countLesson == 0 ? 1 : section.getLessons().get(countLesson - 1).getOrderIndex() + 1;
+
+    Lesson lesson = Lesson.builder()
+        .title(request.getTitle())
+        .lessonType(request.getLessonType())
+        .isPreview(request.isPreview())
+        .orderIndex(lessonIndex)
+        .section(section)
+        .build();
+
+    section.getLessons().add(lesson);
+    this.sectionRepository.save(section);
+  }
+
+  @Override
+  public void updateLesson(LessonUpdatingRequest request) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    UUID courseId = UUID.fromString(request.getCourseId());
+    UUID sectionId = UUID.fromString(request.getSectionId());
+    UUID lessonId = UUID.fromString(request.getLessonId());
+
+    if (!this.courseRepository.existsByIdAndInstructorId(courseId, UUID.fromString(authId)) || !this.sectionRepository.existsByIdAndCourseId(sectionId, courseId)) {
+      throw new ResourceAccessDeniedException();
+    }
+
+    Lesson lesson = this.lessonRepository.findByIdAndSectionId(lessonId, sectionId).orElseThrow(ResourceAccessDeniedException::new);
+
+    lesson.setTitle(request.getTitle());
+    lesson.setLessonType(request.getLessonType());
+    lesson.setIsPreview(request.isPreview());
+    this.lessonRepository.save(lesson);
+  }
+
+  @Override
+  public void deleteLesson(LessonCancelRequest request) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    UUID courseId = UUID.fromString(request.getCourseId());
+    UUID sectionId = UUID.fromString(request.getSectionId());
+    UUID lessonId = UUID.fromString(request.getLessonId());
+
+    if (!this.courseRepository.existsByIdAndInstructorId(courseId, UUID.fromString(authId)) || !this.sectionRepository.existsByIdAndCourseId(sectionId, courseId)) {
+      throw new ResourceAccessDeniedException();
+    }
+
+    Lesson lesson = this.lessonRepository.findByIdAndSectionId(lessonId, sectionId).orElseThrow(ResourceAccessDeniedException::new);
+
+    this.lessonRepository.delete(lesson);
+  }
+
+  @Override
+  public List<InstructorCourseResponse> getAllCourses() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    List<Course> courses = this.courseRepository.findByInstructorId(UUID.fromString(authId));
+    return courses.stream().map(InstructorMapper::mapCourseToInstructorCourseResponse).toList();
+  }
+
+  @Override
+  public InstructorCourseDetailsResponse getCourseDetails(UUID id) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    Course course = this.courseRepository.findByIdAndInstructorId(id, UUID.fromString(authId)).orElseThrow(ResourceAccessDeniedException::new);
+    return InstructorMapper.mapCourseToInstructorCourseDetailsResponse(course);
+  }
+
+  @Override
+  public void updateStatusCourse(CourseStatusRequest request) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    UUID courseId = UUID.fromString(request.getId());
+
+    Course course = this.courseRepository.findByIdAndInstructorId(courseId, UUID.fromString(authId)).orElseThrow(ResourceAccessDeniedException::new);
+
+    if (course.getStatus().equals(CourseStatus.PENDING)) throw new BadRequestException("Khóa học đang trong trạng thái xét duyệt");
+
+    if (course.getStatus().equals(CourseStatus.LOCKED)) throw new BadRequestException("Khóa học đang bị khóa vui lòng liên hệ quản trị viên");
+
+    if (request.getStatus().equals(CourseStatus.PENDING) || request.getStatus().equals(CourseStatus.LOCKED)) {
+      throw new BadRequestException("Trạng thái cập nhật khóa học không hợp lệ");
+    }
+
+    course.setStatus(request.getStatus());
+    this.courseRepository.save(course);
   }
 
 }

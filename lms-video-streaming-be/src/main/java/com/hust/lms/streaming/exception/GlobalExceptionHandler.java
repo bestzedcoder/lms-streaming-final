@@ -70,6 +70,19 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
   }
 
+  // Bắt lỗi truy cập tài nguyên trái phép
+  @ExceptionHandler(ResourceAccessDeniedException.class)
+  public ResponseEntity<ErrorResponse> handleResourceAccessDeniedException(ResourceAccessDeniedException e, WebRequest request) {
+    ErrorResponse error = ErrorResponse.builder()
+        .timestamp(LocalDateTime.now())
+        .code(403)
+        .success(false)
+        .message(e.getMessage())
+        .path(request.getDescription(false).replace("uri=", ""))
+        .build();
+    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+  }
+
   // Bắt lỗi Validate dữ liệu
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException e, WebRequest request) {

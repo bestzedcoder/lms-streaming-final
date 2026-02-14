@@ -16,4 +16,5 @@ public class InstructorUpdatingRequest {
   @Size(max = 5000, message = "Tiểu sử không được vượt quá 5000 ký tự")
   @JsonDeserialize(using = XssSanitizerDeserializer.class)
   private String bio;
+
 }

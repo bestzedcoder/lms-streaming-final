@@ -8,5 +8,5 @@ import org.hibernate.validator.constraints.UUID;
 public class UnlockAccountRequest {
   @NotBlank(message = "ID không được để trống")
   @UUID(message = "ID không đúng định dạng")
-  private String uuid;
+  private String id;
 }
