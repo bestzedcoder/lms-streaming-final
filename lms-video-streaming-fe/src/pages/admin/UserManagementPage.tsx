@@ -391,7 +391,7 @@ const UserManagementPage = () => {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 p-1">
           <div className="w-full sm:max-w-md relative">
             <Input
-              placeholder="Tìm kiếm theo tên, email..."
+              placeholder="Tìm kiếm theo email..."
               prefix={<SearchOutlined className="text-gray-400 text-lg mr-2" />}
               size="large"
               className="rounded-full bg-gray-50 border-transparent hover:bg-white hover:border-gray-300 focus:bg-white focus:border-indigo-500 transition-all pl-5"

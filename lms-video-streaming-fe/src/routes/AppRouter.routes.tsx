@@ -22,6 +22,10 @@ import AdminLayout from "../components/layout/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import UserManagementPage from "../pages/admin/UserManagementPage";
 import ChangePasswordPage from "../pages/user/ChangePasswordPage";
+import ManageCoursePage from "../pages/instructor/ManageCoursePage";
+import InstructorCoursesPage from "../pages/instructor/InstructorCoursesPage";
+import CreateCoursePage from "../pages/instructor/CreateCoursePage";
+import InstructorCourseDetailPage from "../pages/instructor/InstructorCourseDetailPage";
 
 const AppRouter = () => {
   return (
@@ -72,9 +76,16 @@ const AppRouter = () => {
           <Route path="/instructor" element={<InstructorLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<InstructorDashboard />} />
+            <Route path="courses" element={<InstructorCoursesPage />} />
+
+            <Route path="courses/create" element={<CreateCoursePage />} />
             <Route
-              path="courses"
-              element={<div>Quản lý khóa học (Courses Page)</div>}
+              path="courses/:id"
+              element={<InstructorCourseDetailPage />}
+            />
+            <Route
+              path="courses/:courseId/manage"
+              element={<ManageCoursePage />}
             />
             <Route path="students" element={<div>Quản lý học viên</div>} />
             <Route path="analytics" element={<div>Phân tích chi tiết</div>} />
