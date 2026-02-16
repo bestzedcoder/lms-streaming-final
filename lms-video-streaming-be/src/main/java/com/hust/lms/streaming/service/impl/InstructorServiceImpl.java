@@ -11,6 +11,7 @@ import com.hust.lms.streaming.dto.request.instructor.SectionCancelRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionCreatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionUpdatingRequest;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
+import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
@@ -131,9 +132,10 @@ public class InstructorServiceImpl implements InstructorService {
   }
 
   @Override
-  public InstructorCourseResponse getCourse(UUID id) {
-    Course course = this.courseRepository.findById(id).orElse(null);
-    return InstructorMapper.mapCourseToInstructorCourseResponse(course);
+  public InstructorCourseInfoResponse getCourse(UUID id) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    Course course = this.courseRepository.findByIdAndInstructorId(id, UUID.fromString(authId)).orElse(null);
+    return InstructorMapper.mapCourseToInstructorCourseInfoResponse(course);
   }
 
   @Override

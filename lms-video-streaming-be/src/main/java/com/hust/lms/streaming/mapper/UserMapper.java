@@ -61,6 +61,7 @@ public class UserMapper {
 
   public static UserCourseResponse mapCourseToUserCourseResponse(Course course) {
     if (course == null) return null;
+
     UserCourseResponse response = new UserCourseResponse();
     response.setId(course.getId());
     response.setSlug(course.getSlug());

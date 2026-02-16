@@ -1,5 +1,7 @@
 package com.hust.lms.streaming.dto.response.instructor;
 
+import com.hust.lms.streaming.dto.response.review.ReviewCourseResponse;
+import com.hust.lms.streaming.dto.response.user.UserPublicResponse;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -11,8 +13,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class InstructorCourseDetailsResponse {
+public class InstructorCourseInfoResponse {
   private InstructorCourseResponse course;
   @Builder.Default
-  private List<InstructorSectionResponse> sections = new ArrayList<>();
+  private List<UserPublicResponse> students = new ArrayList<>();
+  @Builder.Default
+  private List<ReviewCourseResponse> reviews = new ArrayList<>();
 }

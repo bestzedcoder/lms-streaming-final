@@ -2,6 +2,7 @@ package com.hust.lms.streaming.mapper;
 
 import com.hust.lms.streaming.dto.response.category.CategoryPublicResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
+import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorLessonResponse;
@@ -10,7 +11,6 @@ import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.Instructor;
 import com.hust.lms.streaming.model.Lesson;
 import com.hust.lms.streaming.model.Section;
-import java.util.stream.Collectors;
 
 public class InstructorMapper {
   private InstructorMapper() {
@@ -62,6 +62,8 @@ public class InstructorMapper {
   }
 
   public static InstructorCourseDetailsResponse mapCourseToInstructorCourseDetailsResponse(Course course) {
+    if (course == null) return null;
+
     InstructorCourseDetailsResponse response = new InstructorCourseDetailsResponse();
     response.setCourse(InstructorMapper.mapCourseToInstructorCourseResponse(course));
     response.setSections(course.getSections().stream().map(InstructorMapper::mapSectionToInstructorSectionResponse).toList());
@@ -69,6 +71,8 @@ public class InstructorMapper {
   }
 
   public static InstructorSectionResponse mapSectionToInstructorSectionResponse(Section section) {
+    if (section == null) return null;
+
     InstructorSectionResponse response = new InstructorSectionResponse();
     response.setId(section.getId());
     response.setTitle(section.getTitle());
@@ -79,11 +83,23 @@ public class InstructorMapper {
   }
 
   public static InstructorLessonResponse mapLessonToInstructorLessonResponse(Lesson lesson) {
+    if (lesson == null) return null;
+
     InstructorLessonResponse response = new InstructorLessonResponse();
     response.setId(lesson.getId());
     response.setTitle(lesson.getTitle());
     response.setPreview(lesson.getIsPreview());
     response.setLessonType(lesson.getLessonType());
+    return response;
+  }
+
+  public static InstructorCourseInfoResponse mapCourseToInstructorCourseInfoResponse(Course course) {
+    if (course == null) return null;
+
+    InstructorCourseInfoResponse response = new InstructorCourseInfoResponse();
+    response.setCourse(InstructorMapper.mapCourseToInstructorCourseResponse(course));
+    response.setStudents(course.getEnrollments().stream().map(enrollment -> UserMapper.mapUserToUserPublicResponse(enrollment.getUser())).toList());
+    response.setReviews(course.getReviews().stream().map(ReviewMapper::mapReviewToReviewCourseResponse).toList());
     return response;
   }
 }

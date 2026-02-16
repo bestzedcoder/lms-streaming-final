@@ -13,6 +13,7 @@ import com.hust.lms.streaming.dto.request.instructor.SectionCancelRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionCreatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionUpdatingRequest;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
+import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
 import com.hust.lms.streaming.model.Course;
@@ -68,7 +69,7 @@ public class InstructorController {
 
   @GetMapping("{uuid}")
   public ResponseEntity<BaseResponse<?>> getCourse(@PathVariable("uuid") UUID uuid) {
-    InstructorCourseResponse res = this.instructorService.getCourse(uuid);
+    InstructorCourseInfoResponse res = this.instructorService.getCourse(uuid);
     return ResponseEntity.ok(BaseResponse.builder()
         .code(200)
         .message("Lấy thành công thông tin!")
