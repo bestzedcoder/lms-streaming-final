@@ -5,6 +5,7 @@ import type {
   CourseStatusRequest,
   CourseUpdatingRequest,
   InstructorCourseDetailsResponse,
+  InstructorCourseInfoResponse,
   InstructorCourseResponse,
   InstructorInfoResponse,
   InstructorUpdateRequest,
@@ -42,9 +43,11 @@ export const instructorService = {
     return axiosClient.post("/instructor", data);
   },
 
+  // Course
+
   getCourse: async (
     courseId: string,
-  ): Promise<ResponseData<InstructorCourseResponse>> => {
+  ): Promise<ResponseData<InstructorCourseInfoResponse>> => {
     return axiosClient.get(`/instructor/${courseId}`);
   },
 
@@ -86,6 +89,8 @@ export const instructorService = {
     });
   },
 
+  // Section
+
   addSection: async (data: SectionCreatingRequest): Promise<ResponseData> => {
     return axiosClient.post("/instructor/add-section", data);
   },
@@ -99,6 +104,8 @@ export const instructorService = {
   deleteSection: async (data: SectionCancelRequest): Promise<ResponseData> => {
     return axiosClient.delete("/instructor/delete-section", { data });
   },
+
+  // Lesson
 
   addLesson: async (data: LessonCreatingRequest): Promise<ResponseData> => {
     return axiosClient.post("/instructor/add-lesson", data);

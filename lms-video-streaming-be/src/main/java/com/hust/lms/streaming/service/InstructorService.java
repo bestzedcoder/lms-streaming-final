@@ -11,6 +11,7 @@ import com.hust.lms.streaming.dto.request.instructor.SectionCancelRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionCreatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionUpdatingRequest;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
+import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
 import com.hust.lms.streaming.model.Course;
@@ -24,7 +25,7 @@ public interface InstructorService {
   Course createCourse(CourseCreatingRequest request, MultipartFile image);
   Course updateCourse(CourseUpdatingRequest request, MultipartFile image);
   InstructorInfoResponse getInfo();
-  InstructorCourseResponse getCourse(UUID id);
+  InstructorCourseInfoResponse getCourse(UUID id);
   Boolean isUploadInstructor();
   void addSection(SectionCreatingRequest request);
   void updateSection(SectionUpdatingRequest request);

@@ -80,23 +80,61 @@ const InstructorCoursesPage = () => {
       title: "Giá bán",
       dataIndex: "price",
       key: "price",
-      width: 140,
-      render: (price: number, record: InstructorCourseResponse) => (
-        <div className="flex flex-col">
-          <span className="font-semibold text-gray-700">
-            {price === 0 ? (
-              <Tag color="green">Miễn phí</Tag>
-            ) : (
-              formatCurrency(price)
+      width: 160,
+      render: (originalPrice: number, record: InstructorCourseResponse) => {
+        // Kiểm tra xem có giảm giá hợp lệ không
+        // Điều kiện: Có salePrice VÀ salePrice nhỏ hơn giá gốc
+        const hasDiscount =
+          record.salePrice !== undefined &&
+          record.salePrice !== null &&
+          record.salePrice !== 0 &&
+          record.salePrice < originalPrice;
+
+        // Tính % giảm giá
+        const discountPercent = hasDiscount
+          ? Math.round(
+              ((originalPrice - record.salePrice!) / originalPrice) * 100,
+            )
+          : 0;
+
+        // Giá thực tế người dùng phải trả (Nếu có KM thì lấy salePrice, không thì lấy price)
+        const finalPrice = hasDiscount ? record.salePrice! : originalPrice;
+
+        return (
+          <div className="flex flex-col items-start">
+            {/* 1. HIỂN THỊ GIÁ BÁN THỰC TẾ (To, Đậm) */}
+            <div className="font-bold text-base">
+              {finalPrice === 0 ? (
+                <Tag color="green" className="font-bold">
+                  Miễn phí
+                </Tag>
+              ) : (
+                <span
+                  className={hasDiscount ? "text-red-600" : "text-gray-700"}
+                >
+                  {formatCurrency(finalPrice)}
+                </span>
+              )}
+            </div>
+
+            {/* 2. HIỂN THỊ GIÁ GỐC + % GIẢM (Nếu có giảm giá) */}
+            {hasDiscount && (
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-xs text-gray-400 line-through">
+                  {formatCurrency(originalPrice)}
+                </span>
+                <Tag
+                  color="error"
+                  bordered={false}
+                  className="m-0 text-[10px] px-1 rounded-sm font-bold"
+                >
+                  -{discountPercent}%
+                </Tag>
+              </div>
             )}
-          </span>
-          {record.salePrice && record.salePrice < price && (
-            <span className="text-xs text-gray-400 line-through">
-              {formatCurrency(record.salePrice)}
-            </span>
-          )}
-        </div>
-      ),
+          </div>
+        );
+      },
     },
     {
       title: "Hiệu quả",

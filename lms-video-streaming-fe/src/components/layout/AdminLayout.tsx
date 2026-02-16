@@ -12,6 +12,7 @@ import {
   BellOutlined,
   SafetyCertificateOutlined,
   FileTextOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore.store";
@@ -61,6 +62,11 @@ const AdminLayout = () => {
       key: "/admin/users",
       icon: <TeamOutlined />,
       label: "Quản lý người dùng",
+    },
+    {
+      key: "/admin/categories",
+      icon: <AppstoreOutlined />,
+      label: "Quản lý danh mục",
     },
     {
       key: "/admin/courses",

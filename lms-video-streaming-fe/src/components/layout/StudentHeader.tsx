@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, createSearchParams } from "react-router-dom";
 import {
   Layout,
   Button,
@@ -9,6 +9,7 @@ import {
   Input,
   type MenuProps,
   Tooltip,
+  Spin,
 } from "antd";
 import {
   SearchOutlined,
@@ -18,14 +19,16 @@ import {
   LogoutOutlined,
   BookOutlined,
   HeartOutlined,
-  GlobalOutlined,
-  PlayCircleOutlined,
   RocketOutlined,
+  PlayCircleOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import { useAuthStore } from "../../store/useAuthStore.store";
 import { notify } from "../../utils/notification.utils";
 import { authService } from "../../services/auth.service";
 import { useInstructorStore } from "../../store/useInstructorStore.store";
+import { publicService } from "../../services/public.service";
+import type { CategoryPublicResponse } from "../../types/public.types";
 
 const { Header } = Layout;
 
@@ -35,14 +38,32 @@ const StudentHeader = () => {
   const { reset } = useInstructorStore();
 
   const [isScrolled, setIsScrolled] = useState(false);
+  const [categories, setCategories] = useState<CategoryPublicResponse[]>([]);
+  const [loadingCats, setLoadingCats] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 0);
     window.addEventListener("scroll", handleScroll);
+
+    fetchCategories();
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const fetchCategories = async () => {
+    setLoadingCats(true);
+    try {
+      const res = await publicService.getCategories();
+      if (res.data) {
+        setCategories(res.data);
+      }
+    } catch (error) {
+      console.error("Failed to load categories", error);
+    } finally {
+      setLoadingCats(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -50,20 +71,56 @@ const StudentHeader = () => {
       logout();
       reset();
       notify.info("Đăng xuất", "Đăng xuất thành công!");
+      navigate("/login");
     } catch (error) {
       console.error("error: ", error);
     }
   };
 
-  const categoryItems: MenuProps["items"] = [
-    { key: "cntt", label: "Công nghệ thông tin" },
-    { key: "dtvt", label: "Điện tử viễn thông" },
-    { key: "cokh", label: "Cơ khí & Chế tạo" },
-    { key: "kinhte", label: "Kinh tế & Quản lý" },
-    { key: "ngonngu", label: "Ngoại ngữ" },
-  ];
+  const handleSearch = (value: string) => {
+    if (!value.trim()) return;
+    navigate({
+      pathname: "/student/courses/search",
+      search: `?${createSearchParams({ q: value.trim() })}`,
+    });
+  };
 
-  const userMenuTimestamp: MenuProps["items"] = [
+  const handleCategoryClick = (slug: string) => {
+    navigate({
+      pathname: "/student/courses/search",
+      search: `?${createSearchParams({ category: slug })}`,
+    });
+  };
+
+  const categoryMenuItems: MenuProps["items"] = loadingCats
+    ? [
+        {
+          key: "loading",
+          label: (
+            <div className="p-2 text-center">
+              <Spin size="small" />
+            </div>
+          ),
+          disabled: true,
+        },
+      ]
+    : [
+        ...categories.map((cat) => ({
+          key: cat.slug,
+          label: cat.name,
+          icon: <AppstoreOutlined />,
+          onClick: () => handleCategoryClick(cat.slug),
+        })),
+        { type: "divider" },
+        {
+          key: "all",
+          label: "Tất cả khóa học",
+          icon: <PlayCircleOutlined />,
+          onClick: () => navigate("/courses/search"),
+        },
+      ];
+
+  const userMenu: MenuProps["items"] = [
     {
       key: "profile",
       label: (
@@ -85,7 +142,12 @@ const StudentHeader = () => {
       onClick: () => navigate("/user/info"),
     },
     { type: "divider" },
-    { key: "learning", label: "Quá trình học tập", icon: <BookOutlined /> },
+    {
+      key: "learning",
+      label: "Quá trình học tập",
+      icon: <BookOutlined />,
+      onClick: () => navigate("/student/my-courses"),
+    },
     { key: "wishlist", label: "Danh sách yêu thích", icon: <HeartOutlined /> },
     {
       key: "cart",
@@ -119,30 +181,74 @@ const StudentHeader = () => {
           </span>
         </Link>
 
-        <Dropdown menu={{ items: categoryItems }} trigger={["hover"]}>
-          <span className="text-sm font-medium text-gray-600 hover:text-primary cursor-pointer transition-colors hidden lg:block">
-            Danh mục
-          </span>
+        <Dropdown
+          menu={{
+            items: categoryMenuItems,
+            className: "max-h-[400px] overflow-y-auto",
+          }}
+          trigger={["hover"]}
+          placement="bottomLeft"
+        >
+          <div className="items-center gap-2 cursor-pointer py-2 px-3 rounded-md hover:bg-gray-50 transition-colors hidden lg:flex">
+            <AppstoreOutlined className="text-gray-500" />
+            <span className="text-sm font-medium text-gray-600 hover:text-primary">
+              Danh mục
+            </span>
+          </div>
         </Dropdown>
       </div>
 
       <div className="hidden md:flex flex-1 max-w-xl px-8">
         <div className="w-full relative">
-          <Input
-            prefix={<SearchOutlined className="text-gray-400 text-lg mr-2" />}
-            placeholder="Tìm kiếm khóa học, giảng viên..."
-            className="rounded-full py-2.5 px-5 bg-gray-50 border-transparent hover:bg-white hover:border-primary hover:shadow-md focus:bg-white focus:border-primary focus:shadow-md transition-all text-sm font-medium h-11"
-          />
+          {/* Wrapper tạo viền và bo tròn */}
+          <div
+            className="
+        group flex items-center 
+        bg-white 
+        border border-gray-300 
+        rounded-full 
+        overflow-hidden 
+        transition-all duration-300
+        hover:border-primary hover:shadow-sm
+        focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20
+    "
+          >
+            <Input
+              placeholder="Tìm kiếm khóa học, giảng viên..."
+              allowClear
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onPressEnter={() => handleSearch(searchValue)}
+              bordered={false}
+              size="large"
+              className="flex-1 pl-5"
+            />
+
+            <Button
+              type="primary"
+              onClick={() => handleSearch(searchValue)}
+              className="
+          h-full 
+          rounded-none 
+          bg-primary border-primary 
+          px-6 
+          flex items-center justify-center
+        "
+              style={{ height: "40px" }}
+            >
+              <SearchOutlined className="text-lg" />
+            </Button>
+          </div>
         </div>
       </div>
 
       <div className="flex items-center gap-4 md:gap-6">
         <Link
-          to="/student/courses"
+          to="/courses/search"
           className="hidden xl:flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-primary transition-colors group"
         >
           <PlayCircleOutlined className="text-lg group-hover:scale-110 transition-transform" />
-          <span>Khóa học HUST</span>
+          <span>Khóa học</span>
         </Link>
 
         {isAuthenticated && user ? (
@@ -158,16 +264,6 @@ const StudentHeader = () => {
               </Link>
             </Tooltip>
 
-            <Tooltip title="Vào học ngay">
-              <Link
-                to="/student/my-courses"
-                className="hidden lg:block text-sm font-medium text-gray-600 hover:text-primary"
-              >
-                Vào học
-              </Link>
-            </Tooltip>
-
-            {/* Notifications */}
             <Dropdown
               menu={{
                 items: [{ key: "1", label: "Thông báo mới từ hệ thống" }],
@@ -181,9 +277,8 @@ const StudentHeader = () => {
               </Badge>
             </Dropdown>
 
-            {/* Avatar User */}
             <Dropdown
-              menu={{ items: userMenuTimestamp }}
+              menu={{ items: userMenu }}
               trigger={["hover"]}
               placement="bottomRight"
               arrow={{ pointAtCenter: true }}
@@ -215,11 +310,6 @@ const StudentHeader = () => {
                 Đăng ký
               </Button>
             </Link>
-
-            <Button
-              icon={<GlobalOutlined />}
-              className="hidden lg:flex items-center justify-center border-none text-gray-500 hover:bg-gray-100 rounded-full w-10 h-10"
-            />
           </>
         )}
       </div>

@@ -14,6 +14,12 @@ import {
   Descriptions,
   Breadcrumb,
   Empty,
+  Table,
+  Avatar,
+  List,
+  Rate,
+  Input,
+  Tooltip,
 } from "antd";
 import {
   UserOutlined,
@@ -22,19 +28,25 @@ import {
   DollarCircleOutlined,
   EditOutlined,
   CalendarOutlined,
+  SearchOutlined,
+  MailOutlined,
   BarChartOutlined,
 } from "@ant-design/icons";
 import { instructorService } from "../../services/instructor.service";
-import type { InstructorCourseResponse } from "../../types/instructor.types";
+import type {
+  InstructorCourseInfoResponse,
+  ReviewCourseResponse,
+} from "../../types/instructor.types";
 import { formatCurrency } from "../../utils/format.utils";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const InstructorCourseDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [course, setCourse] = useState<InstructorCourseResponse | null>(null);
+  const [data, setData] = useState<InstructorCourseInfoResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [studentSearch, setStudentSearch] = useState("");
 
   useEffect(() => {
     if (id) fetchCourse();
@@ -44,7 +56,8 @@ const InstructorCourseDetailPage = () => {
     setLoading(true);
     try {
       const res = await instructorService.getCourse(id!);
-      if (res.data) setCourse(res.data);
+      // @ts-ignore: Bỏ qua lỗi type nếu API service chưa cập nhật return type
+      if (res.data) setData(res.data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -58,7 +71,26 @@ const InstructorCourseDetailPage = () => {
         <Skeleton active paragraph={{ rows: 10 }} />
       </div>
     );
-  if (!course) return <Empty description="Không tìm thấy khóa học" />;
+  if (!data)
+    return (
+      <div className="p-8">
+        <Empty description="Không tìm thấy dữ liệu khóa học" />
+      </div>
+    );
+
+  const { course, students, reviews } = data;
+
+  // --- HELPERS ---
+  const getStarValue = (rateEnum: string): number => {
+    const map: Record<string, number> = {
+      ONE: 1,
+      TWO: 2,
+      THREE: 3,
+      FOUR: 4,
+      FIVE: 5,
+    };
+    return map[rateEnum] || 0;
+  };
 
   const renderStatus = (status: string) => {
     const map: any = {
@@ -69,93 +101,222 @@ const InstructorCourseDetailPage = () => {
     };
     const s = map[status] || { color: "default", label: status };
     return (
-      <Tag color={s.color} className="text-base px-3 py-1">
+      <Tag color={s.color} className="text-sm px-2 py-0.5">
         {s.label}
       </Tag>
     );
   };
+
+  // --- TAB CONTENTS ---
+
+  // 1. Tab Tổng quan
+  const OverviewTab = () => (
+    <div className="space-y-6">
+      <Descriptions
+        bordered
+        column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}
+        size="middle"
+        labelStyle={{ fontWeight: "bold", width: "150px" }}
+      >
+        <Descriptions.Item label="Tiêu đề">{course.title}</Descriptions.Item>
+        <Descriptions.Item label="Danh mục">
+          <Tag color="cyan">{course.category?.name}</Tag>
+        </Descriptions.Item>
+        <Descriptions.Item label="Trình độ">{course.level}</Descriptions.Item>
+        <Descriptions.Item label="Giá gốc">
+          {formatCurrency(course.price)}
+        </Descriptions.Item>
+        <Descriptions.Item label="Giá khuyến mãi">
+          {course.salePrice ? (
+            <span className="text-red-500 font-semibold">
+              {formatCurrency(course.salePrice)}
+            </span>
+          ) : (
+            "Không có"
+          )}
+        </Descriptions.Item>
+        <Descriptions.Item label="Ngày tạo">
+          {new Date(course.createdAt).toLocaleDateString("vi-VN")}
+        </Descriptions.Item>
+        <Descriptions.Item label="Cập nhật cuối">
+          {new Date(course.updatedAt).toLocaleDateString("vi-VN")}
+        </Descriptions.Item>
+        <Descriptions.Item label="Người tạo">
+          {course.createdBy}
+        </Descriptions.Item>
+      </Descriptions>
+
+      <Card
+        title="Mô tả khóa học"
+        size="small"
+        className="bg-gray-50 border-gray-200"
+      >
+        <div className="whitespace-pre-line text-gray-700 leading-relaxed">
+          {course.description}
+        </div>
+      </Card>
+    </div>
+  );
+
+  // 2. Tab Học viên
+  const filteredStudents = students.filter(
+    (s) =>
+      s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
+      s.email.toLowerCase().includes(studentSearch.toLowerCase()),
+  );
+
+  const StudentsTab = () => (
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <Text strong className="text-gray-600">
+          Tổng số: {students.length} học viên
+        </Text>
+        <Input
+          prefix={<SearchOutlined className="text-gray-400" />}
+          placeholder="Tìm theo tên hoặc email..."
+          className="w-64"
+          allowClear
+          onChange={(e) => setStudentSearch(e.target.value)}
+        />
+      </div>
+      <Table
+        dataSource={filteredStudents}
+        rowKey="id"
+        pagination={{ pageSize: 5 }}
+        locale={{
+          emptyText: (
+            <Empty
+              description="Chưa có học viên nào"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          ),
+        }}
+        columns={[
+          {
+            title: "Học viên",
+            dataIndex: "name",
+            key: "name",
+            render: (text, record) => (
+              <div className="flex items-center gap-3">
+                <Avatar
+                  src={record.avatarUrl}
+                  icon={<UserOutlined />}
+                  className="bg-indigo-100 text-indigo-600"
+                />
+                <span className="font-medium text-gray-700">{text}</span>
+              </div>
+            ),
+          },
+          {
+            title: "Email liên hệ",
+            dataIndex: "email",
+            key: "email",
+            render: (text) => (
+              <span className="text-gray-500">
+                <MailOutlined className="mr-2" />
+                {text}
+              </span>
+            ),
+          },
+          {
+            title: "Hành động",
+            key: "action",
+            align: "right",
+            render: () => (
+              <Button type="text" size="small" className="text-blue-600">
+                Chi tiết
+              </Button>
+            ),
+          },
+        ]}
+      />
+    </div>
+  );
+
+  // 3. Tab Đánh giá
+  const ReviewsTab = () => (
+    <div className="max-w-4xl">
+      {reviews.length === 0 ? (
+        <div className="flex flex-col items-center justify-center min-h-[300px]">
+          <Empty
+            description="Chưa có đánh giá nào từ học viên"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        </div>
+      ) : (
+        <List
+          itemLayout="horizontal"
+          dataSource={reviews}
+          pagination={{ pageSize: 5, align: "center" }}
+          renderItem={(item: ReviewCourseResponse) => (
+            <List.Item className="bg-white p-4 mb-3 border border-gray-100 rounded-lg shadow-sm">
+              <List.Item.Meta
+                avatar={
+                  <Avatar
+                    src={item.user.avatarUrl}
+                    icon={<UserOutlined />}
+                    size={48}
+                    className="border border-gray-200"
+                  />
+                }
+                title={
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-gray-800">
+                      {item.user.email}
+                    </span>
+                    <Rate
+                      disabled
+                      defaultValue={getStarValue(item.rate)}
+                      className="text-sm"
+                    />
+                  </div>
+                }
+                description={
+                  <div className="mt-2 text-gray-600 bg-gray-50 p-3 rounded italic">
+                    "{item.content}"
+                  </div>
+                }
+              />
+            </List.Item>
+          )}
+        />
+      )}
+    </div>
+  );
 
   const tabItems = [
     {
       key: "1",
       label: (
         <span className="flex items-center gap-2">
-          <BarChartOutlined />
-          Tổng quan
+          <BarChartOutlined /> Tổng quan
         </span>
       ),
-      children: (
-        <div className="space-y-6">
-          <Descriptions
-            bordered
-            column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}
-          >
-            <Descriptions.Item label="Tiêu đề">
-              {course.title}
-            </Descriptions.Item>
-            <Descriptions.Item label="Danh mục">
-              <Tag color="cyan">{course.category?.name}</Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Trình độ">
-              {course.level}
-            </Descriptions.Item>
-            <Descriptions.Item label="Giá gốc">
-              {formatCurrency(course.price)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Giá khuyến mãi">
-              {course.salePrice ? formatCurrency(course.salePrice) : "Không có"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày tạo">
-              {new Date(course.createdAt).toLocaleDateString("vi-VN")}{" "}
-              <span className="text-gray-400 text-xs">
-                ({new Date(course.createdAt).toLocaleTimeString("vi-VN")})
-              </span>
-            </Descriptions.Item>
-            <Descriptions.Item label="Cập nhật lần cuối">
-              {new Date(course.updatedAt).toLocaleDateString("vi-VN")}
-            </Descriptions.Item>
-          </Descriptions>
-
-          <Card title="Mô tả khóa học" size="small" className="bg-gray-50">
-            <div className="whitespace-pre-line text-gray-700">
-              {course.description}
-            </div>
-          </Card>
-        </div>
-      ),
+      children: <OverviewTab />,
     },
     {
       key: "2",
       label: (
         <span className="flex items-center gap-2">
-          <UserOutlined />
-          Danh sách học viên
+          <UserOutlined /> Học viên ({students.length})
         </span>
       ),
-      children: (
-        <div className="min-h-[200px] flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-lg bg-gray-50">
-          <Empty description="Tính năng quản lý học viên đang được phát triển" />
-        </div>
-      ),
+      children: <StudentsTab />,
     },
     {
       key: "3",
       label: (
         <span className="flex items-center gap-2">
-          <StarFilled />
-          Đánh giá & Nhận xét
+          <StarFilled /> Đánh giá ({reviews.length})
         </span>
       ),
-      children: (
-        <div className="min-h-[200px] flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-lg bg-gray-50">
-          <Empty description="Chưa có đánh giá nào" />
-        </div>
-      ),
+      children: <ReviewsTab />,
     },
   ];
 
   return (
-    <div className="animate-fade-in max-w-7xl mx-auto">
+    <div className="animate-fade-in max-w-7xl mx-auto pb-10">
+      {/* BREADCRUMB */}
       <div className="mb-4">
         <Breadcrumb
           items={[
@@ -170,75 +331,109 @@ const InstructorCourseDetailPage = () => {
         />
       </div>
 
+      {/* HEADER CARD */}
       <Card bordered={false} className="shadow-sm rounded-xl mb-6">
         <div className="flex flex-col md:flex-row gap-6">
           <div className="shrink-0">
             <Image
-              src={course.thumbnail || "https://placehold.co/300x200"}
+              src={
+                course.thumbnail || "https://placehold.co/300x200?text=No+Image"
+              }
               width={280}
+              height={180}
               className="rounded-lg shadow-sm border border-gray-100 object-cover"
             />
           </div>
+
           <div className="flex-1 flex flex-col">
             <div className="flex justify-between items-start">
               <div>
-                <Title level={3} className="!mb-2">
+                <Title level={3} className="!mb-2 !mt-0 text-gray-800">
                   {course.title}
                 </Title>
                 <div className="flex items-center gap-3 mb-4">
                   {renderStatus(course.status)}
-                  <span className="text-gray-400">|</span>
-                  <span className="text-gray-500 flex items-center gap-1">
-                    <CalendarOutlined />{" "}
+                  <span className="text-gray-300">|</span>
+                  <span className="text-gray-500 flex items-center gap-1 text-sm">
+                    <CalendarOutlined /> Tạo ngày:{" "}
                     {new Date(course.createdAt).toLocaleDateString("vi-VN")}
                   </span>
                 </div>
               </div>
-              <Button
-                type="primary"
-                icon={<EditOutlined />}
-                size="large"
-                onClick={() =>
-                  navigate(`/instructor/courses/${course.id}/manage`)
-                }
-              >
-                Chỉnh sửa nội dung
-              </Button>
+              <Tooltip title="Chỉnh sửa nội dung bài học, video">
+                <Button
+                  type="primary"
+                  icon={<EditOutlined />}
+                  size="large"
+                  className="bg-indigo-600 hover:bg-indigo-500 shadow-md"
+                  onClick={() =>
+                    navigate(`/instructor/courses/${course.id}/manage`)
+                  }
+                >
+                  Quản lý nội dung
+                </Button>
+              </Tooltip>
             </div>
 
+            {/* STATS ROW */}
             <div className="mt-auto">
               <Row
                 gutter={16}
-                className="bg-gray-50 p-4 rounded-lg border border-gray-100"
+                className="bg-gray-50 p-4 rounded-xl border border-gray-100"
               >
                 <Col span={6}>
                   <Statistic
-                    title="Học viên"
+                    title={
+                      <span className="text-gray-500 text-xs uppercase font-bold">
+                        Học viên
+                      </span>
+                    }
                     value={course.totalStudents}
-                    prefix={<UserOutlined className="text-blue-500" />}
+                    prefix={<UserOutlined className="text-blue-500 mr-1" />}
+                    valueStyle={{ fontWeight: 600 }}
                   />
                 </Col>
                 <Col span={6}>
                   <Statistic
-                    title="Bài học"
+                    title={
+                      <span className="text-gray-500 text-xs uppercase font-bold">
+                        Bài học
+                      </span>
+                    }
                     value={course.totalLessons}
-                    prefix={<ReadOutlined className="text-purple-500" />}
+                    prefix={<ReadOutlined className="text-purple-500 mr-1" />}
+                    valueStyle={{ fontWeight: 600 }}
                   />
                 </Col>
                 <Col span={6}>
                   <Statistic
-                    title="Đánh giá"
+                    title={
+                      <span className="text-gray-500 text-xs uppercase font-bold">
+                        Đánh giá trung bình
+                      </span>
+                    }
                     value={course.averageRating || 0}
                     precision={1}
-                    prefix={<StarFilled className="text-yellow-400" />}
-                    suffix={<span className="text-xs text-gray-400">/ 5</span>}
+                    prefix={<StarFilled className="text-yellow-400 mr-1" />}
+                    suffix={
+                      <span className="text-xs text-gray-400">
+                        / 5 ({course.countRating})
+                      </span>
+                    }
+                    valueStyle={{ fontWeight: 600 }}
                   />
                 </Col>
                 <Col span={6}>
                   <Statistic
-                    title="Doanh thu (Ước tính)"
+                    title={
+                      <span className="text-gray-500 text-xs uppercase font-bold">
+                        Doanh thu ước tính
+                      </span>
+                    }
                     value={course.totalStudents * (course.price || 0)}
-                    prefix={<DollarCircleOutlined className="text-green-500" />}
+                    prefix={
+                      <DollarCircleOutlined className="text-green-500 mr-1" />
+                    }
                     formatter={(value) => formatCurrency(value)}
                     valueStyle={{
                       fontSize: "18px",
@@ -253,7 +448,8 @@ const InstructorCourseDetailPage = () => {
         </div>
       </Card>
 
-      <Card bordered={false} className="shadow-sm rounded-xl">
+      {/* TABS CONTENT */}
+      <Card bordered={false} className="shadow-sm rounded-xl min-h-[400px]">
         <Tabs defaultActiveKey="1" items={tabItems} size="large" />
       </Card>
     </div>

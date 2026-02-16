@@ -1,4 +1,7 @@
-import type { CategoryPublicResponse } from "./public.types";
+import type {
+  CategoryPublicResponse,
+  UserPublicResponse,
+} from "./public.types";
 
 export interface InstructorInfoResponse {
   title: string;
@@ -116,6 +119,24 @@ export interface InstructorCourseResponse {
 export interface InstructorCourseDetailsResponse {
   course: InstructorCourseResponse;
   sections: InstructorSectionResponse[];
+}
+
+export interface InstructorCourseInfoResponse {
+  course: InstructorCourseResponse;
+  students: UserPublicResponse[];
+  reviews: ReviewCourseResponse[];
+}
+
+export interface ReviewCourseResponse {
+  id: string;
+  rate: "ONE" | "TWO" | "THREE" | "FOUR" | "FIVE";
+  content: string;
+  user: ReviewUserResponse;
+}
+
+export interface ReviewUserResponse {
+  email: string;
+  avatarUrl?: string;
 }
 
 export interface InstructorSectionResponse {
