@@ -51,6 +51,12 @@ public class Course extends BaseEntity {
   @Column(name = "_description", columnDefinition = "TEXT")
   private String description;
 
+  @Column(name = "_description_short", columnDefinition = "TEXT")
+  private String descriptionShort;
+
+  @Column(name = "_course_requirements", columnDefinition = "TEXT")
+  private String requirements;
+
   @Column(name = "_price" , nullable = false)
   @Builder.Default
   private BigDecimal price = BigDecimal.ZERO;

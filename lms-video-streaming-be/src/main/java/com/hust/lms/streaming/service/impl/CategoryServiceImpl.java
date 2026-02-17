@@ -7,7 +7,7 @@ import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.exception.ResourceNotFoundException;
 import com.hust.lms.streaming.mapper.CategoryMapper;
 import com.hust.lms.streaming.model.Category;
-import com.hust.lms.streaming.repository.CategoryRepository;
+import com.hust.lms.streaming.repository.jpa.CategoryRepository;
 import com.hust.lms.streaming.service.CategoryService;
 import java.util.List;
 import java.util.UUID;

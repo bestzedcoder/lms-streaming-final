@@ -66,7 +66,7 @@ public class UserMapper {
     response.setId(course.getId());
     response.setSlug(course.getSlug());
     response.setTitle(course.getTitle());
-    response.setDescription(course.getDescription());
+    response.setDescriptionShort(course.getDescriptionShort());
     response.setPrice(course.getPrice());
     response.setSalePrice(course.getSalePrice());
     response.setThumbnail(course.getThumbnail());

@@ -1,4 +1,4 @@
-package com.hust.lms.streaming.repository;
+package com.hust.lms.streaming.repository.jpa;
 
 import com.hust.lms.streaming.model.Category;
 import java.util.Optional;

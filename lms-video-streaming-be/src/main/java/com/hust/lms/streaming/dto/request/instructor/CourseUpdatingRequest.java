@@ -27,6 +27,12 @@ public class CourseUpdatingRequest {
   @JsonDeserialize(using = XssSanitizerDeserializer.class)
   private String description;
 
+  @JsonDeserialize(using = XssSanitizerDeserializer.class)
+  private String descriptionShort;
+
+  @JsonDeserialize(using = XssSanitizerDeserializer.class)
+  private String requirements;
+
   @NotNull(message = "Giá khóa học không được để trống")
   @Min(value = 0, message = "Giá khóa học không được âm")
   private BigDecimal price;

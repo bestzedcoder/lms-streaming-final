@@ -1,5 +1,6 @@
 package com.hust.lms.streaming.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.hust.lms.streaming.dto.request.instructor.CourseCreatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.CourseStatusRequest;
 import com.hust.lms.streaming.dto.request.instructor.CourseUpdatingRequest;
@@ -15,6 +16,8 @@ import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoRespon
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
+import com.hust.lms.streaming.event.custom.CourseEvent;
+import com.hust.lms.streaming.event.enums.CourseEventType;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.exception.ResourceAccessDeniedException;
 import com.hust.lms.streaming.mapper.InstructorMapper;
@@ -24,18 +27,21 @@ import com.hust.lms.streaming.model.Instructor;
 import com.hust.lms.streaming.model.Lesson;
 import com.hust.lms.streaming.model.Section;
 import com.hust.lms.streaming.model.User;
-import com.hust.lms.streaming.repository.CategoryRepository;
-import com.hust.lms.streaming.repository.CourseRepository;
-import com.hust.lms.streaming.repository.InstructorRepository;
-import com.hust.lms.streaming.repository.LessonRepository;
-import com.hust.lms.streaming.repository.SectionRepository;
-import com.hust.lms.streaming.repository.UserRepository;
+import com.hust.lms.streaming.redis.RedisService;
+import com.hust.lms.streaming.repository.jpa.CategoryRepository;
+import com.hust.lms.streaming.repository.jpa.CourseRepository;
+import com.hust.lms.streaming.repository.jpa.InstructorRepository;
+import com.hust.lms.streaming.repository.jpa.LessonRepository;
+import com.hust.lms.streaming.repository.jpa.SectionRepository;
+import com.hust.lms.streaming.repository.jpa.UserRepository;
 import com.hust.lms.streaming.service.InstructorService;
 import com.hust.lms.streaming.upload.CloudinaryService;
 import com.hust.lms.streaming.upload.CloudinaryUploadResult;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,6 +56,8 @@ public class InstructorServiceImpl implements InstructorService {
   private final UserRepository userRepository;
   private final SectionRepository sectionRepository;
   private final LessonRepository lessonRepository;
+  private final ApplicationEventPublisher eventPublisher;
+  private final RedisService redisService;
 
   private User getCurrentUser() {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
@@ -86,6 +94,8 @@ public class InstructorServiceImpl implements InstructorService {
         .title(request.getTitle())
         .slug(request.getSlug())
         .description(request.getDescription())
+        .descriptionShort(request.getDescriptionShort())
+        .requirements(request.getRequirements())
         .level(request.getLevel())
         .category(category)
         .instructor(instructor)
@@ -99,6 +109,7 @@ public class InstructorServiceImpl implements InstructorService {
 
     instructor.getCourses().add(course);
     this.instructorRepository.save(instructor);
+    this.eventPublisher.publishEvent(new CourseEvent<>(CourseEventType.CREATED , currentUser.getId(), null , null));
     return course;
   }
 
@@ -109,6 +120,8 @@ public class InstructorServiceImpl implements InstructorService {
     Course course = this.courseRepository.findByIdAndInstructorId(id, UUID.fromString(authId)).orElseThrow(ResourceAccessDeniedException::new);
 
     course.setTitle(request.getTitle());
+    course.setDescriptionShort(request.getDescriptionShort());
+    course.setRequirements(request.getRequirements());
     course.setDescription(request.getDescription());
     course.setLevel(request.getLevel());
     course.setPrice(request.getPrice());
@@ -267,8 +280,15 @@ public class InstructorServiceImpl implements InstructorService {
   @Override
   public List<InstructorCourseResponse> getAllCourses() {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    String cacheKey = "lms:instructor:list:course:" + authId;
+    List<InstructorCourseResponse> cacheData = this.redisService.getValue(cacheKey, new TypeReference<List<InstructorCourseResponse>>() {});
+    if (cacheData != null) {
+      return cacheData;
+    }
     List<Course> courses = this.courseRepository.findByInstructorId(UUID.fromString(authId));
-    return courses.stream().map(InstructorMapper::mapCourseToInstructorCourseResponse).toList();
+    List<InstructorCourseResponse> res = courses.stream().map(InstructorMapper::mapCourseToInstructorCourseResponse).toList();
+    this.redisService.saveKeyAndValue(cacheKey, res, 5, TimeUnit.MINUTES);
+    return res;
   }
 
   @Override

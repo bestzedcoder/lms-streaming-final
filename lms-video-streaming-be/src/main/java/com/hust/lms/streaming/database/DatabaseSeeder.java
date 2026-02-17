@@ -2,7 +2,7 @@ package com.hust.lms.streaming.database;
 
 import com.hust.lms.streaming.enums.Role;
 import com.hust.lms.streaming.model.User;
-import com.hust.lms.streaming.repository.UserRepository;
+import com.hust.lms.streaming.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;

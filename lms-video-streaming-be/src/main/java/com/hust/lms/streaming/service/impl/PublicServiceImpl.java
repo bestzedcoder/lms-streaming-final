@@ -2,7 +2,7 @@ package com.hust.lms.streaming.service.impl;
 
 import com.hust.lms.streaming.dto.response.category.CategoryPublicResponse;
 import com.hust.lms.streaming.mapper.CategoryMapper;
-import com.hust.lms.streaming.repository.CategoryRepository;
+import com.hust.lms.streaming.repository.jpa.CategoryRepository;
 import com.hust.lms.streaming.service.PublicService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

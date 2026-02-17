@@ -15,7 +15,7 @@ public class UserCourseResponse {
   private UUID id;
   private String title;
   private String slug;
-  private String description;
+  private String descriptionShort;
   private BigDecimal price;
   private BigDecimal salePrice;
   private String thumbnail;

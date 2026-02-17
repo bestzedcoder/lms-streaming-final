@@ -4,7 +4,7 @@ import com.hust.lms.streaming.dto.common.BaseResponse;
 import com.hust.lms.streaming.enums.Role;
 import com.hust.lms.streaming.exception.AdminException;
 import com.hust.lms.streaming.model.User;
-import com.hust.lms.streaming.repository.UserRepository;
+import com.hust.lms.streaming.repository.jpa.UserRepository;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

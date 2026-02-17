@@ -8,9 +8,11 @@ import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorLessonResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorSectionResponse;
 import com.hust.lms.streaming.model.Course;
+import com.hust.lms.streaming.model.Enrollment;
 import com.hust.lms.streaming.model.Instructor;
 import com.hust.lms.streaming.model.Lesson;
 import com.hust.lms.streaming.model.Section;
+import java.math.BigDecimal;
 
 public class InstructorMapper {
   private InstructorMapper() {
@@ -38,6 +40,8 @@ public class InstructorMapper {
     response.setTitle(course.getTitle());
     response.setSlug(course.getSlug());
     response.setDescription(course.getDescription());
+    response.setDescriptionShort(course.getDescriptionShort());
+    response.setRequirements(course.getRequirements());
     response.setPrice(course.getPrice());
     response.setSalePrice(course.getSalePrice());
     response.setThumbnail(course.getThumbnail());
@@ -100,6 +104,7 @@ public class InstructorMapper {
     response.setCourse(InstructorMapper.mapCourseToInstructorCourseResponse(course));
     response.setStudents(course.getEnrollments().stream().map(enrollment -> UserMapper.mapUserToUserPublicResponse(enrollment.getUser())).toList());
     response.setReviews(course.getReviews().stream().map(ReviewMapper::mapReviewToReviewCourseResponse).toList());
+    response.setRevenue(course.getEnrollments().stream().map(Enrollment::getPricePaid).reduce(BigDecimal.ZERO, BigDecimal::add));
     return response;
   }
 }

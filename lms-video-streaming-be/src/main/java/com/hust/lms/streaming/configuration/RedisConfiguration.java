@@ -40,20 +40,13 @@ public class RedisConfiguration {
     template.setConnectionFactory(lettuceConnectionFactory());
 
     // Cấu hình mapper cho redis
-    ObjectMapper redisMapper = this.objectMapper.copy();
-
-    redisMapper.activateDefaultTyping(
-        LaissezFaireSubTypeValidator.instance,
-        ObjectMapper.DefaultTyping.NON_FINAL,
-        JsonTypeInfo.As.PROPERTY
-    );
 
     // Cấu hình key là String
     template.setKeySerializer(new StringRedisSerializer());
     template.setHashKeySerializer(new StringRedisSerializer());
 
     // Cấu hình value là JSON
-    GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer = new GenericJackson2JsonRedisSerializer(redisMapper);
+    GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer = new GenericJackson2JsonRedisSerializer(this.objectMapper);
     template.setValueSerializer(genericJackson2JsonRedisSerializer);
     template.setHashValueSerializer(genericJackson2JsonRedisSerializer);
 

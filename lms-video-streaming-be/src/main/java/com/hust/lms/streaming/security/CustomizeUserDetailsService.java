@@ -1,6 +1,6 @@
 package com.hust.lms.streaming.security;
 
-import com.hust.lms.streaming.repository.UserRepository;
+import com.hust.lms.streaming.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;

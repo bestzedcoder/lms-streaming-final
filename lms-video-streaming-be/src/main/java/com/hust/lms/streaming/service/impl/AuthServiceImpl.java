@@ -18,7 +18,7 @@ import com.hust.lms.streaming.exception.ResourceNotFoundException;
 import com.hust.lms.streaming.mapper.AuthMapper;
 import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.redis.RedisService;
-import com.hust.lms.streaming.repository.UserRepository;
+import com.hust.lms.streaming.repository.jpa.UserRepository;
 import com.hust.lms.streaming.security.JwtUtils;
 import com.hust.lms.streaming.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;

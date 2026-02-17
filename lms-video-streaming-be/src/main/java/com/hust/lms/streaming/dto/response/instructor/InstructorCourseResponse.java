@@ -20,6 +20,8 @@ public class InstructorCourseResponse {
   private String title;
   private String slug;
   private String description;
+  private String descriptionShort;
+  private String requirements;
   private BigDecimal price;
   private BigDecimal salePrice;
   private String thumbnail;

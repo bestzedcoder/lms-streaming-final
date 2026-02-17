@@ -16,7 +16,7 @@ import com.hust.lms.streaming.exception.ResourceNotFoundException;
 import com.hust.lms.streaming.mapper.UserMapper;
 import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.redis.RedisService;
-import com.hust.lms.streaming.repository.UserRepository;
+import com.hust.lms.streaming.repository.jpa.UserRepository;
 import com.hust.lms.streaming.service.UserService;
 import com.hust.lms.streaming.upload.CloudinaryService;
 import java.util.List;

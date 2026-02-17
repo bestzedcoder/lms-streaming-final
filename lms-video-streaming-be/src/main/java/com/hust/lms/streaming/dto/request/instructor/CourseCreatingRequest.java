@@ -30,6 +30,12 @@ public class CourseCreatingRequest {
   @JsonDeserialize(using = XssSanitizerDeserializer.class)
   private String description;
 
+  @JsonDeserialize(using = XssSanitizerDeserializer.class)
+  private String descriptionShort;
+
+  @JsonDeserialize(using = XssSanitizerDeserializer.class)
+  private String requirements;
+
   @NotNull(message = "Trình độ khóa học không được để trống")
   private LevelCourse level;
 
