@@ -8,8 +8,16 @@ import {
   Image,
   Row,
   Col,
+  Tooltip,
 } from "antd";
-import { SaveOutlined, UploadOutlined } from "@ant-design/icons";
+import {
+  InfoCircleOutlined,
+  MinusCircleOutlined,
+  PlusOutlined,
+  SaveOutlined,
+  UnorderedListOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { instructorService } from "../services/instructor.service";
 import { publicService } from "../services/public.service";
@@ -34,14 +42,31 @@ const CourseBasicInfo = ({ course, onRefresh }: Props) => {
     });
   }, []);
 
+  const parseRequirementsToArray = (htmlString?: string) => {
+    if (!htmlString) return [""]; 
+    const matches = htmlString.match(/<li[^>]*>(.*?)<\/li>/g);
+    if (matches) {
+      return matches.map((item) => item.replace(/<\/?li>/g, ""));
+    }
+    return htmlString.split("\n");
+  };
+
+  const convertArrayToHtml = (arr: string[]) => {
+    const validItems = arr.filter((item) => item && item.trim() !== "");
+    if (validItems.length === 0) return "";
+    return `<ul>${validItems.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+  };
+
   const onFinish = async (values: any) => {
     setLoading(true);
     try {
       const image = fileList.length > 0 ? fileList[0].originFileObj : null;
+      const requirementsHtml = convertArrayToHtml(values.requirementsList);
       await instructorService.updateCourse(
         {
           ...values,
           id: course.id,
+          requirements: requirementsHtml,
         },
         image,
       );
@@ -59,7 +84,12 @@ const CourseBasicInfo = ({ course, onRefresh }: Props) => {
       form={form}
       layout="vertical"
       onFinish={onFinish}
-      initialValues={{ ...course, categorySlug: course?.category?.slug }}
+      initialValues={{
+        ...course,
+        categorySlug: course?.category?.slug,
+        descriptionShort: course.descriptionShort,
+        requirementsList: parseRequirementsToArray(course.requirements),
+      }}
       className="max-w-4xl"
     >
       <Form.Item
@@ -68,6 +98,26 @@ const CourseBasicInfo = ({ course, onRefresh }: Props) => {
         rules={[{ required: true, min: 10 }]}
       >
         <Input size="large" placeholder="Nhập tên khóa học hấp dẫn..." />
+      </Form.Item>
+
+      <Form.Item
+        name="descriptionShort"
+        label={
+          <div className="flex items-center gap-2">
+            <span>Mô tả ngắn</span>
+            <Tooltip title="Hiển thị trên thẻ khóa học (Card) ở trang danh sách. Nên viết ngắn gọn, súc tích.">
+              <InfoCircleOutlined className="text-gray-400" />
+            </Tooltip>
+          </div>
+        }
+        rules={[{ required: true, message: "Vui lòng nhập mô tả ngắn" }]}
+      >
+        <Input.TextArea
+          rows={3}
+          showCount
+          maxLength={250}
+          placeholder="Tóm tắt nội dung khóa học trong 2-3 câu..."
+        />
       </Form.Item>
 
       <Row gutter={24}>
@@ -129,11 +179,64 @@ const CourseBasicInfo = ({ course, onRefresh }: Props) => {
           </Form.Item>
         </Col>
       </Row>
+      <div className="mb-6">
+        <label className="block mb-2 font-medium text-gray-700">
+          Yêu cầu / Kiến thức đầu vào
+          <span className="ml-2 text-xs font-normal text-gray-400">
+            (Nhập từng yêu cầu một)
+          </span>
+        </label>
+
+        <Form.List name="requirementsList">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...restField }) => (
+                <div key={key} className="flex items-center gap-2 mb-3">
+                  <UnorderedListOutlined className="text-gray-400" />
+                  <Form.Item
+                    {...restField}
+                    name={[name]}
+                    className="flex-1 mb-0"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng nhập yêu cầu hoặc xóa dòng này",
+                      },
+                    ]}
+                  >
+                    <Input placeholder="Ví dụ: Máy tính kết nối Internet" />
+                  </Form.Item>
+                  {fields.length > 1 && (
+                    <MinusCircleOutlined
+                      className="text-red-500 cursor-pointer hover:text-red-700 text-lg"
+                      onClick={() => remove(name)}
+                    />
+                  )}
+                </div>
+              ))}
+              <Form.Item>
+                <Button
+                  type="dashed"
+                  onClick={() => add()}
+                  block
+                  icon={<PlusOutlined />}
+                  className="mt-1"
+                >
+                  Thêm yêu cầu
+                </Button>
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
+      </div>
 
       <Form.Item
         name="description"
         label="Mô tả chi tiết"
-        rules={[{ required: true, min: 50 }]}
+        rules={[
+          { required: true, message: "Vui lòng nhập mô tả chi tiết" },
+          { min: 20, message: "Mô tả nên dài ít nhất 20 ký tự" },
+        ]}
       >
         <Input.TextArea
           rows={8}

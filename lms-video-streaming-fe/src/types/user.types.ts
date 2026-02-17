@@ -17,7 +17,7 @@ export interface UserCourseResponse {
   id: string;
   title: string;
   slug: string;
-  description: string;
+  descriptionShort: string;
   price: number;
   salePrice: number;
   thumbnail?: string;

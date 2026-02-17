@@ -149,7 +149,7 @@ const InfoPage = () => {
                         {item.title}
                       </h4>
                       <Text type="secondary" className="text-xs line-clamp-1">
-                        {item.description || "Không có mô tả ngắn"}
+                        {item.descriptionShort || "Không có mô tả ngắn"}
                       </Text>
                     </div>
 

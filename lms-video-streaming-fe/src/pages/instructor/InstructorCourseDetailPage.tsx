@@ -31,6 +31,7 @@ import {
   SearchOutlined,
   MailOutlined,
   BarChartOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { instructorService } from "../../services/instructor.service";
 import type {
@@ -56,7 +57,6 @@ const InstructorCourseDetailPage = () => {
     setLoading(true);
     try {
       const res = await instructorService.getCourse(id!);
-      // @ts-ignore: Bỏ qua lỗi type nếu API service chưa cập nhật return type
       if (res.data) setData(res.data);
     } catch (error) {
       console.error(error);
@@ -78,9 +78,8 @@ const InstructorCourseDetailPage = () => {
       </div>
     );
 
-  const { course, students, reviews } = data;
+  const { course, students, reviews, revenue } = data;
 
-  // --- HELPERS ---
   const getStarValue = (rateEnum: string): number => {
     const map: Record<string, number> = {
       ONE: 1,
@@ -107,9 +106,6 @@ const InstructorCourseDetailPage = () => {
     );
   };
 
-  // --- TAB CONTENTS ---
-
-  // 1. Tab Tổng quan
   const OverviewTab = () => (
     <div className="space-y-6">
       <Descriptions
@@ -146,8 +142,51 @@ const InstructorCourseDetailPage = () => {
         </Descriptions.Item>
       </Descriptions>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card
+          title="Mô tả ngắn (Card UI)"
+          size="small"
+          className="bg-gray-50 h-full"
+        >
+          <div className="text-gray-600 italic">
+            {course.descriptionShort || "Chưa có mô tả ngắn."}
+          </div>
+        </Card>
+
+        <Card
+          title="Yêu cầu đầu vào"
+          size="small"
+          className="bg-gray-50 h-full"
+        >
+          {course.requirements ? (
+            <ul className="list-none pl-0 m-0 space-y-2">
+              {!course.requirements.includes("<") ? (
+                course.requirements.split("\n").map(
+                  (req, idx) =>
+                    req.trim() && (
+                      <li
+                        key={idx}
+                        className="flex gap-2 items-start text-gray-700"
+                      >
+                        <CheckCircleOutlined className="text-green-500 mt-1 shrink-0" />
+                        <span>{req}</span>
+                      </li>
+                    ),
+                )
+              ) : (
+                <div
+                  dangerouslySetInnerHTML={{ __html: course.requirements }}
+                />
+              )}
+            </ul>
+          ) : (
+            <span className="text-gray-400">Không có yêu cầu cụ thể.</span>
+          )}
+        </Card>
+      </div>
+
       <Card
-        title="Mô tả khóa học"
+        title="Mô tả chi tiết nội dung"
         size="small"
         className="bg-gray-50 border-gray-200"
       >
@@ -158,7 +197,6 @@ const InstructorCourseDetailPage = () => {
     </div>
   );
 
-  // 2. Tab Học viên
   const filteredStudents = students.filter(
     (s) =>
       s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
@@ -233,7 +271,6 @@ const InstructorCourseDetailPage = () => {
     </div>
   );
 
-  // 3. Tab Đánh giá
   const ReviewsTab = () => (
     <div className="max-w-4xl">
       {reviews.length === 0 ? (
@@ -316,7 +353,6 @@ const InstructorCourseDetailPage = () => {
 
   return (
     <div className="animate-fade-in max-w-7xl mx-auto pb-10">
-      {/* BREADCRUMB */}
       <div className="mb-4">
         <Breadcrumb
           items={[
@@ -331,7 +367,6 @@ const InstructorCourseDetailPage = () => {
         />
       </div>
 
-      {/* HEADER CARD */}
       <Card bordered={false} className="shadow-sm rounded-xl mb-6">
         <div className="flex flex-col md:flex-row gap-6">
           <div className="shrink-0">
@@ -375,7 +410,6 @@ const InstructorCourseDetailPage = () => {
               </Tooltip>
             </div>
 
-            {/* STATS ROW */}
             <div className="mt-auto">
               <Row
                 gutter={16}
@@ -427,10 +461,10 @@ const InstructorCourseDetailPage = () => {
                   <Statistic
                     title={
                       <span className="text-gray-500 text-xs uppercase font-bold">
-                        Doanh thu ước tính
+                        Doanh thu
                       </span>
                     }
-                    value={course.totalStudents * (course.price || 0)}
+                    value={revenue}
                     prefix={
                       <DollarCircleOutlined className="text-green-500 mr-1" />
                     }
@@ -448,7 +482,6 @@ const InstructorCourseDetailPage = () => {
         </div>
       </Card>
 
-      {/* TABS CONTENT */}
       <Card bordered={false} className="shadow-sm rounded-xl min-h-[400px]">
         <Tabs defaultActiveKey="1" items={tabItems} size="large" />
       </Card>

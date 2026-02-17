@@ -17,6 +17,9 @@ import {
   ArrowLeftOutlined,
   RocketOutlined,
   InfoCircleOutlined,
+  MinusCircleOutlined,
+  PlusOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { instructorService } from "../../services/instructor.service";
@@ -74,18 +77,26 @@ const CreateCoursePage = () => {
     }
   };
 
+  const convertArrayToHtml = (arr: string[]) => {
+    const validItems = arr.filter((item) => item && item.trim() !== "");
+    if (validItems.length === 0) return "";
+    return `<ul>${validItems.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+  };
+
   const onFinish = async (values: any) => {
     setLoading(true);
     try {
       const imageFile = fileList.length > 0 ? fileList[0].originFileObj : null;
-
+      const requirementsHtml = convertArrayToHtml(values.requirementsList);
       await instructorService.createCourse(
         {
           title: values.title,
           slug: values.slug,
           description: values.description,
+          descriptionShort: values.descriptionShort,
           level: values.level,
           categorySlug: values.categorySlug,
+          requirements: requirementsHtml,
         },
         imageFile,
       );
@@ -150,14 +161,7 @@ const CreateCoursePage = () => {
 
               <Form.Item
                 name="slug"
-                label={
-                  <Space>
-                    <span className="font-semibold">Đường dẫn (Slug)</span>
-                    <Tooltip title="Đường dẫn thân thiện cho SEO, tự động tạo từ tên khóa học">
-                      <InfoCircleOutlined className="text-gray-400 text-xs" />
-                    </Tooltip>
-                  </Space>
-                }
+                label={<span className="font-semibold">Đường dẫn (Slug)</span>}
                 rules={[
                   { required: true, message: "Slug không được để trống" },
                 ]}
@@ -166,18 +170,90 @@ const CreateCoursePage = () => {
               </Form.Item>
 
               <Form.Item
-                name="description"
-                label={<span className="font-semibold">Mô tả tổng quan</span>}
+                name="descriptionShort"
+                label={
+                  <Space>
+                    <span className="font-semibold">Mô tả ngắn</span>
+                    <Tooltip title="Hiển thị trên Card khóa học ở trang danh sách. Nên viết ngắn gọn, súc tích (khoảng 2-3 câu).">
+                      <InfoCircleOutlined className="text-gray-400" />
+                    </Tooltip>
+                  </Space>
+                }
                 rules={[
-                  { required: true, message: "Vui lòng nhập mô tả" },
-                  { min: 50, message: "Mô tả nên dài ít nhất 50 ký tự" },
+                  { max: 250, message: "Mô tả ngắn không quá 250 ký tự" },
+                ]}
+              >
+                <Input.TextArea
+                  rows={3}
+                  placeholder="Tóm tắt nội dung khóa học trong 1 đoạn ngắn..."
+                  showCount
+                  maxLength={250}
+                />
+              </Form.Item>
+
+              <div className="mb-6">
+                <label className="block mb-2 font-medium text-gray-700">
+                  Yêu cầu / Kiến thức đầu vào
+                  <span className="ml-2 text-xs font-normal text-gray-400">
+                    (Nhập từng yêu cầu một)
+                  </span>
+                </label>
+
+                <Form.List name="requirementsList">
+                  {(fields, { add, remove }) => (
+                    <>
+                      {fields.map(({ key, name, ...restField }) => (
+                        <div key={key} className="flex items-center gap-2 mb-3">
+                          <UnorderedListOutlined className="text-gray-400" />
+                          <Form.Item
+                            {...restField}
+                            name={[name]}
+                            className="flex-1 mb-0"
+                            rules={[
+                              {
+                                required: true,
+                                message:
+                                  "Vui lòng nhập yêu cầu hoặc xóa dòng này",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Ví dụ: Máy tính kết nối Internet" />
+                          </Form.Item>
+                          {fields.length > 1 && (
+                            <MinusCircleOutlined
+                              className="text-red-500 cursor-pointer hover:text-red-700 text-lg"
+                              onClick={() => remove(name)}
+                            />
+                          )}
+                        </div>
+                      ))}
+                      <Form.Item>
+                        <Button
+                          type="dashed"
+                          onClick={() => add()}
+                          block
+                          icon={<PlusOutlined />}
+                          className="mt-1"
+                        >
+                          Thêm yêu cầu
+                        </Button>
+                      </Form.Item>
+                    </>
+                  )}
+                </Form.List>
+              </div>
+
+              <Form.Item
+                name="description"
+                label={<span className="font-semibold">Mô tả chi tiết</span>}
+                rules={[
+                  { required: true, message: "Vui lòng nhập mô tả chi tiết" },
+                  { min: 20, message: "Mô tả nên dài ít nhất 20 ký tự" },
                 ]}
               >
                 <Input.TextArea
                   rows={8}
-                  placeholder="Giới thiệu sơ lược về khóa học: Mục tiêu, đối tượng, kết quả đạt được..."
-                  showCount
-                  maxLength={2000}
+                  placeholder="Giới thiệu chi tiết về khóa học: Mục tiêu, đối tượng, kết quả đạt được..."
                 />
               </Form.Item>
             </Col>

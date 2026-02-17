@@ -34,6 +34,8 @@ export interface CourseCreatingRequest {
   title: string;
   slug: string;
   description: string;
+  descriptionShort?: string;
+  requirements?: string;
   level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
   categorySlug: string;
 }
@@ -42,6 +44,8 @@ export interface CourseUpdatingRequest {
   id: string;
   title: string;
   description: string;
+  descriptionShort?: string;
+  requirements?: string;
   price: number;
   salePrice?: number;
   level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
@@ -99,6 +103,8 @@ export interface InstructorCourseResponse {
   id: string;
   title: string;
   description: string;
+  descriptionShort?: string;
+  requirements?: string;
   price?: number;
   salePrice?: number;
   thumbnail?: string;
@@ -125,6 +131,7 @@ export interface InstructorCourseInfoResponse {
   course: InstructorCourseResponse;
   students: UserPublicResponse[];
   reviews: ReviewCourseResponse[];
+  revenue: number;
 }
 
 export interface ReviewCourseResponse {
