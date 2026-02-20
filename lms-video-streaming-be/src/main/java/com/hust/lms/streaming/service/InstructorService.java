@@ -1,7 +1,6 @@
 package com.hust.lms.streaming.service;
 
 import com.hust.lms.streaming.dto.request.instructor.CourseCreatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.CourseStatusRequest;
 import com.hust.lms.streaming.dto.request.instructor.CourseUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.InstructorUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.LessonCancelRequest;
@@ -14,6 +13,7 @@ import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsRes
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
+import com.hust.lms.streaming.enums.CourseStatus;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.Instructor;
 import java.util.List;
@@ -35,5 +35,5 @@ public interface InstructorService {
   void deleteLesson(LessonCancelRequest request);
   List<InstructorCourseResponse> getAllCourses();
   InstructorCourseDetailsResponse getCourseDetails(UUID id);
-  void updateStatusCourse(CourseStatusRequest request);
+  void updateStatusCourse(UUID id, CourseStatus status);
 }

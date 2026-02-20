@@ -77,7 +77,7 @@ public class AuthServiceImpl implements AuthService {
 //        .build();
 //    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-    this.cookieUtils.setCookieValue(response, "refreshToken", refreshToken, this.refreshTokenExpireTime, "/api/auth");
+    this.cookieUtils.setCookieValue(response, "refreshToken", refreshToken, this.refreshTokenExpireTime, "/api/auth/refresh");
 
     return AuthMapper.toLoginResponse(accessToken, currentUser);
   }
@@ -190,7 +190,7 @@ public class AuthServiceImpl implements AuthService {
 //        .build();
 //    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-    this.cookieUtils.setCookieValue(response, "refreshToken", null, 0, "/api/auth");
+    this.cookieUtils.setCookieValue(response, "refreshToken", null, 0, "/api/auth/refresh");
 
     this.eventPublisher.publishEvent(new AuthEvent(AuthEventType.LOGOUT , currentUser.getEmail() , String.valueOf(accessTokenExpireTime)));
   }

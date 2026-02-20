@@ -4,17 +4,21 @@ import com.hust.lms.streaming.dto.common.BaseListResponse;
 import com.hust.lms.streaming.dto.common.BaseResponse;
 import com.hust.lms.streaming.dto.common.PageResponse;
 import com.hust.lms.streaming.dto.response.category.CategoryPublicResponse;
+import com.hust.lms.streaming.dto.response.course.CoursePublicDetailsResponse;
 import com.hust.lms.streaming.model.elasticsearch.CourseDocument;
 import com.hust.lms.streaming.service.CourseElasticsearchService;
 import com.hust.lms.streaming.service.PublicService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,8 +60,28 @@ public class PublicController {
         .build());
   }
 
-  @GetMapping("courses/{uuid}/details")
-  public ResponseEntity<BaseResponse<?>> getPublicCourseDetails(@PathVariable("uuid") String id) {
-    return null;
+  @PostMapping("courses/reset")
+  public ResponseEntity<?> seedCourses() {
+    this.courseElasticsearchService.reset();
+    return ResponseEntity.ok("Đã reset thành công!");
+  }
+
+  @PostMapping("courses/update/{uuid}")
+  public ResponseEntity<?> uppdateCourse(@PathVariable String uuid, @RequestBody Map<String, Object> data) {
+    this.courseElasticsearchService.updateCourse(uuid, data);
+    return ResponseEntity.ok("Đã update thành công");
+  }
+
+
+  @GetMapping("courses/{slug}/details")
+  public ResponseEntity<BaseResponse<?>> getPublicCourseDetails(@PathVariable("slug") String slug) {
+    CoursePublicDetailsResponse res = this.publicService.getCourseDetails(slug);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("OK")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
   }
 }

@@ -76,31 +76,16 @@ app:
 
 
 logging:
-  file:
-    name: logs/app.log
-
-  logback:
-    rollingpolicy:
-      file-name-pattern: ${logging.file.name}.%d{yyyy-MM-dd}.%i.log
-      max-file-size: 10MB
-      max-history: 30
-      total-size-cap: 1GB
-
   pattern:
-    # Giữ nguyên cấu hình console đẹp của bạn
+    # Cấu hình console đẹp mắt cho việc debug
     console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
-    # File log chỉ lưu nội dung message (%m) để dòng log REQ/RESP sạch nhất có thể
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level : %m%n"
 
   level:
-    # 1. Chỉnh root về WARN để tắt toàn bộ log INFO của Spring, Hibernate, v.v.
-    root: WARN
+    # 1. Chỉnh root về WARN để tắt toàn bộ log rác của hệ thống
+    root: INFO
 
-    # 2. Chỉ bật INFO cho đúng package chứa LoggingFilter của bạn
-    # Hãy đảm bảo đường dẫn này khớp hoàn toàn với package com.hust.lms.streaming.middleware
+    # 2. Tập trung log cho package Middleware của bạn
     com.hust.lms.streaming.middleware: INFO
 
-    # Tắt các log thừa có thể lọt vào
-    org.springframework: WARN
+    # Tắt triệt để các log từ framework
     org.hibernate: WARN
-    org.apache.catalina: WARN

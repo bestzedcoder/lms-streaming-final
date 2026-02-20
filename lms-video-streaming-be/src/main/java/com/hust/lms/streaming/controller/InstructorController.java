@@ -3,7 +3,6 @@ package com.hust.lms.streaming.controller;
 import com.hust.lms.streaming.dto.common.BaseListResponse;
 import com.hust.lms.streaming.dto.common.BaseResponse;
 import com.hust.lms.streaming.dto.request.instructor.CourseCreatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.CourseStatusRequest;
 import com.hust.lms.streaming.dto.request.instructor.CourseUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.InstructorUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.LessonCancelRequest;
@@ -16,6 +15,7 @@ import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsRes
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
+import com.hust.lms.streaming.enums.CourseStatus;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.Instructor;
 import com.hust.lms.streaming.service.InstructorService;
@@ -115,14 +115,23 @@ public class InstructorController {
         .build());
   }
 
-  @PostMapping("course/update-status")
-  public ResponseEntity<BaseResponse<?>> updateStatusCourse(@RequestBody @Valid CourseStatusRequest req) {
-    this.instructorService.updateStatusCourse(req);
+  @PostMapping("course/{uuid}/publish")
+  public ResponseEntity<BaseResponse<?>> publishCourse(@PathVariable("uuid") UUID id) {
+    this.instructorService.updateStatusCourse(id, CourseStatus.PUBLISHED);
     return ResponseEntity.ok(BaseResponse.builder()
-            .code(200)
-            .message("Cập nhật trạng thái khóa học thành công!")
-            .success(true)
-            .timestamp(LocalDateTime.now())
+        .code(200)
+        .message("Khóa học đã được hiển thị công khai!")
+        .success(true)
+        .build());
+  }
+
+  @PostMapping("course/{uuid}/unpublish")
+  public ResponseEntity<BaseResponse<?>> unpublishCourse(@PathVariable("uuid") UUID id) {
+    this.instructorService.updateStatusCourse(id, CourseStatus.PRIVATE);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Khóa học đã được chuyển về chế độ riêng tư!")
+        .success(true)
         .build());
   }
 

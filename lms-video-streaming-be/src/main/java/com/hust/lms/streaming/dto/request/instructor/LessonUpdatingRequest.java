@@ -10,5 +10,5 @@ public class LessonUpdatingRequest {
   private String courseId;
   private String title;
   private LessonType lessonType;
-  private boolean isPreview;
+  private boolean preview;
 }

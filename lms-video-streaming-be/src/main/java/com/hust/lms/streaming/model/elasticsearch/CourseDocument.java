@@ -29,6 +29,9 @@ public class CourseDocument {
       })
   private String title;
 
+  @Field(type = FieldType.Text)
+  private String slug;
+
   @Field(type = FieldType.Double)
   private Double price;
 

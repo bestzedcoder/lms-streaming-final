@@ -9,5 +9,5 @@ public class LessonCreatingRequest {
   private String sectionId;
   private String title;
   private LessonType lessonType;
-  private boolean isPreview;
+  private boolean preview;
 }

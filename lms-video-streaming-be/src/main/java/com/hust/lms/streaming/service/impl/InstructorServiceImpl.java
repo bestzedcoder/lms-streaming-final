@@ -2,7 +2,6 @@ package com.hust.lms.streaming.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.hust.lms.streaming.dto.request.instructor.CourseCreatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.CourseStatusRequest;
 import com.hust.lms.streaming.dto.request.instructor.CourseUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.InstructorUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.LessonCancelRequest;
@@ -20,6 +19,7 @@ import com.hust.lms.streaming.event.custom.CourseEvent;
 import com.hust.lms.streaming.event.enums.CourseEventType;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.exception.ResourceAccessDeniedException;
+import com.hust.lms.streaming.mapper.CourseElasticsearchMapper;
 import com.hust.lms.streaming.mapper.InstructorMapper;
 import com.hust.lms.streaming.model.Category;
 import com.hust.lms.streaming.model.Course;
@@ -109,7 +109,7 @@ public class InstructorServiceImpl implements InstructorService {
 
     instructor.getCourses().add(course);
     this.instructorRepository.save(instructor);
-    this.eventPublisher.publishEvent(new CourseEvent<>(CourseEventType.CREATED , currentUser.getId(), null , null));
+    this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.CREATED , currentUser.getId(), null , null, null));
     return course;
   }
 
@@ -132,6 +132,7 @@ public class InstructorServiceImpl implements InstructorService {
       course.setThumbnail(res.getUrl());
       course.setPublicId(res.getPublicId());
     }
+    this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.INFO_UPDATED, UUID.fromString(authId), id , CourseElasticsearchMapper.updatingInfoCourseDocument(course), null));
     return this.courseRepository.save(course);
   }
 
@@ -184,7 +185,7 @@ public class InstructorServiceImpl implements InstructorService {
     UUID courseId = UUID.fromString(request.getCourseId());
     UUID sectionId = UUID.fromString(request.getSectionId());
 
-    if (!this.courseRepository.existsByIdAndInstructorId(courseId, UUID.fromString(authId))) {
+    if (this.courseRepository.notExistsByIdAndInstructorId(courseId, UUID.fromString(authId))) {
       throw new ResourceAccessDeniedException();
     }
 
@@ -202,7 +203,7 @@ public class InstructorServiceImpl implements InstructorService {
     UUID courseId = UUID.fromString(request.getCourseId());
     UUID sectionId = UUID.fromString(request.getSectionId());
 
-    if (!this.courseRepository.existsByIdAndInstructorId(courseId, UUID.fromString(authId))) {
+    if (this.courseRepository.notExistsByIdAndInstructorId(courseId, UUID.fromString(authId))) {
       throw new ResourceAccessDeniedException();
     }
 
@@ -221,7 +222,7 @@ public class InstructorServiceImpl implements InstructorService {
     UUID courseId = UUID.fromString(request.getCourseId());
     UUID sectionId = UUID.fromString(request.getSectionId());
 
-    if (!this.courseRepository.existsByIdAndInstructorId(courseId, UUID.fromString(authId))) {
+    if (this.courseRepository.notExistsByIdAndInstructorId(courseId, UUID.fromString(authId))) {
       throw new ResourceAccessDeniedException();
     }
 
@@ -240,6 +241,9 @@ public class InstructorServiceImpl implements InstructorService {
 
     section.getLessons().add(lesson);
     this.sectionRepository.save(section);
+    Course course = this.courseRepository.findByIdAndInstructorId(courseId, UUID.fromString(authId)).orElse(null);
+    this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.CONTENT_UPDATED, UUID.fromString(authId), courseId, null, CourseElasticsearchMapper.getCountLesson(course)));
+
   }
 
   @Override
@@ -249,7 +253,7 @@ public class InstructorServiceImpl implements InstructorService {
     UUID sectionId = UUID.fromString(request.getSectionId());
     UUID lessonId = UUID.fromString(request.getLessonId());
 
-    if (!this.courseRepository.existsByIdAndInstructorId(courseId, UUID.fromString(authId)) || !this.sectionRepository.existsByIdAndCourseId(sectionId, courseId)) {
+    if (this.courseRepository.notExistsByIdAndInstructorId(courseId, UUID.fromString(authId)) || this.sectionRepository.notExistsByIdAndCourseId(sectionId, courseId)) {
       throw new ResourceAccessDeniedException();
     }
 
@@ -268,7 +272,7 @@ public class InstructorServiceImpl implements InstructorService {
     UUID sectionId = UUID.fromString(request.getSectionId());
     UUID lessonId = UUID.fromString(request.getLessonId());
 
-    if (!this.courseRepository.existsByIdAndInstructorId(courseId, UUID.fromString(authId)) || !this.sectionRepository.existsByIdAndCourseId(sectionId, courseId)) {
+    if (this.courseRepository.notExistsByIdAndInstructorId(courseId, UUID.fromString(authId)) || this.sectionRepository.notExistsByIdAndCourseId(sectionId, courseId)) {
       throw new ResourceAccessDeniedException();
     }
 
@@ -299,22 +303,23 @@ public class InstructorServiceImpl implements InstructorService {
   }
 
   @Override
-  public void updateStatusCourse(CourseStatusRequest request) {
+  public void updateStatusCourse(UUID id, CourseStatus status) {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    UUID courseId = UUID.fromString(request.getId());
 
-    Course course = this.courseRepository.findByIdAndInstructorId(courseId, UUID.fromString(authId)).orElseThrow(ResourceAccessDeniedException::new);
+    Course course = this.courseRepository.findByIdAndInstructorId(id, UUID.fromString(authId)).orElseThrow(ResourceAccessDeniedException::new);
 
     if (course.getStatus().equals(CourseStatus.PENDING)) throw new BadRequestException("Khóa học đang trong trạng thái xét duyệt");
 
     if (course.getStatus().equals(CourseStatus.LOCKED)) throw new BadRequestException("Khóa học đang bị khóa vui lòng liên hệ quản trị viên");
 
-    if (request.getStatus().equals(CourseStatus.PENDING) || request.getStatus().equals(CourseStatus.LOCKED)) {
-      throw new BadRequestException("Trạng thái cập nhật khóa học không hợp lệ");
-    }
-
-    course.setStatus(request.getStatus());
+    course.setStatus(status);
     this.courseRepository.save(course);
+    if (status.equals(CourseStatus.PUBLISHED)) {
+      this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.PUBLISHED, UUID.fromString(authId), id,
+          CourseElasticsearchMapper.creatingCourseDocument(course),null));
+    } else if (status.equals(CourseStatus.PRIVATE)) {
+      this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.MADE_PRIVATE, UUID.fromString(authId), id, null,null));
+    }
   }
 
 }
