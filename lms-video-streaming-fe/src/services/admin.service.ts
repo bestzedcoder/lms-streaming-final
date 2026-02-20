@@ -1,5 +1,5 @@
 import axiosClient from "../config/axiosClient.config";
-import type { ResponseData } from "../types/common.types";
+import type { PaginationResponse, ResponseData } from "../types/common.types";
 import type {
   AdminCategoryCreatingRequest,
   AdminCategoryResponse,
@@ -8,7 +8,6 @@ import type {
   AdminSearchUser,
   AdminUnlockUserRequest,
   AdminUserCreate,
-  AdminUserList,
   AdminUserUpdate,
   UserResponse,
 } from "../types/admin.types";
@@ -24,7 +23,7 @@ export const adminService = {
 
   getUserList: async (
     params: AdminSearchUser,
-  ): Promise<ResponseData<AdminUserList>> => {
+  ): Promise<ResponseData<PaginationResponse<UserResponse>>> => {
     return axiosClient.get("/admin/users", { params });
   },
 

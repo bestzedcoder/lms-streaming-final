@@ -29,10 +29,11 @@ const CourseSettings = ({ course, onRefresh }: Props) => {
           : "Khóa học sẽ chuyển về trạng thái Nháp (Private).",
       onOk: async () => {
         try {
-          await instructorService.updateCourseStatus({
-            id: course.id,
-            status: newStatus,
-          });
+          if (newStatus === "PUBLISHED") {
+            await instructorService.publishCourse(course.id);
+          } else {
+            await instructorService.unpublishCourse(course.id);
+          }
           notify.success("Thành công", "Cập nhật trạng thái thành công");
           onRefresh();
         } catch (e) {

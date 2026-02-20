@@ -3,12 +3,12 @@ import {
   Input,
   Button,
   InputNumber,
-  Select,
   Upload,
   Image,
   Row,
   Col,
   Tooltip,
+  Select,
 } from "antd";
 import {
   InfoCircleOutlined,
@@ -18,9 +18,8 @@ import {
   UnorderedListOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { instructorService } from "../services/instructor.service";
-import { publicService } from "../services/public.service";
 import { notify } from "../utils/notification.utils";
 import { formatNumber } from "../utils/format.utils";
 import type { InstructorCourseResponse } from "../types/instructor.types";
@@ -33,17 +32,10 @@ interface Props {
 const CourseBasicInfo = ({ course, onRefresh }: Props) => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    publicService.getCategories().then((res) => {
-      if (res.data) setCategories(res.data);
-    });
-  }, []);
-
   const parseRequirementsToArray = (htmlString?: string) => {
-    if (!htmlString) return [""]; 
+    if (!htmlString) return [""];
     const matches = htmlString.match(/<li[^>]*>(.*?)<\/li>/g);
     if (matches) {
       return matches.map((item) => item.replace(/<\/?li>/g, ""));
@@ -62,9 +54,12 @@ const CourseBasicInfo = ({ course, onRefresh }: Props) => {
     try {
       const image = fileList.length > 0 ? fileList[0].originFileObj : null;
       const requirementsHtml = convertArrayToHtml(values.requirementsList);
+      const payload = { ...values };
+      delete payload.requirementsList;
+
       await instructorService.updateCourse(
         {
-          ...values,
+          ...payload,
           id: course.id,
           requirements: requirementsHtml,
         },
@@ -86,7 +81,6 @@ const CourseBasicInfo = ({ course, onRefresh }: Props) => {
       onFinish={onFinish}
       initialValues={{
         ...course,
-        categorySlug: course?.category?.slug,
         descriptionShort: course.descriptionShort,
         requirementsList: parseRequirementsToArray(course.requirements),
       }}
@@ -164,21 +158,17 @@ const CourseBasicInfo = ({ course, onRefresh }: Props) => {
           </Form.Item>
         </Col>
         <Col span={12}>
-          <Form.Item
-            name="categorySlug"
-            label="Danh mục"
-            rules={[{ required: true }]}
-          >
-            <Select size="large" placeholder="Chọn danh mục" showSearch>
-              {categories.map((cat) => (
-                <Select.Option key={cat.id} value={cat.slug}>
-                  {cat.name}
-                </Select.Option>
-              ))}
-            </Select>
+          <Form.Item label="Danh mục">
+            <Input
+              size="large"
+              value={course.category?.name}
+              disabled
+              className="bg-gray-50 text-gray-600 cursor-not-allowed"
+            />
           </Form.Item>
         </Col>
       </Row>
+
       <div className="mb-6">
         <label className="block mb-2 font-medium text-gray-700">
           Yêu cầu / Kiến thức đầu vào

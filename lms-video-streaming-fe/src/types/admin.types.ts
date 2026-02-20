@@ -17,14 +17,6 @@ export interface UserResponse {
   createdBy?: string;
 }
 
-export interface AdminUserList {
-  currentPage: number;
-  pageSize: number;
-  totalPages: number;
-  totalElements: number;
-  result: UserResponse[];
-}
-
 export interface AdminSearchUser {
   page?: number;
   limit?: number;

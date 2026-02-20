@@ -2,7 +2,6 @@ import axiosClient from "../config/axiosClient.config";
 import type { ResponseData } from "../types/common.types";
 import type {
   CourseCreatingRequest,
-  CourseStatusRequest,
   CourseUpdatingRequest,
   InstructorCourseDetailsResponse,
   InstructorCourseInfoResponse,
@@ -63,10 +62,11 @@ export const instructorService = {
     return axiosClient.get(`/instructor/courses/${courseId}/get-details`);
   },
 
-  updateCourseStatus: async (
-    data: CourseStatusRequest,
-  ): Promise<ResponseData> => {
-    return axiosClient.post("/instructor/course/update-status", data);
+  publishCourse: async (id: string): Promise<ResponseData> => {
+    return axiosClient.post(`/instructor/course/${id}/publish`);
+  },
+  unpublishCourse: async (id: string): Promise<ResponseData> => {
+    return axiosClient.post(`/instructor/course/${id}/unpublish`);
   },
 
   createCourse: async (

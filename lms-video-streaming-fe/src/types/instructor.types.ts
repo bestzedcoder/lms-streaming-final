@@ -74,7 +74,7 @@ export interface LessonCreatingRequest {
   sectionId: string;
   title: string;
   lessonType: "QUIZ" | "VIDEO" | "TEXT";
-  isPreview: boolean;
+  preview: boolean;
 }
 
 export interface LessonUpdatingRequest {
@@ -83,7 +83,7 @@ export interface LessonUpdatingRequest {
   courseId: string;
   title: string;
   lessonType: "QUIZ" | "VIDEO" | "TEXT";
-  isPreview: boolean;
+  preview: boolean;
 }
 
 export interface LessonCancelRequest {
@@ -92,16 +92,12 @@ export interface LessonCancelRequest {
   lessonId: string;
 }
 
-export interface CourseStatusRequest {
-  id: string;
-  status: "PUBLISHED" | "PRIVATE";
-}
-
 // Response
 
 export interface InstructorCourseResponse {
   id: string;
   title: string;
+  slug: string;
   description: string;
   descriptionShort?: string;
   requirements?: string;
@@ -158,5 +154,5 @@ export interface InstructorLessonResponse {
   id: string;
   title: string;
   lessonType: "QUIZ" | "VIDEO" | "TEXT";
-  isPreview: boolean;
+  preview: boolean;
 }

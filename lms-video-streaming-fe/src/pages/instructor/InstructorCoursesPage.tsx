@@ -82,8 +82,6 @@ const InstructorCoursesPage = () => {
       key: "price",
       width: 160,
       render: (originalPrice: number, record: InstructorCourseResponse) => {
-        // Kiểm tra xem có giảm giá hợp lệ không
-        // Điều kiện: Có salePrice VÀ salePrice nhỏ hơn giá gốc
         const hasDiscount =
           record.salePrice !== undefined &&
           record.salePrice !== null &&
@@ -92,17 +90,15 @@ const InstructorCoursesPage = () => {
 
         // Tính % giảm giá
         const discountPercent = hasDiscount
-          ? Math.round(
-              ((originalPrice - record.salePrice!) / originalPrice) * 100,
-            )
+          ? Math.round((record.salePrice! / originalPrice) * 100)
           : 0;
 
-        // Giá thực tế người dùng phải trả (Nếu có KM thì lấy salePrice, không thì lấy price)
-        const finalPrice = hasDiscount ? record.salePrice! : originalPrice;
+        const finalPrice = hasDiscount
+          ? originalPrice - record.salePrice!
+          : originalPrice;
 
         return (
           <div className="flex flex-col items-start">
-            {/* 1. HIỂN THỊ GIÁ BÁN THỰC TẾ (To, Đậm) */}
             <div className="font-bold text-base">
               {finalPrice === 0 ? (
                 <Tag color="green" className="font-bold">
@@ -117,7 +113,6 @@ const InstructorCoursesPage = () => {
               )}
             </div>
 
-            {/* 2. HIỂN THỊ GIÁ GỐC + % GIẢM (Nếu có giảm giá) */}
             {hasDiscount && (
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="text-xs text-gray-400 line-through">

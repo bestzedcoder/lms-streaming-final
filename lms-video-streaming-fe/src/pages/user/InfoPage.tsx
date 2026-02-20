@@ -126,7 +126,7 @@ const InfoPage = () => {
                 hoverable
                 className="rounded-lg overflow-hidden border border-gray-200 shadow-sm transition-all hover:shadow-md hover:border-blue-300"
                 bodyStyle={{ padding: 12 }}
-                onClick={() => navigate(`/course/${item.slug}`)}
+                onClick={() => navigate(`/student/courses/${item.slug}`)}
               >
                 <div className="flex gap-4 items-start">
                   <div className="w-20 h-20 flex-shrink-0">

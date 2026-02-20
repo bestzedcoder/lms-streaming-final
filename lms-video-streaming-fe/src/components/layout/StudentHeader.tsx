@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, createSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Layout,
   Button,
@@ -37,10 +37,15 @@ const StudentHeader = () => {
   const { user, isAuthenticated, logout } = useAuthStore();
   const { reset } = useInstructorStore();
 
+  const [searchParams] = useSearchParams();
   const [isScrolled, setIsScrolled] = useState(false);
   const [categories, setCategories] = useState<CategoryPublicResponse[]>([]);
   const [loadingCats, setLoadingCats] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState(searchParams.get("q") || "");
+
+  useEffect(() => {
+    setSearchValue(searchParams.get("q") || "");
+  }, [searchParams]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 0);
@@ -78,17 +83,36 @@ const StudentHeader = () => {
   };
 
   const handleSearch = (value: string) => {
-    if (!value.trim()) return;
+    const newParams = new URLSearchParams(searchParams);
+
+    if (value.trim()) {
+      newParams.set("q", value.trim());
+    } else {
+      newParams.delete("q");
+    }
+
+    newParams.delete("page");
+
     navigate({
       pathname: "/student/courses/search",
-      search: `?${createSearchParams({ q: value.trim() })}`,
+      search: newParams.toString(),
     });
   };
 
   const handleCategoryClick = (slug: string) => {
+    const newParams = new URLSearchParams(searchParams);
+
+    if (slug === "all") {
+      newParams.delete("category");
+    } else {
+      newParams.set("category", slug);
+    }
+
+    newParams.delete("page");
+
     navigate({
       pathname: "/student/courses/search",
-      search: `?${createSearchParams({ category: slug })}`,
+      search: newParams.toString(),
     });
   };
 
@@ -116,7 +140,7 @@ const StudentHeader = () => {
           key: "all",
           label: "Tất cả khóa học",
           icon: <PlayCircleOutlined />,
-          onClick: () => navigate("/courses/search"),
+          onClick: () => navigate("/student/courses/search"),
         },
       ];
 
@@ -200,7 +224,6 @@ const StudentHeader = () => {
 
       <div className="hidden md:flex flex-1 max-w-xl px-8">
         <div className="w-full relative">
-          {/* Wrapper tạo viền và bo tròn */}
           <div
             className="
         group flex items-center 
@@ -244,7 +267,7 @@ const StudentHeader = () => {
 
       <div className="flex items-center gap-4 md:gap-6">
         <Link
-          to="/courses/search"
+          to="/student/courses/search"
           className="hidden xl:flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-primary transition-colors group"
         >
           <PlayCircleOutlined className="text-lg group-hover:scale-110 transition-transform" />

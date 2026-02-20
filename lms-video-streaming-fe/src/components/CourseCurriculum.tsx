@@ -85,7 +85,7 @@ const CourseCurriculum = ({ courseId, sections, onRefresh }: Props) => {
         ...values,
         courseId,
         sectionId: lessonModal.sectionId,
-        isPreview: values.isPreview || false,
+        preview: values.preview || false,
       };
       if (lessonModal.editing) {
         await instructorService.updateLesson({
@@ -243,7 +243,7 @@ const CourseCurriculum = ({ courseId, sections, onRefresh }: Props) => {
                           <span className="font-medium text-gray-700">
                             Bài {lIdx + 1}: {lesson.title}
                           </span>
-                          {lesson.isPreview && (
+                          {lesson.preview && (
                             <Tag
                               icon={<CheckCircleOutlined />}
                               color="success"
@@ -293,7 +293,7 @@ const CourseCurriculum = ({ courseId, sections, onRefresh }: Props) => {
           form={formLesson}
           layout="vertical"
           onFinish={handleSaveLesson}
-          initialValues={{ lessonType: "VIDEO", isPreview: false }}
+          initialValues={{ lessonType: "VIDEO", preview: false }}
         >
           <Form.Item
             name="title"
@@ -311,7 +311,7 @@ const CourseCurriculum = ({ courseId, sections, onRefresh }: Props) => {
               </Select>
             </Form.Item>
             <Form.Item
-              name="isPreview"
+              name="preview"
               label="Cho phép học thử?"
               valuePropName="checked"
             >

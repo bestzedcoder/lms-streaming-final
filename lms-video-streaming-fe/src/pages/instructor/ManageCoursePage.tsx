@@ -17,7 +17,6 @@ const ManageCoursePage = () => {
   );
 
   const fetchDetails = async () => {
-    // Không set loading toàn màn hình khi refresh nhẹ để giữ UX mượt
     try {
       const res = await instructorService.getCourseDetails(courseId!);
       if (res.data) setData(res.data);
@@ -86,7 +85,9 @@ const ManageCoursePage = () => {
 
         {course.status === "PUBLISHED" && (
           <Button
-            onClick={() => window.open(`/course/${course.id}`, "_blank")}
+            onClick={() =>
+              window.open(`/student/courses/${course.slug}`, "_blank")
+            }
             icon={<EyeOutlined />}
           >
             Xem trang Public

@@ -27,6 +27,8 @@ import InstructorCoursesPage from "../pages/instructor/InstructorCoursesPage";
 import CreateCoursePage from "../pages/instructor/CreateCoursePage";
 import InstructorCourseDetailPage from "../pages/instructor/InstructorCourseDetailPage";
 import CategoryManagerPage from "../pages/admin/CategoryManagerPage";
+import PublicCoursesPage from "../pages/student/PublicCoursePage";
+import CourseDetailsPage from "../pages/student/CourseDetailsPage";
 
 const AppRouter = () => {
   return (
@@ -50,7 +52,11 @@ const AppRouter = () => {
           <Route path="/student/dashboard" element={<HomePage />} />
           <Route
             path="/student/courses/search"
-            element={<div>Trang danh sách khóa học</div>}
+            element={<PublicCoursesPage />}
+          />
+          <Route
+            path="/student/courses/:slug"
+            element={<CourseDetailsPage />}
           />
           <Route
             element={
