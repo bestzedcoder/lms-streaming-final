@@ -41,7 +41,7 @@ public class Cart extends BaseEntity {
   @JoinColumn(name = "_user_id", nullable = false, updatable = false)
   private User user;
 
-  @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<CartItem> items = new ArrayList<>();
 }
