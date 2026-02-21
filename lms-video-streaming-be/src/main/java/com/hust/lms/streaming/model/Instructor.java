@@ -30,13 +30,14 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "instructors")
 public class Instructor extends BaseEntity {
+
   @Id
-  @Column(name = "user_id")
+  @Column(name = "_user_id")
   private UUID id;
 
   @OneToOne(fetch = FetchType.LAZY)
   @MapsId
-  @JoinColumn(name = "user_id")
+  @JoinColumn(name = "_user_id")
   @JsonIgnore
   private User user;
 

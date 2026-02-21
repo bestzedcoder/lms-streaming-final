@@ -1,12 +1,16 @@
 package com.hust.lms.streaming.model;
 
 import com.hust.lms.streaming.model.common.BaseEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,28 +24,24 @@ import lombok.experimental.SuperBuilder;
 
 @Setter
 @Getter
-@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 @Entity
-@Table(name = "categories")
-public class Category extends BaseEntity {
+@Table(name = "carts")
+
+public class Cart extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "_id")
   private UUID id;
 
-  @Column(name = "_name", nullable = false, unique = true)
-  private String name;
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "_user_id", nullable = false, updatable = false)
+  private User user;
 
-  @Column(name = "_slug", nullable = false, unique = true)
-  private String slug;
-
-  @Column(name = "_icon")
-  private String icon;
-
-  @OneToMany(mappedBy = "category")
+  @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @Builder.Default
-  private List<Course> courses = new ArrayList<>();
+  private List<CartItem> items = new ArrayList<>();
 }

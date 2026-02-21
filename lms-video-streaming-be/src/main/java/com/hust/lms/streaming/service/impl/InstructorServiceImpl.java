@@ -234,7 +234,7 @@ public class InstructorServiceImpl implements InstructorService {
     Lesson lesson = Lesson.builder()
         .title(request.getTitle())
         .lessonType(request.getLessonType())
-        .isPreview(request.isPreview())
+        .preview(request.isPreview())
         .orderIndex(lessonIndex)
         .section(section)
         .build();
@@ -261,7 +261,7 @@ public class InstructorServiceImpl implements InstructorService {
 
     lesson.setTitle(request.getTitle());
     lesson.setLessonType(request.getLessonType());
-    lesson.setIsPreview(request.isPreview());
+    lesson.setPreview(request.isPreview());
     this.lessonRepository.save(lesson);
   }
 

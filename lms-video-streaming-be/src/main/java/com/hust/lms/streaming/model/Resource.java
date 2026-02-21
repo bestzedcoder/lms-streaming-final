@@ -35,5 +35,4 @@ public class Resource extends BaseEntity {
   @Column(name = "_mime_type")
   private String mimeType;
 
-
 }

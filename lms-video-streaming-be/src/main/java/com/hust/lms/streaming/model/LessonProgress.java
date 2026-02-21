@@ -7,11 +7,11 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@Getter
-@Setter
 @Entity
 @Table(name = "lesson_progress", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"_user_id", "_lesson_id"})
@@ -38,4 +38,5 @@ public class LessonProgress extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "_lesson_id", nullable = false, updatable = false)
   private Lesson lesson;
+
 }

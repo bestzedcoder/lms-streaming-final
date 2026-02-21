@@ -53,7 +53,7 @@ public class CourseMapper {
     SectionPublicResponse response = new SectionPublicResponse();
     response.setTitle(section.getTitle());
     response.setDescriptionShort(section.getDescriptionShort());
-    response.setLessons(section.getLessons().stream().filter(Lesson::getIsPreview).map(CourseMapper::mapLessonToLessonPublicResponse).toList());
+    response.setLessons(section.getLessons().stream().filter(Lesson::getPreview).map(CourseMapper::mapLessonToLessonPublicResponse).toList());
     return response;
   }
 

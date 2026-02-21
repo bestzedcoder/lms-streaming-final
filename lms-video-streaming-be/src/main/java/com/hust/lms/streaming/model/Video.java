@@ -29,6 +29,7 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "videos")
 public class Video extends BaseEntity {
+
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "_id")
@@ -63,4 +64,5 @@ public class Video extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "_owner_id", nullable = false)
   private User owner;
+
 }

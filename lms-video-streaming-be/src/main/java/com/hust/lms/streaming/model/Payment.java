@@ -1,6 +1,7 @@
 package com.hust.lms.streaming.model;
 
-import com.hust.lms.streaming.enums.LessonType;
+import com.hust.lms.streaming.enums.PaymentMethod;
+import com.hust.lms.streaming.enums.PaymentStatus;
 import com.hust.lms.streaming.model.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,12 +12,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,34 +28,29 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "lessons")
-public class Lesson extends BaseEntity {
+@Table(name = "payments")
+public class Payment extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "_id")
   private UUID id;
 
-  @Column(name = "_title", nullable = false)
-  private String title;
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "_order_id", nullable = false)
+  private Order order;
+
+  @Column(name = "_amount", nullable = false)
+  private BigDecimal amount;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "_lesson_type", nullable = false)
-  @Builder.Default
-  private LessonType lessonType = LessonType.VIDEO;
+  @Column(name = "_payment_method", nullable = false)
+  private PaymentMethod paymentMethod;
 
-  @Column(name = "_order_index", nullable = false)
-  private Integer orderIndex;
+  @Column(name = "_transaction_no")
+  private String transactionNo;
 
-  @Column(name = "_preview", nullable = false)
-  @Builder.Default
-  private Boolean preview = false;
-
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "_video_id")
-  private Video video;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "_section_id" ,nullable = false, updatable = false)
-  private Section section;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "_status", nullable = false)
+  private PaymentStatus status;
 }

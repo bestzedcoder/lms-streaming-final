@@ -36,6 +36,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @SuperBuilder
 @Table(name = "users")
 public class User extends BaseEntity implements UserDetails {
+
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "_id")
@@ -121,4 +122,5 @@ public class User extends BaseEntity implements UserDetails {
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
   @Builder.Default
   private List<Enrollment> enrollments = new ArrayList<>();
+
 }

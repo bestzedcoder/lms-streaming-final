@@ -37,6 +37,7 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "courses")
 public class Course extends BaseEntity {
+
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "_id")
@@ -61,7 +62,7 @@ public class Course extends BaseEntity {
   @Builder.Default
   private BigDecimal price = BigDecimal.ZERO;
 
-  @Column(name = "_salePrice")
+  @Column(name = "_sale_price")
   @Builder.Default
   private BigDecimal salePrice = BigDecimal.ZERO;
 

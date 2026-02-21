@@ -92,7 +92,7 @@ public class InstructorMapper {
     InstructorLessonResponse response = new InstructorLessonResponse();
     response.setId(lesson.getId());
     response.setTitle(lesson.getTitle());
-    response.setPreview(lesson.getIsPreview());
+    response.setPreview(lesson.getPreview());
     response.setLessonType(lesson.getLessonType());
     return response;
   }

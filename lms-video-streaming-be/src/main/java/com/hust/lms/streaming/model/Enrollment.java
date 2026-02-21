@@ -9,11 +9,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@Getter
-@Setter
 @Entity
 @Table(name = "enrollments", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"_user_id", "_course_id"})

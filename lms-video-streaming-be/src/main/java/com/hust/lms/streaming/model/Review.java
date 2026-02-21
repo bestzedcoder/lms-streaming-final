@@ -38,4 +38,5 @@ public class Review extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "_course_id", nullable = false)
   private Course course;
+
 }

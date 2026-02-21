@@ -1,9 +1,12 @@
 package com.hust.lms.streaming.model;
 
+import com.hust.lms.streaming.enums.OrderStatus;
 import com.hust.lms.streaming.model.common.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,8 +14,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,36 +27,38 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "sections")
-public class Section extends BaseEntity {
+@Table(name = "orders")
+public class Order extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "_id")
   private UUID id;
 
-  @Column(name = "_title", nullable = false)
-  private String title;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "_user_id", nullable = false, updatable = false)
+  private User user;
 
-  @Column(name = "_description_short" , columnDefinition = "TEXT")
-  private String descriptionShort;
+  @Column(name = "_total_amount", nullable = false)
+  private BigDecimal totalAmount;
 
-  @Column(name = "_order_index", nullable = false)
-  private Integer orderIndex;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "_status", nullable = false)
+  private OrderStatus status;
 
-  @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  @OrderBy("orderIndex ASC")
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @Builder.Default
-  private List<Lesson> lessons = new ArrayList<>();
+  private List<OrderItem> items = new ArrayList<>();
 
-  @ManyToOne
-  @JoinColumn(name = "_course_id" ,nullable = false ,updatable = false)
-  private Course course;
+  @Column(name = "_expires_at", nullable = false)
+  private LocalDateTime expiresAt;
 
+  @Column(name = "_completed_at")
+  private LocalDateTime completedAt;
 }
