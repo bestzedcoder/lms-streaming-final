@@ -8,4 +8,5 @@ public interface CartService {
   void addItem(AddItemRequest request);
   void removeItem(RemoveItemRequest request);
   CartResponse getCart();
+  void clearCart();
 }

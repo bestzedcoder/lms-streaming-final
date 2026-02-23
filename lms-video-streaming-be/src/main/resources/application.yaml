@@ -74,7 +74,24 @@ app:
     api-key: ${CLOUDINARY_API_KEY}
     api-secret: ${CLOUDINARY_API_SECRET}
 
+# --- cấu hình thông tin thanh toán ---
+payment:
+  # --- VNPAY ---
+  vnpay:
+    tmn-code: ${TMN_CODE}       # Lấy từ email VNPay gửi
+    hash-secret: ${SECRET_KEY}  # Lấy từ email VNPay gửi
+    pay-url: ${PAY_URL} # URL môi trường Test
+    return-url: ${RETURN_URL} # Trả về Frontend sau khi thanh toán xong
+    version: ${VERSION}
+    command: ${COMMAND}
+    order-type: ${ORDER_TYPE}
 
+  # --- MOMO ---
+
+
+
+
+# logging
 logging:
   pattern:
     # Cấu hình console đẹp mắt cho việc debug
@@ -89,3 +106,5 @@ logging:
 
     # Tắt triệt để các log từ framework
     org.hibernate: WARN
+
+

@@ -46,7 +46,7 @@ public class CourseEventListener {
           this.courseElasticsearchService.updateCourse(event.getCourseId().toString(), data);
         }
         break;
-      case APPROVED_COURSE:
+      case APPROVED_COURSE, ADD_REVIEW, ADD_STUDENT:
         break;
       case PUBLISHED:
         this.courseElasticsearchService.saveCourse(event.getCourseDocument());

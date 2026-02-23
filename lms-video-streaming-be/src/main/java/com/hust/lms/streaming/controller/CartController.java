@@ -56,4 +56,15 @@ public class CartController {
             .timestamp(LocalDateTime.now())
         .build());
   }
+
+  @PostMapping("clear")
+  public ResponseEntity<BaseResponse<?>> clearCart() {
+    this.cartService.clearCart();
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Success")
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
 }

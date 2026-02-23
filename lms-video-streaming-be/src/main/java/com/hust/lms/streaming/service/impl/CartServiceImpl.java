@@ -33,6 +33,9 @@ public class CartServiceImpl implements CartService {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
     User user = this.userRepository.getReferenceById(UUID.fromString(authId));
     Course course = this.courseRepository.findBySlugAndStatus(request.getCourseSlug(), CourseStatus.PUBLISHED).orElseThrow(() -> new BadRequestException("Khóa học không còn công khai hoặc không tồn tại"));
+    if (user.getEnrollments().stream().anyMatch(enrollment -> enrollment.getCourse().getId().equals(course.getId()))) {
+      throw new BadRequestException("Khóa học này bạn đã mua rồi");
+    }
     Cart cart = this.cartRepository.findByUserId(UUID.fromString(authId)).orElse(
         Cart.builder()
             .user(user)
@@ -72,4 +75,15 @@ public class CartServiceImpl implements CartService {
     Cart cart = this.cartRepository.findByUserId(UUID.fromString(authId)).orElse(null);
     return CartMapper.mapCartToCartResponse(cart);
   }
+
+  @Override
+  public void clearCart() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    Cart cart = this.cartRepository.findByUserId(UUID.fromString(authId)).orElse(null);
+    if (cart == null) return;
+    cart.getItems().clear();
+    this.cartRepository.save(cart);
+  }
+
+
 }
