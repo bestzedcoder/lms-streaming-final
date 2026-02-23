@@ -1,0 +1,34 @@
+{
+  "title": "Senior Backend Engineer | Spring Boot & Microservices Architect | 10+ Years Experience",
+  "bio": "<h2>Giới thiệu</h2>
+  <p>Tôi là một <strong>Senior Backend Engineer</strong> với hơn 10 năm kinh nghiệm phát triển hệ thống phần mềm quy mô lớn. Tôi chuyên về <em>Java, Spring Boot và kiến trúc Microservices</em>, từng tham gia xây dựng các nền tảng có hàng triệu người dùng.</p>
+
+  <p>Trong sự nghiệp của mình, tôi đã làm việc với các hệ thống thương mại điện tử, nền tảng học trực tuyến (LMS), và hệ thống tài chính yêu cầu độ ổn định và bảo mật cao.</p>
+
+  <h3>Kinh nghiệm chuyên môn</h3>
+  <ul>
+    <li>Thiết kế và triển khai RESTful API chuẩn production</li>
+    <li>Xây dựng hệ thống Microservices với Docker & Kubernetes</li>
+    <li>Bảo mật hệ thống với JWT, OAuth2 và Spring Security</li>
+    <li>Tối ưu hiệu năng và xử lý hệ thống tải cao</li>
+    <li>CI/CD với GitHub Actions & Jenkins</li>
+  </ul>
+
+  <h3>Triết lý giảng dạy</h3>
+  <blockquote>
+    Tôi tin rằng cách học tốt nhất là học thông qua thực hành và xây dựng dự án thực tế.
+  </blockquote>
+
+  <p>Trong các khóa học của tôi, bạn sẽ không chỉ học lý thuyết mà còn:</p>
+  <ol>
+    <li>Xây dựng project thực tế từ đầu đến cuối</li>
+    <li>Hiểu rõ bản chất của từng công nghệ</li>
+    <li>Biết cách thiết kế hệ thống scalable</li>
+    <li>Tối ưu code theo chuẩn clean architecture</li>
+  </ol>
+
+  <h3>Mục tiêu của tôi</h3>
+  <p>Tôi mong muốn giúp học viên không chỉ biết code mà còn hiểu cách suy nghĩ như một Software Engineer thực thụ. Sau khóa học, bạn có thể tự tin ứng tuyển vào các vị trí Backend Developer hoặc nâng cao kỹ năng hiện tại của mình.</p>
+
+  <p>Kết nối với tôi qua LinkedIn hoặc tham gia các khóa học để bắt đầu hành trình nâng cấp kỹ năng ngay hôm nay!</p>"
+}

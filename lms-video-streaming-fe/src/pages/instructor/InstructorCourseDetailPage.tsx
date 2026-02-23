@@ -190,16 +190,17 @@ const InstructorCourseDetailPage = () => {
         size="small"
         className="bg-gray-50 border-gray-200"
       >
-        <div className="whitespace-pre-line text-gray-700 leading-relaxed">
-          {course.description}
-        </div>
+        <div
+          className="text-gray-700 leading-relaxed custom-html-content"
+          dangerouslySetInnerHTML={{ __html: course.description }}
+        />
       </Card>
     </div>
   );
 
   const filteredStudents = students.filter(
     (s) =>
-      s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
+      s.fullName.toLowerCase().includes(studentSearch.toLowerCase()) ||
       s.email.toLowerCase().includes(studentSearch.toLowerCase()),
   );
 
@@ -232,8 +233,8 @@ const InstructorCourseDetailPage = () => {
         columns={[
           {
             title: "Học viên",
-            dataIndex: "name",
-            key: "name",
+            dataIndex: "fullName",
+            key: "fullName",
             render: (text, record) => (
               <div className="flex items-center gap-3">
                 <Avatar
@@ -329,7 +330,7 @@ const InstructorCourseDetailPage = () => {
           <BarChartOutlined /> Tổng quan
         </span>
       ),
-      children: <OverviewTab />,
+      children: OverviewTab(),
     },
     {
       key: "2",
@@ -338,7 +339,7 @@ const InstructorCourseDetailPage = () => {
           <UserOutlined /> Học viên ({students.length})
         </span>
       ),
-      children: <StudentsTab />,
+      children: StudentsTab(),
     },
     {
       key: "3",
@@ -347,7 +348,7 @@ const InstructorCourseDetailPage = () => {
           <StarFilled /> Đánh giá ({reviews.length})
         </span>
       ),
-      children: <ReviewsTab />,
+      children: ReviewsTab(),
     },
   ];
 

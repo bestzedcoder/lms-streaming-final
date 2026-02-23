@@ -6,7 +6,7 @@ export interface CategoryPublicResponse {
 
 export interface UserPublicResponse {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
   avatarUrl: string;
 }

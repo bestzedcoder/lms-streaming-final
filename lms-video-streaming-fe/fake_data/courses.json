@@ -1,0 +1,267 @@
+[
+  {
+    "code": 200,
+    "message": "Lấy thông tin khóa học thành công",
+    "success": true,
+    "timestamp": "2026-02-20T20:00:00.000Z",
+    "data": {
+      "title": "Lập trình ReactJS Thực Chiến: Từ Cơ Bản Đến Nâng Cao",
+      "slug": "lap-trinh-reactjs-thuc-chien-tu-co-ban-den-nang-cao",
+      "descriptionShort": "Trở thành Frontend Developer chuyên nghiệp với React. Học cách sử dụng React Hooks, Redux Toolkit, React Query và xây dựng 3 dự án thực tế để đưa vào CV của bạn.",
+      "description": "<h2>Khóa học này dành cho ai?</h2><p>Khóa học này được thiết kế từ con số 0 dành cho những bạn muốn theo đuổi con đường Frontend Web Developer. Bạn sẽ học được cách tư duy của một lập trình viên React thực thụ.</p><h3>Bạn sẽ học được gì?</h3><ul><li>Hiểu rõ vòng đời (Lifecycle) của một component trong React.</li><li>Làm chủ các Hooks quan trọng: useState, useEffect, useMemo, useCallback.</li><li>Quản lý State toàn cục một cách mượt mà với Redux Toolkit.</li><li>Kết nối và gọi API an toàn với Axios và React Query.</li><li>Tối ưu hóa hiệu năng ứng dụng (Performance Optimization).</li></ul><p><b>Cam kết:</b> Sau khóa học, bạn hoàn toàn tự tin ứng tuyển vị trí Fresher/Junior ReactJS tại các công ty công nghệ.</p>",
+      "requirements": "<ul>\n <li>Hiểu biết cơ bản về HTML, CSS và JavaScript (ES6+).</li>\n <li>Sở hữu máy tính có kết nối Internet (Windows, macOS hoặc Linux đều được).</li>\n <li>Sẵn sàng dành ít nhất 5 giờ mỗi tuần để thực hành code.</li>\n</ul>",
+      "thumbnail": "https://placehold.co/800x450/4f46e5/ffffff?text=ReactJS+Masterclass",
+      "price": 2500000.0,
+      "salePrice": 999000.0,
+      "level": "BEGINNER",
+      "averageRating": 4.8,
+      "countRating": 1245,
+      "countStudents": 5830,
+      "totalSections": 3,
+      "totalLessons": 8,
+      "reviews": [
+        {
+          "content": "Khóa học cực kỳ chất lượng, giảng viên giải thích các khái niệm khó như Redux hay useEffect rất dễ hiểu. Lớp dự án thực tế giúp mình tự tin hơn hẳn khi đi phỏng vấn.",
+          "rating": "FIVE",
+          "user": "Nguyễn Văn A"
+        },
+        {
+          "content": "Nội dung đầy đủ, update các công nghệ mới nhất. Tuy nhiên phần React Query mình mong muốn có thêm nhiều bài tập nâng cao hơn.",
+          "rating": "FOUR",
+          "user": "Trần Thị B"
+        },
+        {
+          "content": "Tuyệt vời! Cách dạy chậm rãi, phù hợp cho cả những người chuyển ngành sang IT như mình.",
+          "rating": "FIVE",
+          "user": "Lê Hoàng C"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Chương 1: Bắt đầu với ReactJS",
+          "descriptionShort": "Tìm hiểu React là gì, tại sao nên dùng React và cách khởi tạo dự án đầu tiên của bạn.",
+          "lessons": [
+            {
+              "title": "1. ReactJS là gì? Tại sao nó lại phổ biến?",
+              "lessonType": "VIDEO"
+            },
+            {
+              "title": "2. Cài đặt môi trường (NodeJS, VS Code)",
+              "lessonType": "VIDEO"
+            },
+            {
+              "title": "3. Bài tập trắc nghiệm: Khởi động",
+              "lessonType": "QUIZ"
+            },
+            {
+              "title": "4. Tài liệu tham khảo React (Cheat Sheet)",
+              "lessonType": "TEXT"
+            }
+          ]
+        },
+        {
+          "title": "Chương 2: Cốt lõi của React (Components & Props)",
+          "descriptionShort": "Nắm vững khái niệm Component (thành phần) và cách truyền dữ liệu giữa các Component thông qua Props.",
+          "lessons": [
+            {
+              "title": "5. Functional Component vs Class Component",
+              "lessonType": "VIDEO"
+            },
+            {
+              "title": "6. Truyền dữ liệu với Props",
+              "lessonType": "VIDEO"
+            }
+          ]
+        },
+        {
+          "title": "Chương 3: React Hooks Toàn Tập",
+          "descriptionShort": "Làm chủ State và Lifecycle trong Functional Component với các Hooks phổ biến nhất.",
+          "lessons": [
+            {
+              "title": "7. Quản lý trạng thái với useState",
+              "lessonType": "VIDEO"
+            },
+            {
+              "title": "8. Side effects và useEffect Hook",
+              "lessonType": "VIDEO"
+            }
+          ]
+        }
+      ],
+      "instructor": {
+        "fullName": "Huy Coder",
+        "title": "Senior Frontend Developer @ TechCorp",
+        "bio": "<p>Xin chào, mình là <b>Huy</b>. Mình có hơn 5 năm kinh nghiệm làm việc với hệ sinh thái JavaScript/TypeScript.</p><p>Mình từng tham gia phát triển nhiều hệ thống lớn phục vụ hàng triệu người dùng. Niềm đam mê của mình là mang những kiến thức thực chiến phức tạp truyền đạt lại một cách đơn giản, dễ hiểu nhất cho người mới bắt đầu.</p>",
+        "totalCourses": 4,
+        "avatarUrl": "https://placehold.co/150x150/111827/ffffff?text=HC"
+      },
+      "updatedAt": "2026-02-15T08:30:00.000Z"
+    }
+  },
+  {
+    "code": 200,
+    "message": "Lấy thông tin khóa học thành công",
+    "success": true,
+    "timestamp": "2026-02-21T10:15:00.000Z",
+    "data": {
+      "title": "Lập trình Java Spring Boot Microservices Thực Chiến",
+      "slug": "lap-trinh-java-spring-boot-microservices-thuc-chien",
+      "descriptionShort": "Xây dựng hệ thống thương mại điện tử chịu tải cao với Spring Boot, Spring Cloud, Kafka, Redis và Elasticsearch.",
+      "description": "<h2>Khóa học này sẽ thay đổi tư duy thiết kế hệ thống của bạn</h2><p>Chuyển đổi từ Monolithic sang Microservices không chỉ là việc chia nhỏ code, mà là cả một nghệ thuật về thiết kế cơ sở dữ liệu phân tán và giao tiếp giữa các service.</p><h3>Trong khóa học này, bạn sẽ xây dựng:</h3><ul><li>Hệ thống <b>API Gateway</b> và Service Discovery với Eureka.</li><li>Quản lý xác thực tập trung (SSO) sử dụng OAuth2 và JWT.</li><li>Xử lý Message Queue bất đồng bộ với <b>Apache Kafka</b>.</li><li>Tối ưu hóa tìm kiếm với <b>Elasticsearch</b> và caching với <b>Redis</b>.</li><li>Triển khai ứng dụng lên server thực tế với Docker.</li></ul><p><b>Lưu ý:</b> Đây là khóa học chuyên sâu, đòi hỏi bạn phải thực sự nghiêm túc và dành nhiều thời gian thực hành.</p>",
+      "requirements": "<ul>\n <li>Nắm vững Java Core và lập trình hướng đối tượng (OOP).</li>\n <li>Đã có kinh nghiệm làm việc với Spring Boot cơ bản (REST API, Spring Data JPA).</li>\n <li>Hiểu biết cơ bản về cơ sở dữ liệu quan hệ (MySQL/PostgreSQL).</li>\n</ul>",
+      "thumbnail": "https://placehold.co/800x450/16a34a/ffffff?text=Spring+Boot+Microservices",
+      "price": 3500000.0,
+      "salePrice": 1290000.0,
+      "level": "ADVANCED",
+      "averageRating": 4.9,
+      "countRating": 850,
+      "countStudents": 2100,
+      "totalSections": 3,
+      "totalLessons": 7,
+      "reviews": [
+        {
+          "content": "Khóa học cực kỳ nặng đô nhưng cực hay! Giảng viên đi sâu vào bản chất của Kafka và Redis, cách xử lý transaction phân tán (Saga pattern) cực kỳ đỉnh.",
+          "rating": "FIVE",
+          "user": "Phạm Văn Long"
+        },
+        {
+          "content": "Nội dung rất thực tế, kiến thức có thể áp dụng ngay vào dự án ở công ty. Giá như có thêm phần hướng dẫn deploy lên Kubernetes thì tuyệt vời hơn 100%.",
+          "rating": "FOUR",
+          "user": "Bùi Mai Phương"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Chương 1: Kiến trúc Microservices và Thiết kế",
+          "descriptionShort": "Tìm hiểu những ưu nhược điểm của Microservices so với Monolithic và chia tách Database.",
+          "lessons": [
+            {
+              "title": "1. Khi nào nên và không nên dùng Microservices?",
+              "lessonType": "VIDEO"
+            },
+            {
+              "title": "2. Thiết kế Database phân tán: Database per Service",
+              "lessonType": "VIDEO"
+            }
+          ]
+        },
+        {
+          "title": "Chương 2: Xây dựng Core Services",
+          "descriptionShort": "Bắt tay vào code các service cốt lõi: User Service, Product Service và Order Service.",
+          "lessons": [
+            {
+              "title": "3. Setup dự án với Spring Cloud",
+              "lessonType": "VIDEO"
+            },
+            {
+              "title": "4. Giao tiếp giữa các Services với OpenFeign",
+              "lessonType": "VIDEO"
+            },
+            {
+              "title": "5. Xử lý lỗi với Resilience4j (Circuit Breaker)",
+              "lessonType": "VIDEO"
+            }
+          ]
+        },
+        {
+          "title": "Chương 3: Message Queue & Caching",
+          "descriptionShort": "Tối ưu hóa hiệu năng và đồng bộ dữ liệu với Kafka và Redis.",
+          "lessons": [
+            {
+              "title": "6. Cài đặt và sử dụng Kafka trong Spring Boot",
+              "lessonType": "VIDEO"
+            },
+            {
+              "title": "7. Bài tập: Xử lý tồn kho bất đồng bộ",
+              "lessonType": "QUIZ"
+            }
+          ]
+        }
+      ],
+      "instructor": {
+        "fullName": "Quách Linh",
+        "title": "Solution Architect",
+        "bio": "<p>Tôi hiện đang là Solution Architect với hơn 10 năm kinh nghiệm trong việc thiết kế và phát triển các hệ thống Backend quy mô lớn.</p><p>Phương châm giảng dạy của tôi: <i>\"Không chỉ dạy code chạy được, mà còn phải code sạch và tối ưu.\"</i></p>",
+        "totalCourses": 5,
+        "avatarUrl": "https://placehold.co/150x150/000000/ffffff?text=QL"
+      },
+      "updatedAt": "2026-02-18T14:20:00.000Z"
+    }
+  },
+  {
+    "code": 200,
+    "message": "Lấy thông tin khóa học thành công",
+    "success": true,
+    "timestamp": "2026-02-21T10:15:00.000Z",
+    "data": {
+      "title": "DevOps Thực Chiến: Làm chủ Docker, Kubernetes & CI/CD",
+      "slug": "devops-thuc-chien-docker-kubernetes-cicd",
+      "descriptionShort": "Tự động hóa quy trình triển khai phần mềm. Học cách đóng gói ứng dụng với Docker, quản lý Cluster với Kubernetes và xây dựng Pipeline CI/CD với GitHub Actions.",
+      "description": "<h2>Kỹ năng bắt buộc cho Software Engineer thời đại mới</h2><p>Code chạy trên máy bạn nhưng lại lỗi trên server? Đó là lý do bạn cần khóa học này.</p><h3>Nội dung chính:</h3><ul><li>Hiểu rõ ảo hóa (Virtualization) và Containerization.</li><li>Viết Dockerfile chuẩn để đóng gói ứng dụng Node.js, Java, Python.</li><li>Dùng Docker Compose để chạy môi trường local dễ dàng.</li><li>Xây dựng đường ống CI/CD: Tự động test, build và deploy.</li><li>Làm quen với kiến trúc Kubernetes (K8s) cơ bản.</li></ul>",
+      "requirements": "<ul>\n <li>Biết sử dụng Linux Command Line cơ bản (cd, ls, mkdir, vim/nano).</li>\n <li>Có kiến thức nền tảng về phát triển Web Backend hoặc Frontend.</li>\n <li>Cài đặt sẵn Docker Desktop hoặc Docker Engine trên máy cá nhân.</li>\n</ul>",
+      "thumbnail": "https://placehold.co/800x450/0ea5e9/ffffff?text=DevOps+Mastery",
+      "price": 1800000.0,
+      "salePrice": 0.0,
+      "level": "INTERMEDIATE",
+      "averageRating": 4.6,
+      "countRating": 420,
+      "countStudents": 3500,
+      "totalSections": 2,
+      "totalLessons": 5,
+      "reviews": [
+        {
+          "content": "Một khóa học tuyệt vời để nhập môn DevOps. Cảm ơn anh đã ra khóa học miễn phí chất lượng thế này!",
+          "rating": "FIVE",
+          "user": "Trần Trọng Đạt"
+        },
+        {
+          "content": "Giải thích rất cặn kẽ về cách hoạt động của Docker image layer. Giờ mình đã có thể tự viết file CI/CD cho dự án cá nhân.",
+          "rating": "FIVE",
+          "user": "Lê Vũ Phương"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Chương 1: Docker Cơ Bản Đến Nâng Cao",
+          "descriptionShort": "Tất tần tật về Docker Image, Container, Volume và Network.",
+          "lessons": [
+            {
+              "title": "1. Sự khác biệt giữa VM và Container",
+              "lessonType": "VIDEO"
+            },
+            {
+              "title": "2. Hướng dẫn viết Dockerfile tối ưu dung lượng",
+              "lessonType": "VIDEO"
+            },
+            {
+              "title": "3. Bài đọc thêm: Docker Networking",
+              "lessonType": "TEXT"
+            }
+          ]
+        },
+        {
+          "title": "Chương 2: Tự động hóa với CI/CD",
+          "descriptionShort": "Sử dụng GitHub Actions để tự động hóa quy trình kiểm thử và phát hành.",
+          "lessons": [
+            {
+              "title": "4. CI/CD là gì? Setup GitHub Actions workflow",
+              "lessonType": "VIDEO"
+            },
+            {
+              "title": "5. Thực hành deploy ứng dụng lên Server VPS",
+              "lessonType": "VIDEO"
+            }
+          ]
+        }
+      ],
+      "instructor": {
+        "fullName": "Trần Hữu Khang",
+        "title": "Senior DevOps Engineer",
+        "bio": "<p>DevOps không chỉ là một vị trí công việc, nó là một văn hóa làm việc. Hy vọng qua khóa học này, mình có thể giúp các bạn tiết kiệm hàng trăm giờ deploy thủ công.</p>",
+        "totalCourses": 2,
+        "avatarUrl": "https://placehold.co/150x150/1e40af/ffffff?text=TK"
+      },
+      "updatedAt": "2026-02-01T09:00:00.000Z"
+    }
+  }
+]

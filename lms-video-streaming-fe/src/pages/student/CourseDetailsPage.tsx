@@ -197,7 +197,8 @@ const CourseDetailsPage = () => {
                 Yêu cầu
               </Title>
               <div
-                className="text-gray-700 text-base ml-4 format-html-list"
+                // Đã thêm class custom-html-content
+                className="text-gray-700 text-base ml-4 format-html-list custom-html-content"
                 dangerouslySetInnerHTML={{ __html: course.requirements }}
               />
             </div>
@@ -207,9 +208,9 @@ const CourseDetailsPage = () => {
             <Title level={3} className="!font-bold !text-2xl !mb-6">
               Mô tả khóa học
             </Title>
-            {/* Nếu HTML (dùng ReactQuill lưu) thì dùng dangerouslySetInnerHTML */}
             <div
-              className="prose max-w-none text-gray-700 leading-relaxed whitespace-pre-line"
+              // Đã XÓA whitespace-pre-line, ĐỔI leading-relaxed thành leading-normal
+              className="prose max-w-none text-gray-700 leading-normal custom-html-content"
               dangerouslySetInnerHTML={{ __html: course.description }}
             />
           </div>
@@ -319,7 +320,7 @@ const CourseDetailsPage = () => {
                 </div>
 
                 <div
-                  className="text-gray-700 leading-relaxed text-sm prose max-w-none"
+                  className="text-gray-700 leading-relaxed text-sm prose max-w-none custom-html-content"
                   dangerouslySetInnerHTML={{ __html: course.instructor.bio }}
                 />
               </div>

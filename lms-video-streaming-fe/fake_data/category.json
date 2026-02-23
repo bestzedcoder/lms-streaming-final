@@ -1,0 +1,42 @@
+[
+  {
+    "title": "Công nghệ thông tin",
+    "slug": "cong-nghe-thong-tin"
+  },
+  {
+    "title": "Lập trình Web",
+    "slug": "lap-trinh-web"
+  },
+  {
+    "title": "Phát triển Backend",
+    "slug": "phat-trien-backend"
+  },
+  {
+    "title": "Frontend với React",
+    "slug": "frontend-voi-react"
+  },
+  {
+    "title": "Mobile Development",
+    "slug": "mobile-development"
+  },
+  {
+    "title": "Trí tuệ nhân tạo",
+    "slug": "tri-tue-nhan-tao"
+  },
+  {
+    "title": "Khoa học dữ liệu",
+    "slug": "khoa-hoc-du-lieu"
+  },
+  {
+    "title": "DevOps & Cloud",
+    "slug": "devops-cloud"
+  },
+  {
+    "title": "An toàn thông tin",
+    "slug": "an-toan-thong-tin"
+  },
+  {
+    "title": "Thiết kế UI/UX",
+    "slug": "thiet-ke-ui-ux"
+  }
+]

@@ -86,7 +86,7 @@ const InstructorCoursesPage = () => {
           record.salePrice !== undefined &&
           record.salePrice !== null &&
           record.salePrice !== 0 &&
-          record.salePrice < originalPrice;
+          record.salePrice <= originalPrice;
 
         // Tính % giảm giá
         const discountPercent = hasDiscount

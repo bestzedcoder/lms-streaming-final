@@ -82,3 +82,35 @@
     transform: translate3d(0, 0, 0);
   }
 }
+
+/* --- FORMAT CHO NỘI DUNG HTML ĐỘNG --- */
+
+/* Thu hẹp khoảng cách giữa các thẻ p */
+.custom-html-content p {
+  margin-top: 0 !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* Ép thẻ p cuối cùng không có margin dưới để tránh thừa khoảng trắng */
+.custom-html-content p:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Thu hẹp khoảng cách của danh sách (ul, ol) */
+.custom-html-content ul,
+.custom-html-content ol {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.75rem !important;
+  padding-left: 1.5rem !important; /* Lùi lề cho gạch đầu dòng */
+}
+
+/* Siết chặt các dòng li (gạch đầu dòng) lại với nhau */
+.custom-html-content li {
+  margin-bottom: 0.25rem !important;
+}
+
+/* Xử lý lỗi thẻ br rỗng do trình soạn thảo sinh ra (nếu có) */
+.custom-html-content br {
+  display: block;
+  margin-bottom: 2px;
+}

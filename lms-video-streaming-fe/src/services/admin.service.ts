@@ -24,40 +24,40 @@ export const adminService = {
   getUserList: async (
     params: AdminSearchUser,
   ): Promise<ResponseData<PaginationResponse<UserResponse>>> => {
-    return axiosClient.get("/admin/users", { params });
+    return axiosClient.get("/users", { params });
   },
 
   getUserById: async (id: string): Promise<ResponseData<UserResponse>> => {
-    return axiosClient.get(`/admin/users/${id}`);
+    return axiosClient.get(`/users/${id}`);
   },
 
   createUser: async (
     data: AdminUserCreate,
   ): Promise<ResponseData<UserResponse>> => {
-    return axiosClient.post("/admin/users", data);
+    return axiosClient.post("/users", data);
   },
 
   updateUser: async (
     id: string,
     data: AdminUserUpdate,
   ): Promise<ResponseData<UserResponse>> => {
-    return axiosClient.put(`/admin/users/${id}`, data);
+    return axiosClient.put(`/users/${id}`, data);
   },
 
   deleteUser: async (id: string): Promise<ResponseData<boolean>> => {
-    return axiosClient.delete(`/admin/users/${id}`);
+    return axiosClient.delete(`/users/${id}`);
   },
 
   lockUser: async (
     data: AdminLockUserRequest,
   ): Promise<ResponseData<boolean>> => {
-    return axiosClient.post("/admin/users/lock", data);
+    return axiosClient.post("/users/lock", data);
   },
 
   unlockUser: async (
     data: AdminUnlockUserRequest,
   ): Promise<ResponseData<boolean>> => {
-    return axiosClient.post("/admin/users/unlock", data);
+    return axiosClient.post("/users/unlock", data);
   },
 
   // Category
