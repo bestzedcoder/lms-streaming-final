@@ -6,7 +6,6 @@ import com.hust.lms.streaming.dto.response.order.OrderResponse;
 import com.hust.lms.streaming.service.OrderService;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +51,18 @@ public class OrderController {
     return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.builder()
             .code(201)
             .message("success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("pay-now/{slug}")
+  public ResponseEntity<BaseResponse<?>> payNow(@PathVariable("slug") String slug) {
+    String res = this.orderService.payNow(slug);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
             .data(res)
             .success(true)
             .timestamp(LocalDateTime.now())

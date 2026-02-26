@@ -45,7 +45,7 @@ public class SecurityConfiguration {
         )
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/auth/login", "/auth/register", "/auth/verify-account", "/auth/forgot-password", "/auth/reset-password", "/auth/refresh", "/public/**", "/overview/**").permitAll()
+            .requestMatchers("/auth/login", "/auth/register", "/auth/verify-account", "/auth/forgot-password", "/auth/reset-password", "/auth/refresh", "/public/**", "/overview/**", "/payment/vn-pay/callback", "/payment/momo/callback").permitAll()
             .requestMatchers("/admin/**", "/users/**").hasRole(Role.ADMIN.name())
             .requestMatchers("/instructor/**").hasRole(Role.INSTRUCTOR.name())
             .anyRequest().authenticated()

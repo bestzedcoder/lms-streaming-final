@@ -15,7 +15,7 @@ public class OrderMapper {
     if (order == null) return null;
 
     OrderResponse response = new OrderResponse();
-    response.setId(order.getId());
+    response.setCode(order.getCode());
     response.setOrderDate(order.getCreatedAt());
     response.setStatus(order.getStatus());
     response.setQuantity(order.getItems().size());
@@ -29,7 +29,7 @@ public class OrderMapper {
     if (order == null) return null;
 
     OrderDetailsResponse response = new OrderDetailsResponse();
-    response.setId(order.getId());
+    response.setCode(order.getCode());
     response.setOrderDate(order.getCreatedAt());
     response.setStatus(order.getStatus());
     response.setQuantity(order.getItems().size());

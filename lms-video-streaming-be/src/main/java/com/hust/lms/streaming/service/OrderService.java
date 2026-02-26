@@ -8,4 +8,5 @@ public interface OrderService {
   String createOrder();
   OrderDetailsResponse getOrderDetails(String code);
   List<OrderResponse> getOrders();
+  String payNow(String slug);
 }

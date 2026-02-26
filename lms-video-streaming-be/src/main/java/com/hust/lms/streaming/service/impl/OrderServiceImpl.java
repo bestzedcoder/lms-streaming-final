@@ -3,6 +3,7 @@ package com.hust.lms.streaming.service.impl;
 import com.hust.lms.streaming.common.Gen;
 import com.hust.lms.streaming.dto.response.order.OrderDetailsResponse;
 import com.hust.lms.streaming.dto.response.order.OrderResponse;
+import com.hust.lms.streaming.enums.CourseStatus;
 import com.hust.lms.streaming.enums.OrderStatus;
 import com.hust.lms.streaming.event.custom.CourseEvent;
 import com.hust.lms.streaming.event.enums.CourseEventType;
@@ -16,6 +17,7 @@ import com.hust.lms.streaming.model.Order;
 import com.hust.lms.streaming.model.OrderItem;
 import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.repository.jpa.CartRepository;
+import com.hust.lms.streaming.repository.jpa.CourseRepository;
 import com.hust.lms.streaming.repository.jpa.EnrollmentRepository;
 import com.hust.lms.streaming.repository.jpa.OrderRepository;
 import com.hust.lms.streaming.repository.jpa.UserRepository;
@@ -40,6 +42,7 @@ public class OrderServiceImpl implements OrderService {
   private final UserRepository userRepository;
   private final EnrollmentRepository enrollmentRepository;
   private final ApplicationEventPublisher eventPublisher;
+  private final CourseRepository courseRepository;
 
   @Override
   @Transactional
@@ -129,5 +132,31 @@ public class OrderServiceImpl implements OrderService {
         this.orderRepository.save(order);
       }
     }
+  }
+
+  @Override
+  public String payNow(String slug) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    UUID userId = UUID.fromString(authId);
+    User user = this.userRepository.getReferenceById(userId);
+    Course course = this.courseRepository.findBySlugAndStatus(slug, CourseStatus.PUBLISHED).orElseThrow(() -> new BadRequestException("Slug không hợp lệ."));
+
+    Order order = new Order();
+    order.setUser(user);
+    order.setStatus(OrderStatus.PENDING);
+    BigDecimal price = this.calculatePrice(course);
+    order.getItems().add(OrderItem.builder()
+            .order(order)
+            .price(price)
+        .build());
+    String code = Gen.genOrderCode();
+    order.setCode(code);
+    order.setTotalAmount(price);
+    order.setExpiresAt(LocalDateTime.now().plusMinutes(15));
+    order = this.orderRepository.save(order);
+    if (price.compareTo(BigDecimal.ZERO) == 0) {
+      this.handleOrderFree(order);
+    }
+    return code;
   }
 }
