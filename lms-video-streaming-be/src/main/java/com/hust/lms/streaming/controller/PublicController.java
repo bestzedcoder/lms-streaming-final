@@ -60,17 +60,20 @@ public class PublicController {
         .build());
   }
 
+
+  // Test Postman
   @PostMapping("courses/reset")
   public ResponseEntity<?> seedCourses() {
     this.courseElasticsearchService.reset();
     return ResponseEntity.ok("Đã reset thành công!");
   }
 
-  @PostMapping("courses/update/{uuid}")
-  public ResponseEntity<?> uppdateCourse(@PathVariable String uuid, @RequestBody Map<String, Object> data) {
-    this.courseElasticsearchService.updateCourse(uuid, data);
-    return ResponseEntity.ok("Đã update thành công");
-  }
+  // Test Postman
+//  @PostMapping("courses/update/{uuid}")
+//  public ResponseEntity<?> updateCourse(@PathVariable String uuid, @RequestBody Map<String, Object> data) {
+//    this.courseElasticsearchService.updateCourse(uuid, data);
+//    return ResponseEntity.ok("Đã update thành công");
+//  }
 
 
   @GetMapping("courses/{slug}/details")

@@ -85,5 +85,12 @@ public class CartServiceImpl implements CartService {
     this.cartRepository.save(cart);
   }
 
+  @Override
+  public Integer getCountItemCart() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    Cart cart = this.cartRepository.findByUserId(UUID.fromString(authId)).orElse(null);
+    if (cart == null) return 0;
+    return cart.getItems().size();
+  }
 
 }

@@ -57,6 +57,18 @@ public class CartController {
         .build());
   }
 
+  @GetMapping("count/item-cart")
+  public ResponseEntity<BaseResponse<?>> getCountItemCart() {
+    Integer res = this.cartService.getCountItemCart();
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
   @PostMapping("clear")
   public ResponseEntity<BaseResponse<?>> clearCart() {
     this.cartService.clearCart();

@@ -6,6 +6,7 @@ import com.hust.lms.streaming.dto.response.user.UserPublicResponse;
 import com.hust.lms.streaming.dto.response.user.UserResponse;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.User;
+import java.math.BigDecimal;
 
 public class UserMapper {
 
@@ -59,7 +60,7 @@ public class UserMapper {
     return response;
   }
 
-  public static UserCourseResponse mapCourseToUserCourseResponse(Course course) {
+  public static UserCourseResponse mapCourseToUserCourseResponse(Course course, BigDecimal price) {
     if (course == null) return null;
 
     UserCourseResponse response = new UserCourseResponse();
@@ -67,7 +68,7 @@ public class UserMapper {
     response.setSlug(course.getSlug());
     response.setTitle(course.getTitle());
     response.setDescriptionShort(course.getDescriptionShort());
-    response.setPrice(course.getPrice());
+    response.setPrice(price);
     response.setSalePrice(course.getSalePrice());
     response.setThumbnail(course.getThumbnail());
     return response;

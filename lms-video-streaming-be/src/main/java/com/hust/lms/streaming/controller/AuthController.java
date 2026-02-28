@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -120,6 +121,17 @@ public class AuthController {
             .code(HttpStatus.OK.value())
             .success(true)
             .message("Thay đổi mật khẩu thành công")
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("check-admin")
+  public ResponseEntity<BaseResponse<?>> checkAdmin() {
+    this.authService.checkAdmin();
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .success(true)
+            .message("Success")
             .timestamp(LocalDateTime.now())
         .build());
   }

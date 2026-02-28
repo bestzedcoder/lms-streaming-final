@@ -19,4 +19,6 @@ public interface AuthService {
   RefreshResponse refresh(HttpServletRequest request);
   void logout(HttpServletResponse response);
   void changePassword(ChangePasswordRequest request);
+
+  void checkAdmin();
 }

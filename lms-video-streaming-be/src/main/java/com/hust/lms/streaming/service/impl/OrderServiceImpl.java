@@ -61,6 +61,9 @@ public class OrderServiceImpl implements OrderService {
 
     for (CartItem item : cart.getItems()) {
       Course course = item.getCourse();
+      if (!course.getStatus().equals(CourseStatus.PUBLISHED)) {
+        throw new BadRequestException(String.format("Khóa học %s :\nHiện tại không còn công khai.",course.getTitle()));
+      }
       OrderItem orderItem = new OrderItem();
       orderItem.setOrder(order);
       orderItem.setCourse(course);

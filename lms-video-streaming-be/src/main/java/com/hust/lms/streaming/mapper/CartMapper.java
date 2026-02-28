@@ -28,6 +28,7 @@ public class CartMapper {
     response.setSalePrice(cartItem.getCourse().getSalePrice());
     response.setTitle(cartItem.getCourse().getTitle());
     response.setThumbnail(cartItem.getCourse().getThumbnail());
+    response.setInstructorName(cartItem.getCourse().getInstructor().getUser().getFullName());
     return response;
   }
 }

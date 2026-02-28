@@ -74,6 +74,6 @@ public class ProfileServiceImpl implements ProfileService {
   public List<UserCourseResponse> getCourseMe() {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
     User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
-    return currentUser.getEnrollments().stream().map(enrollment -> UserMapper.mapCourseToUserCourseResponse(enrollment.getCourse())).toList();
+    return currentUser.getEnrollments().stream().map(enrollment -> UserMapper.mapCourseToUserCourseResponse(enrollment.getCourse(), enrollment.getPricePaid())).toList();
   }
 }

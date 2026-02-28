@@ -5,6 +5,8 @@ import com.hust.lms.streaming.dto.request.payment.PaymentCreatingRequest;
 import com.hust.lms.streaming.enums.OrderStatus;
 import com.hust.lms.streaming.enums.PaymentMethod;
 import com.hust.lms.streaming.enums.PaymentStatus;
+import com.hust.lms.streaming.event.custom.CourseEvent;
+import com.hust.lms.streaming.event.enums.CourseEventType;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.model.Enrollment;
 import com.hust.lms.streaming.model.Order;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +38,7 @@ public class PaymentServiceImpl implements PaymentService {
   private final PaymentRepository paymentRepository;
   private final PaymentFactory paymentFactory;
   private final EnrollmentRepository enrollmentRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public String initPayment(PaymentCreatingRequest request, HttpServletRequest servletRequest) {
@@ -90,6 +94,10 @@ public class PaymentServiceImpl implements PaymentService {
           enrollments.add(enrollment);
         }
         this.enrollmentRepository.saveAll(enrollments);
+
+        for (Enrollment enrollment : enrollments) {
+          this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.ADD_STUDENT, enrollment.getCourse().getInstructor().getId(), enrollment.getCourse().getId(), null, null));
+        }
 
       } else {
         payment.setStatus(PaymentStatus.FAILED);

@@ -13,6 +13,7 @@ import com.hust.lms.streaming.dto.response.auth.RefreshResponse;
 import com.hust.lms.streaming.enums.Role;
 import com.hust.lms.streaming.event.custom.AuthEvent;
 import com.hust.lms.streaming.event.enums.AuthEventType;
+import com.hust.lms.streaming.exception.AdminException;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.exception.ResourceNotFoundException;
 import com.hust.lms.streaming.mapper.AuthMapper;
@@ -67,15 +68,6 @@ public class AuthServiceImpl implements AuthService {
     String refreshToken = jwtUtils.generateRefreshToken(currentUser);
 
     this.redisService.deleteKey("lms:auth:blacklist:" + currentUser.getUsername());
-
-//    ResponseCookie cookie =  ResponseCookie.from("refreshToken" , refreshToken)
-//        .maxAge(this.refreshTokenExpireTime)
-//        .secure(false)
-//        .httpOnly(true)
-//        .path("/api/auth")
-//        .sameSite("Lax")
-//        .build();
-//    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
     this.cookieUtils.setCookieValue(response, "refreshToken", refreshToken, this.refreshTokenExpireTime, "/api/auth/refresh");
 
@@ -181,15 +173,6 @@ public class AuthServiceImpl implements AuthService {
 
     User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
 
-//    ResponseCookie cookie =  ResponseCookie.from("refreshToken" , null)
-//        .maxAge(0)
-//        .secure(false)
-//        .httpOnly(true)
-//        .path("/api/auth")
-//        .sameSite("Lax")
-//        .build();
-//    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
     this.cookieUtils.setCookieValue(response, "refreshToken", null, 0, "/api/auth/refresh");
 
     this.eventPublisher.publishEvent(new AuthEvent(AuthEventType.LOGOUT , currentUser.getEmail() , String.valueOf(accessTokenExpireTime)));
@@ -204,5 +187,12 @@ public class AuthServiceImpl implements AuthService {
     }
     currentUser.setPassword(this.passwordEncoder.encode(request.getNewPassword()));
     this.userRepository.save(currentUser);
+  }
+
+  @Override
+  public void checkAdmin() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
+    if (!currentUser.getRole().equals(Role.ADMIN)) throw new AdminException("Truy cập trái phép vui lòng login lại!");
   }
 }
