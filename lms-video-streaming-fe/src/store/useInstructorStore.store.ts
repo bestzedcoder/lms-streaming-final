@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { instructorService } from "../services/instructor.service";
-import type { InstructorInfoResponse } from "../types/instructor.types";
+import type { InstructorInfoResponse } from "../@types/instructor.types";
 
 interface InstructorState {
   instructorInfo: InstructorInfoResponse | null;

@@ -18,7 +18,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { instructorService } from "../../services/instructor.service";
-import type { InstructorCourseResponse } from "../../types/instructor.types";
+import type { InstructorCourseResponse } from "../../@types/instructor.types";
 import { formatCurrency } from "../../utils/format.utils";
 
 const { Title } = Typography;

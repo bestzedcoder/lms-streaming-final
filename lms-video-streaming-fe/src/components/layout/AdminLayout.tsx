@@ -17,7 +17,6 @@ import {
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore.store";
 import { authService } from "../../services/auth.service";
-import { adminService } from "../../services/admin.service";
 
 const { Header, Sider, Content } = Layout;
 
@@ -34,7 +33,7 @@ const AdminLayout = () => {
   useEffect(() => {
     const verifyAdminAccess = async () => {
       try {
-        await adminService.checkAuth();
+        await authService.checkAdmin();
       } catch (error) {
         console.error("Admin verification failed:", error);
       }

@@ -6,7 +6,7 @@ import {
   SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { notify } from "../../utils/notification.utils";
-import type { AuthChangePasswordRequest } from "../../types/auth.types";
+import type { AuthChangePasswordRequest } from "../../@types/auth.types";
 import { authService } from "../../services/auth.service";
 
 const { Title, Text } = Typography;

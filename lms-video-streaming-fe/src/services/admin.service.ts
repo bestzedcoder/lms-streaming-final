@@ -1,5 +1,5 @@
 import axiosClient from "../config/axiosClient.config";
-import type { PaginationResponse, ResponseData } from "../types/common.types";
+import type { PaginationResponse, ResponseData } from "../@types/common.types";
 import type {
   AdminCategoryCreatingRequest,
   AdminCategoryResponse,
@@ -10,15 +10,9 @@ import type {
   AdminUserCreate,
   AdminUserUpdate,
   UserResponse,
-} from "../types/admin.types";
+} from "../@types/admin.types";
 
 export const adminService = {
-  // Check Auth
-
-  checkAuth: async (): Promise<ResponseData<boolean>> => {
-    return axiosClient.get("/admin/check-auth");
-  },
-
   // User
 
   getUserList: async (

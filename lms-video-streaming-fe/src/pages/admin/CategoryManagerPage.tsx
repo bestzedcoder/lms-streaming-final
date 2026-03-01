@@ -27,7 +27,7 @@ import type {
   AdminCategoryResponse,
   AdminCategoryCreatingRequest,
   AdminCategoryUpdatingRequest,
-} from "../../types/admin.types";
+} from "../../@types/admin.types";
 
 const { Title, Text } = Typography;
 
@@ -183,7 +183,7 @@ const CategoryManagerPage = () => {
       ),
     },
     {
-      title: "Slug (Đường dẫn)",
+      title: "Đường dẫn",
       dataIndex: "slug",
       key: "slug",
       render: (text: string) => <Tag color="blue">{text}</Tag>,

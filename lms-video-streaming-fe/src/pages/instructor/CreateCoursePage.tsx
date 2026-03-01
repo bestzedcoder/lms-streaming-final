@@ -25,7 +25,7 @@ import { useNavigate } from "react-router-dom";
 import { instructorService } from "../../services/instructor.service";
 import { publicService } from "../../services/public.service";
 import { notify } from "../../utils/notification.utils";
-import type { CategoryPublicResponse } from "../../types/public.types";
+import type { CategoryPublicResponse } from "../../@types/public.types";
 
 const { Title, Text } = Typography;
 const { Option } = Select;

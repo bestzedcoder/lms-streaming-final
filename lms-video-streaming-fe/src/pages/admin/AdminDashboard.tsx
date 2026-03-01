@@ -2,7 +2,6 @@ import {
   Card,
   Row,
   Col,
-  Statistic,
   Table,
   Tag,
   Button,

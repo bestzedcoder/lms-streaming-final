@@ -29,6 +29,10 @@ import InstructorCourseDetailPage from "../pages/instructor/InstructorCourseDeta
 import CategoryManagerPage from "../pages/admin/CategoryManagerPage";
 import PublicCoursesPage from "../pages/student/PublicCoursePage";
 import CourseDetailsPage from "../pages/student/CourseDetailsPage";
+import CartPage from "../pages/student/CartPage";
+import OrderListPage from "../pages/student/OrderListPage";
+import OrderDetailsPage from "../pages/student/OrderDetailsPage";
+import PaymentResultPage from "../pages/student/PaymentResultPage";
 
 const AppRouter = () => {
   return (
@@ -71,11 +75,23 @@ const AppRouter = () => {
               <Route path="edit-photo" element={<EditPhotoPage />} />
               <Route path="security" element={<ChangePasswordPage />} />
             </Route>
+            <Route path="/student/my-cart" element={<CartPage />} />
+            <Route
+              path="/student/orders/my-orders"
+              element={<OrderListPage />}
+            />
+            <Route
+              path="/student/orders/details/:code"
+              element={<OrderDetailsPage />}
+            />
+            <Route
+              path="/student/orders/:code/payment-result/:result"
+              element={<PaymentResultPage />}
+            />
             <Route
               path="/student/my-courses"
               element={<div>Khóa học của tôi</div>}
             />
-            {/* ... */}
           </Route>
         </Route>
 

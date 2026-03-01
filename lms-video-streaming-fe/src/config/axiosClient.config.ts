@@ -10,7 +10,7 @@ import type {
   BaseResponse,
   ErrorResponse,
   ResponseData,
-} from "../types/common.types";
+} from "../@types/common.types";
 
 // Mở rộng type cho config
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {

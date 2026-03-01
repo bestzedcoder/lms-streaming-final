@@ -1,5 +1,5 @@
 import { ReadOutlined, StarFilled, UserOutlined } from "@ant-design/icons";
-import type { CoursePublicResponse } from "../types/public.types";
+import type { CoursePublicResponse } from "../@types/public.types";
 import { formatCurrency } from "../utils/format.utils";
 import { Button } from "antd";
 import { useNavigate } from "react-router-dom";

@@ -1,10 +1,10 @@
 import axiosClient from "../config/axiosClient.config";
-import type { ResponseData } from "../types/common.types";
+import type { ResponseData } from "../@types/common.types";
 import type {
   UserProfileResponse,
   ProfileUpdatingRequest,
   UserCourseResponse,
-} from "../types/user.types";
+} from "../@types/user.types";
 
 export const profileService = {
   getMe: async (): Promise<ResponseData<UserProfileResponse>> => {

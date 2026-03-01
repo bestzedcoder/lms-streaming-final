@@ -26,7 +26,7 @@ import { notify } from "../utils/notification.utils";
 import type {
   InstructorSectionResponse,
   InstructorLessonResponse,
-} from "../types/instructor.types";
+} from "../@types/instructor.types";
 
 const { Panel } = Collapse;
 

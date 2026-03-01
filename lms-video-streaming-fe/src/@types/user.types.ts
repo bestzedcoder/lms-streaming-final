@@ -19,6 +19,5 @@ export interface UserCourseResponse {
   slug: string;
   descriptionShort: string;
   price: number;
-  salePrice: number;
   thumbnail?: string;
 }

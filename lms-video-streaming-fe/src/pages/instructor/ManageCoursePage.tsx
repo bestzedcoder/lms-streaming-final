@@ -3,7 +3,7 @@ import { Tabs, Button, Tag, Spin, Result } from "antd";
 import { ArrowLeftOutlined, EyeOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { instructorService } from "../../services/instructor.service";
-import type { InstructorCourseDetailsResponse } from "../../types/instructor.types";
+import type { InstructorCourseDetailsResponse } from "../../@types/instructor.types";
 import CourseBasicInfo from "../../components/CourseBasicInfo";
 import CourseCurriculum from "../../components/CourseCurriculum";
 import CourseSettings from "../../components/CourseSettings";

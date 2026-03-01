@@ -7,8 +7,8 @@ import type {
   AuthForgotPasswordRequest,
   AuthResetPasswordRequest,
   AuthChangePasswordRequest,
-} from "../types/auth.types";
-import type { ResponseData } from "../types/common.types";
+} from "../@types/auth.types";
+import type { ResponseData } from "../@types/common.types";
 
 export const authService = {
   login: async (
@@ -47,5 +47,9 @@ export const authService = {
     data: AuthChangePasswordRequest,
   ): Promise<ResponseData> => {
     return axiosClient.post("/auth/change-password", data);
+  },
+
+  checkAdmin: async (): Promise<ResponseData> => {
+    return axiosClient.get("/auth/check-admin");
   },
 };

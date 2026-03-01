@@ -10,7 +10,7 @@ import { publicService } from "../../services/public.service";
 import type {
   CoursePublicResponse,
   CategoryPublicResponse,
-} from "../../types/public.types";
+} from "../../@types/public.types";
 import CourseCard from "../../components/CourseCard";
 
 const { Title, Text } = Typography;

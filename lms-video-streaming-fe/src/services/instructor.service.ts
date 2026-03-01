@@ -1,5 +1,5 @@
 import axiosClient from "../config/axiosClient.config";
-import type { ResponseData } from "../types/common.types";
+import type { ResponseData } from "../@types/common.types";
 import type {
   CourseCreatingRequest,
   CourseUpdatingRequest,
@@ -14,7 +14,7 @@ import type {
   SectionCancelRequest,
   SectionCreatingRequest,
   SectionUpdatingRequest,
-} from "../types/instructor.types";
+} from "../@types/instructor.types";
 
 const createFormData = (data: any, file?: File | null) => {
   const formData = new FormData();

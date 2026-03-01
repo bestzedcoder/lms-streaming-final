@@ -1,10 +1,10 @@
-import { Modal, Form, Input, Select, Radio } from "antd";
+import { Modal, Form, Input, Radio } from "antd";
 import { useEffect } from "react";
 import type {
   AdminUserCreate,
   AdminUserUpdate,
   UserResponse,
-} from "../types/admin.types";
+} from "../@types/admin.types";
 
 interface UserFormModalProps {
   visible: boolean;

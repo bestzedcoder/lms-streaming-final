@@ -29,7 +29,7 @@ import {
 } from "@ant-design/icons";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import { adminService } from "../../services/admin.service";
-import type { UserResponse, AdminUserCreate } from "../../types/admin.types";
+import type { UserResponse, AdminUserCreate } from "../../@types/admin.types";
 import { UserFormModal, LockUserModal } from "../../components/UserModals";
 import { useDebounce } from "../../hooks/useDebounce";
 

@@ -22,13 +22,15 @@ import {
   RocketOutlined,
   PlayCircleOutlined,
   AppstoreOutlined,
+  ContainerOutlined,
 } from "@ant-design/icons";
 import { useAuthStore } from "../../store/useAuthStore.store";
 import { notify } from "../../utils/notification.utils";
 import { authService } from "../../services/auth.service";
 import { useInstructorStore } from "../../store/useInstructorStore.store";
 import { publicService } from "../../services/public.service";
-import type { CategoryPublicResponse } from "../../types/public.types";
+import type { CategoryPublicResponse } from "../../@types/public.types";
+import { useCartStore } from "../../store/useCartStore.store";
 
 const { Header } = Layout;
 
@@ -37,6 +39,7 @@ const StudentHeader = () => {
   const { user, isAuthenticated, logout } = useAuthStore();
   const { reset } = useInstructorStore();
 
+  const { cartCount, fetchCartCount, clearCart } = useCartStore();
   const [searchParams] = useSearchParams();
   const [isScrolled, setIsScrolled] = useState(false);
   const [categories, setCategories] = useState<CategoryPublicResponse[]>([]);
@@ -46,6 +49,12 @@ const StudentHeader = () => {
   useEffect(() => {
     setSearchValue(searchParams.get("q") || "");
   }, [searchParams]);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchCartCount();
+    }
+  }, [isAuthenticated, user, fetchCartCount]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 0);
@@ -75,6 +84,7 @@ const StudentHeader = () => {
       await authService.logout();
       logout();
       reset();
+      clearCart();
       notify.info("Đăng xuất", "Đăng xuất thành công!");
       navigate("/login");
     } catch (error) {
@@ -172,12 +182,22 @@ const StudentHeader = () => {
       icon: <BookOutlined />,
       onClick: () => navigate("/student/my-courses"),
     },
-    { key: "wishlist", label: "Danh sách yêu thích", icon: <HeartOutlined /> },
+    {
+      key: "wishlist",
+      label: "Danh sách yêu thích",
+      icon: <HeartOutlined />,
+    },
     {
       key: "cart",
       label: "Giỏ hàng của tôi",
       icon: <ShoppingCartOutlined />,
-      onClick: () => navigate("/student/cart"),
+      onClick: () => navigate("/student/my-cart"),
+    },
+    {
+      key: "orders",
+      label: "Lịch sử đơn hàng",
+      icon: <ContainerOutlined />,
+      onClick: () => navigate("/student/orders/my-orders"),
     },
     { type: "divider" },
     {
@@ -278,10 +298,15 @@ const StudentHeader = () => {
           <>
             <Tooltip title="Giỏ hàng">
               <Link
-                to="/student/cart"
+                to="/student/my-cart"
                 className="text-gray-600 hover:text-primary transition-colors relative"
               >
-                <Badge count={2} size="small" offset={[0, 0]} color="#0056D2">
+                <Badge
+                  count={cartCount}
+                  size="small"
+                  offset={[0, 0]}
+                  color="#0056D2"
+                >
                   <ShoppingCartOutlined className="text-2xl" />
                 </Badge>
               </Link>

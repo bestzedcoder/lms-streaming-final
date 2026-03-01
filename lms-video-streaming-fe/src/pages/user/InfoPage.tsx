@@ -17,7 +17,7 @@ import {
 import { useAuthStore } from "../../store/useAuthStore.store";
 import { useNavigate } from "react-router-dom";
 import { profileService } from "../../services/profile.service";
-import type { UserCourseResponse } from "../../types/user.types";
+import type { UserCourseResponse } from "../../@types/user.types";
 import { formatCurrency } from "../../utils/format.utils";
 
 const { Title, Paragraph, Text } = Typography;
@@ -118,54 +118,78 @@ const InfoPage = () => {
         />
       ) : courses.length > 0 ? (
         <List
-          grid={{ gutter: 16, xs: 1, sm: 2, lg: 2 }}
+          grid={{ gutter: 16, xs: 1, sm: 2, lg: 2 }} // Nếu bạn muốn list 1 cột thì đổi thành { xs: 1, sm: 1, lg: 1 }
           dataSource={courses}
-          renderItem={(item) => (
-            <List.Item>
-              <Card
-                hoverable
-                className="rounded-lg overflow-hidden border border-gray-200 shadow-sm transition-all hover:shadow-md hover:border-blue-300"
-                bodyStyle={{ padding: 12 }}
-                onClick={() => navigate(`/student/courses/${item.slug}`)}
-              >
-                <div className="flex gap-4 items-start">
-                  <div className="w-20 h-20 flex-shrink-0">
-                    <img
-                      src={
-                        item.thumbnail ||
-                        "https://via.placeholder.com/150?text=No+Image"
-                      }
-                      className="w-full h-full rounded object-cover border border-gray-100"
-                      alt={item.title}
-                    />
-                  </div>
+          renderItem={(item) => {
+            // --- 1. LOGIC GIÁ TIỀN MỚI (CHỈ HIỆN 1 GIÁ) ---
+            const renderPrice = () => {
+              if (item.price === 0) {
+                return (
+                  <span className="text-blue-600 font-bold text-lg">
+                    Miễn phí
+                  </span>
+                );
+              }
+              return (
+                <span className="text-red-600 font-bold text-lg">
+                  {formatCurrency(item.price)}
+                </span>
+              );
+            };
 
-                  <div className="flex flex-col justify-between h-20 w-full overflow-hidden">
-                    <div>
-                      <h4
-                        className="font-bold text-gray-800 m-0 text-base line-clamp-2 leading-tight mb-1"
-                        title={item.title}
-                      >
-                        {item.title}
-                      </h4>
-                      <Text type="secondary" className="text-xs line-clamp-1">
-                        {item.descriptionShort || "Không có mô tả ngắn"}
-                      </Text>
+            return (
+              <List.Item className="h-full pb-4">
+                <Card
+                  hoverable
+                  // Ép Card chiếm toàn bộ chiều cao của ô Grid
+                  className="rounded-xl overflow-hidden border border-gray-200 shadow-sm transition-all hover:shadow-md hover:border-blue-300 h-full"
+                  bodyStyle={{ padding: 16, height: "100%" }}
+                  onClick={() => navigate(`/student/courses/${item.slug}`)}
+                >
+                  {/* 2. Ép Flex giãn chiều cao */}
+                  <div className="flex gap-4 items-start h-full">
+                    {/* Cột trái: Ảnh (Kích thước cố định) */}
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0">
+                      <img
+                        src={
+                          item.thumbnail ||
+                          "https://placehold.co/150?text=No+Image"
+                        }
+                        className="w-full h-full rounded-lg object-cover border border-gray-100"
+                        alt={item.title}
+                      />
                     </div>
 
-                    <div className="mt-auto flex items-center justify-between">
-                      <Tag color="processing" className="m-0 text-xs">
-                        Đã sở hữu
-                      </Tag>
-                      <span className="text-red-600 font-bold text-lg">
-                        {formatCurrency(item.price)}
-                      </span>
+                    {/* Cột phải: Nội dung (Dùng min-h để ép các card cao bằng nhau) */}
+                    <div className="flex flex-col flex-1 h-full min-h-[6rem] sm:min-h-[7rem]">
+                      <div>
+                        <h4
+                          className="font-bold text-gray-800 m-0 text-base line-clamp-2 leading-tight mb-1"
+                          title={item.title}
+                        >
+                          {item.title}
+                        </h4>
+                        <Text type="secondary" className="text-sm line-clamp-1">
+                          {item.descriptionShort || "Không có mô tả ngắn"}
+                        </Text>
+                      </div>
+
+                      {/* Phần Giá và Tag luôn được ghim sát đáy */}
+                      <div className="mt-auto pt-3 flex items-end justify-between">
+                        <Tag
+                          color="processing"
+                          className="m-0 text-xs px-2 py-0.5 rounded"
+                        >
+                          Đã sở hữu
+                        </Tag>
+                        <div className="text-right">{renderPrice()}</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            </List.Item>
-          )}
+                </Card>
+              </List.Item>
+            );
+          }}
         />
       ) : (
         <Empty

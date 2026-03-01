@@ -7,7 +7,6 @@ import {
   Progress,
   Button,
   Avatar,
-  Typography,
   Tooltip,
 } from "antd";
 import {
@@ -15,13 +14,9 @@ import {
   DollarCircleOutlined,
   ReadOutlined,
   StarOutlined,
-  ArrowUpOutlined,
   MoreOutlined,
   CheckCircleFilled,
   GlobalOutlined,
-  LinkedinFilled,
-  FacebookFilled,
-  YoutubeFilled,
   EditOutlined,
   RiseOutlined,
 } from "@ant-design/icons";

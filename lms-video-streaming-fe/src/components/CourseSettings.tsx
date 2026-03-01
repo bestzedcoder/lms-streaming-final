@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons";
 import { instructorService } from "../services/instructor.service";
 import { notify } from "../utils/notification.utils";
-import type { InstructorCourseResponse } from "../types/instructor.types";
+import type { InstructorCourseResponse } from "../@types/instructor.types";
 
 const { Paragraph } = Typography;
 const { confirm } = Modal;

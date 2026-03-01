@@ -37,7 +37,7 @@ import { instructorService } from "../../services/instructor.service";
 import type {
   InstructorCourseInfoResponse,
   ReviewCourseResponse,
-} from "../../types/instructor.types";
+} from "../../@types/instructor.types";
 import { formatCurrency } from "../../utils/format.utils";
 
 const { Title, Text } = Typography;
@@ -143,11 +143,7 @@ const InstructorCourseDetailPage = () => {
       </Descriptions>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card
-          title="Mô tả ngắn (Card UI)"
-          size="small"
-          className="bg-gray-50 h-full"
-        >
+        <Card title="Mô tả ngắn" size="small" className="bg-gray-50 h-full">
           <div className="text-gray-600 italic">
             {course.descriptionShort || "Chưa có mô tả ngắn."}
           </div>

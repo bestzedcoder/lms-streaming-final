@@ -1,11 +1,11 @@
 import axiosClient from "../config/axiosClient.config";
-import type { PaginationResponse, ResponseData } from "../types/common.types";
+import type { PaginationResponse, ResponseData } from "../@types/common.types";
 import type {
   CategoryPublicResponse,
   CoursePublicDetailsResponse,
   CoursePublicResponse,
   CourseSearchParams,
-} from "../types/public.types";
+} from "../@types/public.types";
 
 export const publicService = {
   getCategories: async (): Promise<ResponseData<CategoryPublicResponse[]>> => {

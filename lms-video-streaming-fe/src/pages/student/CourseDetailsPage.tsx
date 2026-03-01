@@ -28,7 +28,9 @@ import { publicService } from "../../services/public.service";
 import { studentService } from "../../services/student.service";
 import { formatCurrency } from "../../utils/format.utils";
 import { notify } from "../../utils/notification.utils";
-import type { CoursePublicDetailsResponse } from "../../types/public.types";
+import type { CoursePublicDetailsResponse } from "../../@types/public.types";
+import type { AddItemRequest } from "../../@types/student.types";
+import { useCartStore } from "../../store/useCartStore.store";
 
 const { Title } = Typography;
 const { Panel } = Collapse;
@@ -69,6 +71,8 @@ const CourseDetailsPage = () => {
   const [hasAccess, setHasAccess] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const { addItem } = useCartStore();
+
   useEffect(() => {
     if (slug) fetchCourseData();
     window.scrollTo(0, 0);
@@ -106,15 +110,30 @@ const CourseDetailsPage = () => {
     navigate(`/login?returnUrl=${encodeURIComponent(location.pathname)}`);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!isAuthenticated) return handleRequireLogin();
-    notify.success("Thành công", "Đã thêm vào giỏ hàng!");
-    // To do logic thêm giỏ hàng
+    try {
+      const data: AddItemRequest = {
+        courseSlug: course?.slug || "",
+      };
+      await studentService.addCartItem(data);
+      addItem();
+      notify.success("Thành công", "Đã thêm vào giỏ hàng!");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!isAuthenticated) return handleRequireLogin();
-    navigate("/student/checkout");
+    try {
+      const res = await studentService.payNow(course?.slug || "");
+      const orderCode: string = res.data;
+      notify.success("Thành công", "Đã tạo đơn hàng!");
+      navigate(`/student/orders/details/${orderCode}`, { replace: true });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleStudyNow = () => {
@@ -127,6 +146,7 @@ const CourseDetailsPage = () => {
         <Skeleton active paragraph={{ rows: 15 }} />
       </div>
     );
+
   if (!course)
     return (
       <div className="text-center p-20 text-xl font-bold">
@@ -197,7 +217,6 @@ const CourseDetailsPage = () => {
                 Yêu cầu
               </Title>
               <div
-                // Đã thêm class custom-html-content
                 className="text-gray-700 text-base ml-4 format-html-list custom-html-content"
                 dangerouslySetInnerHTML={{ __html: course.requirements }}
               />
@@ -209,7 +228,6 @@ const CourseDetailsPage = () => {
               Mô tả khóa học
             </Title>
             <div
-              // Đã XÓA whitespace-pre-line, ĐỔI leading-relaxed thành leading-normal
               className="prose max-w-none text-gray-700 leading-normal custom-html-content"
               dangerouslySetInnerHTML={{ __html: course.description }}
             />
@@ -384,25 +402,27 @@ const CourseDetailsPage = () => {
             )}
 
             <div className="p-6">
-              {/* Phần Giá */}
               <div className="mb-6">
-                {course.salePrice !== undefined &&
-                course.price - course.salePrice === 0 ? (
-                  <div className="text-3xl font-extrabold text-green-600">
-                    Miễn phí
+                {!course.salePrice || course.salePrice === 0 ? (
+                  <div className="text-3xl font-extrabold text-gray-900">
+                    {course.price === 0 ? (
+                      <span className="text-green-600">Miễn phí</span>
+                    ) : (
+                      formatCurrency(course.price)
+                    )}
                   </div>
-                ) : (
+                ) : course.salePrice < course.price ? (
                   <div className="flex items-end gap-3 flex-wrap">
                     <span className="text-3xl font-extrabold text-gray-900">
-                      {course.salePrice
-                        ? formatCurrency(course.price - course.salePrice)
-                        : formatCurrency(course.salePrice)}
+                      {formatCurrency(course.price - course.salePrice)}
                     </span>
-                    {course.salePrice && course.salePrice < course.price ? (
-                      <span className="text-lg text-gray-500 line-through mb-1">
-                        {formatCurrency(course.price)}
-                      </span>
-                    ) : null}
+                    <span className="text-lg text-gray-500 line-through mb-1">
+                      {formatCurrency(course.price)}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="text-3xl font-extrabold text-green-600">
+                    Miễn phí
                   </div>
                 )}
               </div>
