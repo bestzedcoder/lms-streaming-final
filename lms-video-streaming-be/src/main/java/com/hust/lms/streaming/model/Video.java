@@ -61,7 +61,7 @@ public class Video extends BaseEntity {
   @Builder.Default
   private VideoStatus status = VideoStatus.PENDING;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "_owner_id", nullable = false)
   private User owner;
 

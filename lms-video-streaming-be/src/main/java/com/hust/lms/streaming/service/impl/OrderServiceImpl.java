@@ -150,6 +150,7 @@ public class OrderServiceImpl implements OrderService {
     BigDecimal price = this.calculatePrice(course);
     order.getItems().add(OrderItem.builder()
             .order(order)
+            .course(course)
             .price(price)
         .build());
     String code = Gen.genOrderCode();
@@ -162,4 +163,5 @@ public class OrderServiceImpl implements OrderService {
     }
     return code;
   }
+
 }

@@ -119,7 +119,7 @@ public class User extends BaseEntity implements UserDetails {
   }
 
 
-  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
   @Builder.Default
   private List<Enrollment> enrollments = new ArrayList<>();
 

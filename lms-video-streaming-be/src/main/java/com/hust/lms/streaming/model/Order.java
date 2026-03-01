@@ -55,7 +55,7 @@ public class Order extends BaseEntity {
   @Column(name = "_code", nullable = false, unique = true, updatable = false)
   private String code;
 
-  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
   @Builder.Default
   private List<OrderItem> items = new ArrayList<>();
 

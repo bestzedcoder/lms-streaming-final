@@ -34,7 +34,7 @@ public class CartItem {
   @JoinColumn(name = "_cart_id", nullable = false, updatable = false)
   private Cart cart;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "_course_id", nullable = false)
   private Course course;
 }

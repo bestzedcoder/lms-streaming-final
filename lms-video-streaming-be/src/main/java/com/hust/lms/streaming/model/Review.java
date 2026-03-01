@@ -31,7 +31,7 @@ public class Review extends BaseEntity {
   @Column(name = "_content", columnDefinition = "TEXT")
   private String content;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "_user_id", nullable = false)
   private User user;
 

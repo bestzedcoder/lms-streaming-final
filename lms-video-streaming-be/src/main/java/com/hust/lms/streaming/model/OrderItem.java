@@ -36,7 +36,7 @@ public class OrderItem extends BaseEntity {
   @JoinColumn(name = "_order_id", nullable = false)
   private Order order;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "_course_id", nullable = false)
   private Course course;
 

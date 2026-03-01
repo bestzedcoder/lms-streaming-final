@@ -51,7 +51,7 @@ public class Lesson extends BaseEntity {
   @Builder.Default
   private Boolean preview = false;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "_video_id")
   private Video video;
 

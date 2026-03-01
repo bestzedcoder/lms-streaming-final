@@ -25,11 +25,11 @@ public class Enrollment extends BaseEntity {
   @Column(name = "_id")
   private UUID id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "_user_id", nullable = false, updatable = false)
   private User user;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "_course_id", nullable = false, updatable = false)
   private Course course;
 

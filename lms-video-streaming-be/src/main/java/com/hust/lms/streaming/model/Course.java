@@ -105,11 +105,11 @@ public class Course extends BaseEntity {
   @Builder.Default
   private List<Section> sections = new ArrayList<>();
 
-  @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "course", fetch = FetchType.EAGER)
   @Builder.Default
   private List<Enrollment> enrollments = new ArrayList<>();
 
-  @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "course", fetch = FetchType.EAGER)
   @Builder.Default
   private List<Review> reviews = new ArrayList<>();
 }

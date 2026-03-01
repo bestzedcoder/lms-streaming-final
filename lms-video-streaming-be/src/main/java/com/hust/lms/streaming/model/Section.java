@@ -46,7 +46,7 @@ public class Section extends BaseEntity {
   @Column(name = "_order_index", nullable = false)
   private Integer orderIndex;
 
-  @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   @OrderBy("orderIndex ASC")
   @Builder.Default
   private List<Lesson> lessons = new ArrayList<>();

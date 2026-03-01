@@ -2,12 +2,14 @@ package com.hust.lms.streaming.service.impl;
 
 import com.hust.lms.streaming.common.PaymentUtils;
 import com.hust.lms.streaming.dto.request.payment.PaymentCreatingRequest;
+import com.hust.lms.streaming.dto.response.payment.InvoiceResponse;
 import com.hust.lms.streaming.enums.OrderStatus;
 import com.hust.lms.streaming.enums.PaymentMethod;
 import com.hust.lms.streaming.enums.PaymentStatus;
 import com.hust.lms.streaming.event.custom.CourseEvent;
 import com.hust.lms.streaming.event.enums.CourseEventType;
 import com.hust.lms.streaming.exception.BadRequestException;
+import com.hust.lms.streaming.mapper.PaymentMapper;
 import com.hust.lms.streaming.model.Enrollment;
 import com.hust.lms.streaming.model.Order;
 import com.hust.lms.streaming.model.OrderItem;
@@ -20,6 +22,7 @@ import com.hust.lms.streaming.repository.jpa.PaymentRepository;
 import com.hust.lms.streaming.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -39,6 +43,9 @@ public class PaymentServiceImpl implements PaymentService {
   private final PaymentFactory paymentFactory;
   private final EnrollmentRepository enrollmentRepository;
   private final ApplicationEventPublisher eventPublisher;
+
+  @Value("${app.origin.client}")
+  private String originClient ;
 
   @Override
   public String initPayment(PaymentCreatingRequest request, HttpServletRequest servletRequest) {
@@ -64,7 +71,8 @@ public class PaymentServiceImpl implements PaymentService {
   }
 
   @Override
-  public void handlePaymentCallback(HttpServletRequest request, HttpServletResponse response, PaymentMethod method) {
+  public void handlePaymentCallback(HttpServletRequest request, HttpServletResponse response, PaymentMethod method)
+      throws IOException {
     Map<String, String> params = new HashMap<>();
     request.getParameterMap().forEach((key, value) -> params.put(key, value[0]));
 
@@ -77,6 +85,8 @@ public class PaymentServiceImpl implements PaymentService {
           : params.get("resultCode");
 
       Payment payment = paymentRepository.findByOrderCode(orderCode);
+
+      String result = "success";
 
       if ("00".equals(responseCode) || "0".equals(responseCode)) {
         payment.setStatus(PaymentStatus.SUCCESS);
@@ -102,10 +112,19 @@ public class PaymentServiceImpl implements PaymentService {
       } else {
         payment.setStatus(PaymentStatus.FAILED);
         payment.getOrder().setStatus(OrderStatus.CANCELLED);
+        result = "failed";
       }
 
       paymentRepository.save(payment);
       orderRepository.save(payment.getOrder());
+      String url = String.format("%s/student/orders/%s/payment-result/%s", originClient ,orderCode, result);
+      response.sendRedirect(url);
+  }
+
+  @Override
+  public InvoiceResponse invoice(String code) {
+    Payment payment = this.paymentRepository.findPaymentByOrderCode(code).orElse(null);
+    return PaymentMapper.mapPaymentToInvoiceResponse(payment);
   }
 
 }

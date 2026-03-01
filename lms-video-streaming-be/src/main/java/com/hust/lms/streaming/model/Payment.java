@@ -36,7 +36,7 @@ public class Payment extends BaseEntity {
   @Column(name = "_id")
   private UUID id;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "_order_id", nullable = false)
   private Order order;
 

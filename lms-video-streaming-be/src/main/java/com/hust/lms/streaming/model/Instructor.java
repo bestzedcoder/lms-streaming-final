@@ -51,7 +51,7 @@ public class Instructor extends BaseEntity {
   @Builder.Default
   private Integer totalStudent = 0;
 
-  @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   @Builder.Default
   private List<Course> courses = new ArrayList<>();
 }
