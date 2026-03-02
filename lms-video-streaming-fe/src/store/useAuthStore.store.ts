@@ -1,58 +1,63 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import type { User } from "../@types/auth.types";
+import type { AuthUserInfoResponse } from "../@types/auth.types";
+import { authService } from "../services/auth.service";
 
 interface AuthState {
-  user: User | null;
-  accessToken: string | null;
+  user: AuthUserInfoResponse | null;
   isAuthenticated: boolean;
+  isInitialized: boolean;
 
-  // Actions
-  login: (user: User, accessToken: string) => void;
+  login: (user: AuthUserInfoResponse) => void;
   logout: () => void;
-  updateUser: (user: Partial<User>) => void;
+  updateUser: (user: Partial<AuthUserInfoResponse>) => void;
+  checkAuth: () => Promise<void>;
 }
 
-// Store
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: null,
+  isAuthenticated: false,
+  isInitialized: false,
+
+  login: (user) => {
+    set({
+      user: user,
+      isAuthenticated: true,
+    });
+  },
+
+  logout: () => {
+    set({
       user: null,
-      accessToken: null,
       isAuthenticated: false,
+    });
+  },
 
-      login: (user, token) => {
+  updateUser: (updatedData) => {
+    const currentUser = get().user;
+    if (currentUser) {
+      set({ user: { ...currentUser, ...updatedData } });
+    }
+  },
+
+  checkAuth: async () => {
+    try {
+      const res = await authService.getMe();
+
+      if (res.data) {
         set({
-          user: user,
-          accessToken: token,
+          user: res.data,
           isAuthenticated: true,
+          isInitialized: true,
         });
-      },
-
-      logout: () => {
-        set({
-          user: null,
-          accessToken: null,
-          isAuthenticated: false,
-        });
-      },
-
-      updateUser: (updatedData) => {
-        const currentUser = get().user;
-        if (currentUser) {
-          set({ user: { ...currentUser, ...updatedData } });
-        }
-      },
-    }),
-
-    {
-      name: "auth-storage",
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
-        accessToken: state.accessToken,
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
-      }),
-    },
-  ),
-);
+      } else {
+        set({ user: null, isAuthenticated: false, isInitialized: true });
+      }
+    } catch (error) {
+      set({
+        user: null,
+        isAuthenticated: false,
+        isInitialized: true,
+      });
+    }
+  },
+}));

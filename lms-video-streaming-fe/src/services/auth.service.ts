@@ -1,19 +1,19 @@
 import axiosClient from "../config/axiosClient.config";
 import type {
-  AuthLoginResponse,
   AuthLoginRequest,
   AuthRegisterRequest,
   AuthVerifyAccountRequest,
   AuthForgotPasswordRequest,
   AuthResetPasswordRequest,
   AuthChangePasswordRequest,
+  AuthUserInfoResponse,
 } from "../@types/auth.types";
 import type { ResponseData } from "../@types/common.types";
 
 export const authService = {
   login: async (
     data: AuthLoginRequest,
-  ): Promise<ResponseData<AuthLoginResponse>> => {
+  ): Promise<ResponseData<AuthUserInfoResponse>> => {
     return axiosClient.post("/auth/login", data);
   },
 
@@ -51,5 +51,9 @@ export const authService = {
 
   checkAdmin: async (): Promise<ResponseData> => {
     return axiosClient.get("/auth/check-admin");
+  },
+
+  getMe: async (): Promise<ResponseData<AuthUserInfoResponse>> => {
+    return axiosClient.get("/auth/check-auth");
   },
 };

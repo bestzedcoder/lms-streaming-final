@@ -1,17 +1,17 @@
 // Mô phỏng User Entity từ Java
-export interface User {
+export interface AuthUserInfoResponse {
   id: string;
   email: string;
   fullName: string;
   avatarUrl?: string;
   updateProfile: boolean;
-  role: "STUDENT" | "INSTRUCTOR" | "ADMIN";
+  role: "STUDENT" | "INSTRUCTOR";
 }
 
-export interface AuthLoginResponse {
-  accessToken: string;
-  user: User;
-}
+// export interface AuthLoginResponse {
+//   accessToken: string;
+//   user: AuthUserInfoResponse;
+// }
 
 export interface AuthLoginRequest {
   email: string;

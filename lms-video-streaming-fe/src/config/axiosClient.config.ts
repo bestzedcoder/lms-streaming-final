@@ -12,7 +12,6 @@ import type {
   ResponseData,
 } from "../@types/common.types";
 
-// Mở rộng type cho config
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
@@ -29,10 +28,6 @@ const axiosClient = axios.create({
 axiosClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     useAppStore.getState().setLoading(true);
-    const token = useAuthStore.getState().accessToken;
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
     return config;
   },
   (error) => {
@@ -67,25 +62,21 @@ axiosClient.interceptors.response.use(
     if (status === 401) {
       if (errorData?.code === 1000 && !originalRequest._retry) {
         originalRequest._retry = true;
-
+        console.log(errorData);
         try {
-          const refreshTokenResponse = await axios.post(
+          // 1. Gọi API Refresh. Trình duyệt tự động gửi RefreshToken Cookie đi.
+          // Server xác thực thành công sẽ tự động set AccessToken Cookie mới vào trình duyệt.
+          console.log(1);
+          await axios.post(
             `${import.meta.env.VITE_BACKEND_URL}/auth/refresh`,
             {},
             { withCredentials: true },
           );
 
-          const newAccessToken = refreshTokenResponse.data.data.accessToken;
-
-          const currentUser = useAuthStore.getState().user;
-          if (currentUser) {
-            useAuthStore.getState().login(currentUser, newAccessToken);
-          }
-
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-
+          // 2. Gọi lại request ban đầu. Trình duyệt sẽ tự động mang cái Cookie vừa được làm mới đi theo.
           return axiosClient(originalRequest);
         } catch (refreshError) {
+          // Nếu refresh lỗi (RefreshToken cũng hết hạn luôn hoặc bị thu hồi)
           useAppStore.getState().setLoading(false);
           useAuthStore.getState().logout();
           notify.error("Phiên đăng nhập hết hạn", "Vui lòng đăng nhập lại.");
@@ -93,9 +84,15 @@ axiosClient.interceptors.response.use(
         }
       }
 
+      // Nếu 401 nhưng không phải do hết hạn (ví dụ sai token, không có token), hoặc đã retry 1 lần mà vẫn 401
       useAuthStore.getState().logout();
       notify.error("Lỗi xác thực", errorMessage);
-    } else {
+      useAppStore.getState().setLoading(false);
+      return Promise.reject(errorData || error);
+    }
+
+    // XỬ LÝ CÁC LỖI KHÁC
+    else {
       switch (status) {
         case 400:
           notify.error("Dữ liệu không hợp lệ", errorMessage);
@@ -116,7 +113,7 @@ axiosClient.interceptors.response.use(
           if (status && status >= 500) {
             notify.error("Lỗi hệ thống", "Server gặp sự cố.");
           } else {
-            notify.error("Lỗi không xác định", errorMessage);
+            notify.error("Lỗi", errorMessage);
           }
       }
     }

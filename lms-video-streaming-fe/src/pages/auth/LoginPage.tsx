@@ -14,16 +14,13 @@ const LoginPage = () => {
   const onFinish = async (values: any) => {
     setLoading(true);
     try {
-      // 1. Gọi API
       const response = await authService.login({
         email: values.email,
         password: values.password,
       });
 
-      // 2. Lưu vào Store (Zustand + LocalStorage)
-      // response.data chứa { user, accessToken } do axiosClient đã xử lý
       if (response.data) {
-        login(response.data.user, response.data.accessToken);
+        login(response.data);
 
         notify.success("Xác thực thành công", response.message);
       }
