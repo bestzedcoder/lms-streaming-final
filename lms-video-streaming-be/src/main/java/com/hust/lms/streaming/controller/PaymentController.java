@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("payment")
+@RequestMapping("api/payment")
 @RequiredArgsConstructor
 public class PaymentController {
   private final PaymentService paymentService;

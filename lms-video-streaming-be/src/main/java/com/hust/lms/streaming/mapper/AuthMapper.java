@@ -14,14 +14,20 @@ public class AuthMapper {
 
     LoginResponse response = new LoginResponse();
     response.setAccessToken(accessToken);
-    LoginUserInfoResponse userInfoResponse = new LoginUserInfoResponse();
-    userInfoResponse.setId(user.getId());
-    userInfoResponse.setEmail(user.getEmail());
-    userInfoResponse.setFullName(user.getFullName());
-    userInfoResponse.setAvatarUrl(user.getAvatarUrl());
-    userInfoResponse.setRole(user.getRole());
-    userInfoResponse.setUpdateProfile(user.getUpdateProfile());
-    response.setUser(userInfoResponse);
+    response.setUser(AuthMapper.toLoginUserInfoResponse(user));
+    return response;
+  }
+
+  public static LoginUserInfoResponse toLoginUserInfoResponse(User user) {
+    if (user == null) return null;
+
+    LoginUserInfoResponse response = new LoginUserInfoResponse();
+    response.setId(user.getId());
+    response.setEmail(user.getEmail());
+    response.setFullName(user.getFullName());
+    response.setAvatarUrl(user.getAvatarUrl());
+    response.setRole(user.getRole());
+    response.setUpdateProfile(user.getUpdateProfile());
     return response;
   }
 }

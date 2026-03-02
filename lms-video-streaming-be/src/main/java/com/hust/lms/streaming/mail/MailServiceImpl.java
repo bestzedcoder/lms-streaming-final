@@ -28,7 +28,7 @@ public class MailServiceImpl implements MailService {
     variables.put("password", rawPassword);
     variables.put("name", extractNameFromEmail(toEmail));
 
-    sendHtmlEmail(toEmail, "Thông tin tài khoản mới - LMS Streaming", "new-account", variables);
+    sendHtmlEmail(toEmail, "Thông tin tài khoản mới - LMS Streaming", "mail/new-account", variables);
   }
 
   @Override
@@ -37,7 +37,7 @@ public class MailServiceImpl implements MailService {
     variables.put("name", extractNameFromEmail(toEmail));
     variables.put("otpCode", otpCode);
 
-    sendHtmlEmail(toEmail, "Mã xác thực kích hoạt tài khoản", "otp-active-account", variables);
+    sendHtmlEmail(toEmail, "Mã xác thực kích hoạt tài khoản", "mail/otp-active-account", variables);
   }
 
   @Override
@@ -46,7 +46,7 @@ public class MailServiceImpl implements MailService {
     variables.put("email", toEmail);
     variables.put("otpCode", otpCode);
 
-    sendHtmlEmail(toEmail, "Yêu cầu đặt lại mật khẩu", "forgot-password", variables);
+    sendHtmlEmail(toEmail, "Yêu cầu đặt lại mật khẩu", "mail/forgot-password", variables);
   }
 
   @Override
@@ -55,7 +55,7 @@ public class MailServiceImpl implements MailService {
     variables.put("email", toEmail);
     variables.put("newPassword", newPassword);
 
-    sendHtmlEmail(toEmail, "Cấp lại mật khẩu thành công", "reset-password", variables);
+    sendHtmlEmail(toEmail, "Cấp lại mật khẩu thành công", "mail/reset-password", variables);
   }
 
   private void sendHtmlEmail(String to, String subject, String templateName, Map<String, Object> variables) {

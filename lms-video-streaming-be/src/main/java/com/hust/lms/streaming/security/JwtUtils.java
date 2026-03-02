@@ -73,6 +73,12 @@ public class JwtUtils {
     return claimsResolver.apply(claims);
   }
 
+  public long getRemainingTime(String token) {
+    Date expiration = extractExpiration(token);
+    long now = System.currentTimeMillis();
+    return expiration.getTime() - now;
+  }
+
   private Claims extractAllClaims(String token) {
     return Jwts.parserBuilder()
         .setSigningKey(getSignInKey())

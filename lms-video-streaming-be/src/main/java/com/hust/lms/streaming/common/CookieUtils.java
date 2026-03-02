@@ -5,11 +5,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
-import org.springframework.stereotype.Component;
 
-@Component
 public class CookieUtils {
-  public String getCookieValue(HttpServletRequest request, String name) {
+  private CookieUtils() {
+    throw new AssertionError("Utility class");
+  }
+
+  public static String getCookieValue(HttpServletRequest request, String name) {
     Cookie[] cookies = request.getCookies();
 
     if (cookies != null) {
@@ -22,14 +24,14 @@ public class CookieUtils {
     return null;
   }
 
-  public void setCookieValue(HttpServletResponse response, String name, String value, long expires, String path) {
+  public static void setCookieValue(HttpServletResponse response, String name, String value, long expires, String path) {
     ResponseCookie cookie = ResponseCookie
         .from(name, value)
-        .maxAge(expires)
+        .maxAge(expires/1000)
         .sameSite("Lax")
         .secure(false)
         .path(path)
         .build();
-    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
   }
 }

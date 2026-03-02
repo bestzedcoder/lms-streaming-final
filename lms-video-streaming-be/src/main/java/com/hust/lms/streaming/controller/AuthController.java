@@ -7,8 +7,7 @@ import com.hust.lms.streaming.dto.request.auth.LoginRequest;
 import com.hust.lms.streaming.dto.request.auth.ResetPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.SignUpRequest;
 import com.hust.lms.streaming.dto.request.auth.VerifyAccountRequest;
-import com.hust.lms.streaming.dto.response.auth.LoginResponse;
-import com.hust.lms.streaming.dto.response.auth.RefreshResponse;
+import com.hust.lms.streaming.dto.response.auth.LoginUserInfoResponse;
 import com.hust.lms.streaming.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,14 +24,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("auth")
+@RequestMapping("api/auth")
 @RequiredArgsConstructor
 public class AuthController {
   private final AuthService authService;
 
   @PostMapping("login")
   public ResponseEntity<BaseResponse<?>> login(@RequestBody @Valid LoginRequest req, @NotNull HttpServletResponse response) {
-    LoginResponse res = this.authService.login(response , req.getEmail() , req.getPassword());
+//    LoginResponse res = this.authService.login(response , req.getEmail() , req.getPassword());
+    LoginUserInfoResponse res =  this.authService.login(response , req.getEmail() , req.getPassword());
     return ResponseEntity.ok(BaseResponse.builder()
             .message("Đăng nhập thành công!")
             .code(HttpStatus.OK.value())
@@ -103,13 +103,15 @@ public class AuthController {
   }
 
   @PostMapping("refresh")
-  public ResponseEntity<BaseResponse<?>> refresh(@NotNull HttpServletRequest req) {
-    RefreshResponse accessToken = this.authService.refresh(req);
+  public ResponseEntity<BaseResponse<?>> refresh(
+      @NotNull HttpServletRequest req,
+      @NotNull HttpServletResponse res) {
+//    RefreshResponse accessToken = this.authService.refresh(req, res);
+    this.authService.refresh(req, res);
     return ResponseEntity.ok(BaseResponse.builder()
         .code(HttpStatus.OK.value())
         .success(true)
         .message("Refresh token thành công!")
-        .data(accessToken)
         .timestamp(LocalDateTime.now())
         .build());
   }
@@ -133,6 +135,18 @@ public class AuthController {
             .success(true)
             .message("Success")
             .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("check-auth")
+  public ResponseEntity<BaseResponse<?>> checkAuth() {
+    LoginUserInfoResponse res = this.authService.getMe();
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .success(true)
+        .data(res)
+        .message("Success")
+        .timestamp(LocalDateTime.now())
         .build());
   }
 }

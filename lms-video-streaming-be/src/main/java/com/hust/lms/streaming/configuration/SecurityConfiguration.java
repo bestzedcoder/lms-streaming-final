@@ -45,9 +45,9 @@ public class SecurityConfiguration {
         )
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/auth/login", "/auth/register", "/auth/verify-account", "/auth/forgot-password", "/auth/reset-password", "/auth/refresh", "/public/**", "/overview/**", "/payment/vn-pay/callback", "/payment/momo/callback").permitAll()
-            .requestMatchers("/admin/**", "/users/**").hasRole(Role.ADMIN.name())
-            .requestMatchers("/instructor/**").hasRole(Role.INSTRUCTOR.name())
+            .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/verify-account", "/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/refresh", "/api/public/**", "/overview/**", "/api/payment/vn-pay/callback", "/api/payment/momo/callback").permitAll()
+            .requestMatchers("/api/instructor/**").hasRole(Role.INSTRUCTOR.name())
+            .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
             .anyRequest().authenticated()
         )
         .addFilterBefore(jwtFilter , UsernamePasswordAuthenticationFilter.class);

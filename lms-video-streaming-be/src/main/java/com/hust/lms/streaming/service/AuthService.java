@@ -6,19 +6,23 @@ import com.hust.lms.streaming.dto.request.auth.ResetPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.SignUpRequest;
 import com.hust.lms.streaming.dto.request.auth.VerifyAccountRequest;
 import com.hust.lms.streaming.dto.response.auth.LoginResponse;
+import com.hust.lms.streaming.dto.response.auth.LoginUserInfoResponse;
 import com.hust.lms.streaming.dto.response.auth.RefreshResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
-  LoginResponse login(HttpServletResponse response,String email, String password);
+//  LoginResponse login(HttpServletResponse response,String email, String password);
+  LoginUserInfoResponse login(HttpServletResponse response,String email, String password);
   void register(SignUpRequest signUpRequest);
   void verifyAccount(VerifyAccountRequest request);
   void forgotPassword(ForgotPasswordRequest request);
   void resetPassword(ResetPasswordRequest request);
-  RefreshResponse refresh(HttpServletRequest request);
+//  RefreshResponse refresh(HttpServletRequest request, HttpServletResponse response);
+  void refresh(HttpServletRequest request, HttpServletResponse response);
   void logout(HttpServletResponse response);
   void changePassword(ChangePasswordRequest request);
 
   void checkAdmin();
+  LoginUserInfoResponse getMe();
 }

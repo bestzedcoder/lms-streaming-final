@@ -22,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("profile")
+@RequestMapping("api/profile")
 public class ProfileController {
   private final ProfileService profileService;
 

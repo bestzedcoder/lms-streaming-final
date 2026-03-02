@@ -8,8 +8,7 @@ import com.hust.lms.streaming.dto.request.auth.ForgotPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.ResetPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.SignUpRequest;
 import com.hust.lms.streaming.dto.request.auth.VerifyAccountRequest;
-import com.hust.lms.streaming.dto.response.auth.LoginResponse;
-import com.hust.lms.streaming.dto.response.auth.RefreshResponse;
+import com.hust.lms.streaming.dto.response.auth.LoginUserInfoResponse;
 import com.hust.lms.streaming.enums.Role;
 import com.hust.lms.streaming.event.custom.AuthEvent;
 import com.hust.lms.streaming.event.enums.AuthEventType;
@@ -45,7 +44,6 @@ public class AuthServiceImpl implements AuthService {
   private final PasswordEncoder passwordEncoder;
   private final RedisService redisService;
   private final ApplicationEventPublisher eventPublisher;
-  private final CookieUtils cookieUtils;
 
   @Value("${app.security.jwt.accessExpiration}")
   private long accessTokenExpireTime;
@@ -53,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
   private long refreshTokenExpireTime;
 
   @Override
-  public LoginResponse login(HttpServletResponse response,String email, String password) {
+  public LoginUserInfoResponse login(HttpServletResponse response,String email, String password) {
 
     Authentication authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
     Authentication authentication = authenticationManager.authenticate(authenticationToken);
@@ -69,9 +67,10 @@ public class AuthServiceImpl implements AuthService {
 
     this.redisService.deleteKey("lms:auth:blacklist:" + currentUser.getUsername());
 
-    this.cookieUtils.setCookieValue(response, "refreshToken", refreshToken, this.refreshTokenExpireTime, "/api/auth/refresh");
+    CookieUtils.setCookieValue(response, "refreshToken", refreshToken, this.refreshTokenExpireTime, "/api/auth/refresh");
+    CookieUtils.setCookieValue(response, "accessToken", accessToken, this.refreshTokenExpireTime, "/");
 
-    return AuthMapper.toLoginResponse(accessToken, currentUser);
+    return AuthMapper.toLoginUserInfoResponse(currentUser);
   }
 
   @Override
@@ -155,16 +154,16 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  public RefreshResponse refresh(HttpServletRequest request) {
-    String token = this.cookieUtils.getCookieValue(request, "refreshToken");
+  public void refresh(HttpServletRequest request, HttpServletResponse response) {
+    String token = CookieUtils.getCookieValue(request, "refreshToken");
     if (token == null || !this.jwtUtils.validateJwtToken(token)) {
       throw new BadRequestException("Token không hợp lệ!");
     }
     String email = this.jwtUtils.extractUsername(token);
+    long expires = this.jwtUtils.getRemainingTime(token);
     User user = this.userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
     String newToken = this.jwtUtils.generateAccessToken(user);
-    this.redisService.saveKeyAndValue("lms:auth:access-token:username:" + user.getEmail(), newToken , accessTokenExpireTime , TimeUnit.SECONDS);
-    return RefreshResponse.builder().accessToken(newToken).build();
+    CookieUtils.setCookieValue(response, "accessToken", newToken, expires, "/");
   }
 
   @Override
@@ -173,7 +172,8 @@ public class AuthServiceImpl implements AuthService {
 
     User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
 
-    this.cookieUtils.setCookieValue(response, "refreshToken", null, 0, "/api/auth/refresh");
+    CookieUtils.setCookieValue(response, "refreshToken", null, 0, "/api/auth/refresh");
+    CookieUtils.setCookieValue(response, "accessToken", null, 0, "/");
 
     this.eventPublisher.publishEvent(new AuthEvent(AuthEventType.LOGOUT , currentUser.getEmail() , String.valueOf(accessTokenExpireTime)));
   }
@@ -194,5 +194,12 @@ public class AuthServiceImpl implements AuthService {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
     User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
     if (!currentUser.getRole().equals(Role.ADMIN)) throw new AdminException("Truy cập trái phép vui lòng login lại!");
+  }
+
+  @Override
+  public LoginUserInfoResponse getMe() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
+    return AuthMapper.toLoginUserInfoResponse(currentUser);
   }
 }

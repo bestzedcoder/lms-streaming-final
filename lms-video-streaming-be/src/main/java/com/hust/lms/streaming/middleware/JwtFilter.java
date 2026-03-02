@@ -2,6 +2,7 @@ package com.hust.lms.streaming.middleware;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hust.lms.streaming.common.CookieUtils;
 import com.hust.lms.streaming.dto.common.ErrorResponse;
 import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.redis.RedisService;
@@ -45,17 +46,15 @@ public class JwtFilter extends OncePerRequestFilter {
       @NonNull FilterChain filterChain
   ) throws ServletException, IOException {
 
-    final String authHeader = request.getHeader("Authorization");
-    final String jwt;
+    final String jwt = CookieUtils.getCookieValue(request, "accessToken");
     final String userEmail;
 
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+    if (jwt == null || request.getRequestURI().contains("/auth/refresh")) {
       filterChain.doFilter(request, response);
       return;
     }
 
     try {
-      jwt = authHeader.substring(7);
       userEmail = jwtUtils.extractUsername(jwt);
 
       if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {

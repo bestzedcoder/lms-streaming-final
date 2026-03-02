@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("instructor")
+@RequestMapping("api/instructor")
 @RequiredArgsConstructor
 public class InstructorController {
   private final InstructorService instructorService;
