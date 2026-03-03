@@ -31,7 +31,6 @@ public class AuthController {
 
   @PostMapping("login")
   public ResponseEntity<BaseResponse<?>> login(@RequestBody @Valid LoginRequest req, @NotNull HttpServletResponse response) {
-//    LoginResponse res = this.authService.login(response , req.getEmail() , req.getPassword());
     LoginUserInfoResponse res =  this.authService.login(response , req.getEmail() , req.getPassword());
     return ResponseEntity.ok(BaseResponse.builder()
             .message("Đăng nhập thành công!")
@@ -106,7 +105,6 @@ public class AuthController {
   public ResponseEntity<BaseResponse<?>> refresh(
       @NotNull HttpServletRequest req,
       @NotNull HttpServletResponse res) {
-//    RefreshResponse accessToken = this.authService.refresh(req, res);
     this.authService.refresh(req, res);
     return ResponseEntity.ok(BaseResponse.builder()
         .code(HttpStatus.OK.value())

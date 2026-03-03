@@ -5,6 +5,7 @@ import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,15 @@ public class DatabaseSeeder implements CommandLineRunner {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
+  @Value("${app.admin.account.email}")
+  private String adminEmail;
+  @Value("${app.admin.account.password}")
+  private String adminPassword;
+  @Value("${app.admin.name}")
+  private String adminName;
+  @Value("${app.admin.phone}")
+  private String adminPhone;
+
   @Override
   public void run(String... args) throws Exception {
     // Khởi tạo tài khoản admin
@@ -23,10 +33,6 @@ public class DatabaseSeeder implements CommandLineRunner {
   }
 
   private void seedAdminUser() {
-    String adminEmail = "admin.lms.streaming@gmail.com";
-    String adminPassword = "admin@123456789";
-    String adminName = "administrator";
-    String adminPhone = "0123456789";
 
     if (this.userRepository.existsByEmail(adminEmail)) {
       return;

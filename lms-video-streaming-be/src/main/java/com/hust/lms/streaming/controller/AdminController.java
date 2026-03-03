@@ -3,6 +3,7 @@ package com.hust.lms.streaming.controller;
 import com.hust.lms.streaming.dto.common.BaseListResponse;
 import com.hust.lms.streaming.dto.common.BaseResponse;
 import com.hust.lms.streaming.dto.common.PageResponse;
+import com.hust.lms.streaming.dto.request.auth.LoginRequest;
 import com.hust.lms.streaming.dto.request.category.CategoryCreatingRequest;
 import com.hust.lms.streaming.dto.request.category.CategoryUpdatingRequest;
 import com.hust.lms.streaming.dto.request.user.LockAccountRequest;
@@ -14,7 +15,9 @@ import com.hust.lms.streaming.dto.response.user.UserResponse;
 import com.hust.lms.streaming.service.AdminService;
 import com.hust.lms.streaming.service.CategoryService;
 import com.hust.lms.streaming.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -37,6 +40,33 @@ public class AdminController {
   private final AdminService adminService;
   private final UserService userService;
   private final CategoryService categoryService;
+
+  @PostMapping("login")
+  public ResponseEntity<BaseResponse<?>> login(
+      @RequestBody @Valid LoginRequest data,
+      @NotNull HttpServletResponse response) {
+    this.adminService.login(data, response);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("logout")
+  public ResponseEntity<BaseResponse<?>> logout(
+      @NotNull HttpServletResponse response
+  ) {
+    this.adminService.logout(response);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
   // Course
   @PostMapping("approve-course/{uuid}")
   public ResponseEntity<BaseResponse<?>> approveCourse(@PathVariable("uuid") UUID courseId) {

@@ -64,6 +64,12 @@ spring:
       enabled: ALWAYS
 
 app:
+  admin:
+    account:
+      email: ${ADMIN_USERNAME}
+      password: ${ADMIN_PASSWORD}
+    name: ${ADMIN_NAME}
+    phone: ${ADMIN_PHONE}
   security:
     jwt:
       secretKey: ${JWT_SECRET_KEY}

@@ -36,18 +36,37 @@ public class SecurityConfiguration {
   @Bean
   public SecurityFilterChain configure(HttpSecurity http) throws Exception {
     http
-        .anonymous(AbstractHttpConfigurer::disable)
+//        .anonymous(AbstractHttpConfigurer::disable)
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(AbstractHttpConfigurer::disable)
         .exceptionHandling(exception -> exception
-            .authenticationEntryPoint(customAuthenticationEntryPoint) // Xử lý 401
+            .authenticationEntryPoint((request, response, authException) -> {
+              String uri = request.getRequestURI();
+              if (uri.startsWith("/api/")) {
+                customAuthenticationEntryPoint.commence(request, response, authException); // Xử lý 401
+              } else {
+                response.sendRedirect("/admin/login");
+              }
+            })
             .accessDeniedHandler(customAccessDeniedHandler)           // Xử lý 403
         )
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/verify-account", "/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/refresh", "/api/public/**", "/overview/**", "/api/payment/vn-pay/callback", "/api/payment/momo/callback").permitAll()
+            .requestMatchers(
+                "/api/auth/login",
+                "/api/auth/register",
+                "/api/auth/verify-account",
+                "/api/auth/forgot-password",
+                "/api/auth/reset-password",
+                "/api/auth/refresh",
+                "/api/public/**",
+                "/overview/**",
+                "/api/payment/vn-pay/callback",
+                "/api/payment/momo/callback",
+                "/api/admin/login").permitAll()
+            .requestMatchers("/admin/login" , "/403.html" , "/static/**", "/css/**" , "/error/**").permitAll()
             .requestMatchers("/api/instructor/**").hasRole(Role.INSTRUCTOR.name())
-            .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
+            .requestMatchers("/api/admin/**", "/admin/**").hasRole(Role.ADMIN.name())
             .anyRequest().authenticated()
         )
         .addFilterBefore(jwtFilter , UsernamePasswordAuthenticationFilter.class);
@@ -55,10 +74,11 @@ public class SecurityConfiguration {
   }
 
 
+  // Cấu hình CORS
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000", "http://localhost"));
+    configuration.setAllowedOrigins(List.of("http://localhost"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);

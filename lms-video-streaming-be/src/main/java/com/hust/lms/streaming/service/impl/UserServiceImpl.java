@@ -148,6 +148,7 @@ public class UserServiceImpl implements UserService {
     User user = this.userRepository.findById(uuid).orElseThrow(() -> new ResourceNotFoundException("User", "id", uuid));
     if (user.getRole().equals(Role.ADMIN)) throw new BadRequestException("Không thể thao tác lock và unlock với tài khoản admin");
     user.setLocked(false);
+    user.setLockReason("");
     this.userRepository.save(user);
     this.eventPublisher.publishEvent(new UserEvent(UserEventType.UNLOCKED, user.getEmail()));
   }

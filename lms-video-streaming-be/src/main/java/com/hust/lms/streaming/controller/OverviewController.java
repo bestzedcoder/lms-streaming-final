@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("overview")
+@RequestMapping("api/overview")
 public class OverviewController {
   @GetMapping
   public String overview() {

@@ -50,8 +50,14 @@ public class AuthServiceImpl implements AuthService {
   @Value("${app.security.jwt.refreshExpiration}")
   private long refreshTokenExpireTime;
 
+  @Value("${app.admin.account.email}")
+  private String adminEmail;
+
   @Override
   public LoginUserInfoResponse login(HttpServletResponse response,String email, String password) {
+    if (email.equals(adminEmail)) {
+      throw new AdminException("Truy nhập trái phép.");
+    }
 
     Authentication authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
     Authentication authentication = authenticationManager.authenticate(authenticationToken);
