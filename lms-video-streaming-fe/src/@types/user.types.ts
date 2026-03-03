@@ -3,7 +3,7 @@ export interface UserProfileResponse {
   fullName: string;
   phone: string;
   email: string;
-  role: "STUDENT" | "INSTRUCTOR" | "ADMIN";
+  role: "STUDENT" | "INSTRUCTOR";
   avatarUrl: string;
   updateProfile: boolean;
 }

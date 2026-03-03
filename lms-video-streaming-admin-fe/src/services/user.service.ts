@@ -1,20 +1,15 @@
-import axiosClient from "../config/axiosClient.config";
-import type { PaginationResponse, ResponseData } from "../@types/common.types";
+import type { PaginationResponse, ResponseData } from "../@types/common.type";
 import type {
-  AdminCategoryCreatingRequest,
-  AdminCategoryResponse,
-  AdminCategoryUpdatingRequest,
   AdminLockUserRequest,
   AdminSearchUser,
   AdminUnlockUserRequest,
   AdminUserCreate,
   AdminUserUpdate,
   UserResponse,
-} from "../@types/admin.types";
+} from "../@types/user.type";
+import axiosClient from "../api/axiosClient";
 
-export const adminService = {
-  // User
-
+export const UserService = {
   getUserList: async (
     params: AdminSearchUser,
   ): Promise<ResponseData<PaginationResponse<UserResponse>>> => {
@@ -52,28 +47,5 @@ export const adminService = {
     data: AdminUnlockUserRequest,
   ): Promise<ResponseData<boolean>> => {
     return axiosClient.post("/admin/users/unlock", data);
-  },
-
-  // Category
-
-  getCategories: async (): Promise<ResponseData<AdminCategoryResponse[]>> => {
-    return axiosClient.get("/admin/categories");
-  },
-
-  createCategory: async (
-    data: AdminCategoryCreatingRequest,
-  ): Promise<ResponseData> => {
-    return axiosClient.post("/admin/categories", data);
-  },
-
-  updateCategory: async (
-    id: string,
-    data: AdminCategoryUpdatingRequest,
-  ): Promise<ResponseData> => {
-    return axiosClient.post(`/admin/categories/${id}`, data);
-  },
-
-  deleteCategory: async (id: string): Promise<ResponseData> => {
-    return axiosClient.delete(`/admin/categories/${id}`);
   },
 };

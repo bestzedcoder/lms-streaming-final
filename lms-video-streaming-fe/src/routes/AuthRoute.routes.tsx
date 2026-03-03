@@ -9,10 +9,6 @@ const AuthRoute = () => {
       return <Navigate to="/instructor/dashboard" replace />;
     }
 
-    if (user?.role === "ADMIN") {
-      return <Navigate to="/admin" replace />;
-    }
-
     return <Navigate to="/" replace />;
   }
 

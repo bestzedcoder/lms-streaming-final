@@ -18,15 +18,11 @@ import EditPhotoPage from "../pages/user/EditPhotoPage";
 import InstructorLayout from "../components/layout/InstructorLayout";
 import InstructorDashboard from "../pages/instructor/InstructorDashboard";
 import InstructorSettingsPage from "../pages/instructor/InstructorSettingsPage";
-import AdminLayout from "../components/layout/AdminLayout";
-import AdminDashboard from "../pages/admin/AdminDashboard";
-import UserManagementPage from "../pages/admin/UserManagementPage";
 import ChangePasswordPage from "../pages/user/ChangePasswordPage";
 import ManageCoursePage from "../pages/instructor/ManageCoursePage";
 import InstructorCoursesPage from "../pages/instructor/InstructorCoursesPage";
 import CreateCoursePage from "../pages/instructor/CreateCoursePage";
 import InstructorCourseDetailPage from "../pages/instructor/InstructorCourseDetailPage";
-import CategoryManagerPage from "../pages/admin/CategoryManagerPage";
 import PublicCoursesPage from "../pages/student/PublicCoursePage";
 import CourseDetailsPage from "../pages/student/CourseDetailsPage";
 import CartPage from "../pages/student/CartPage";
@@ -63,9 +59,7 @@ const AppRouter = () => {
             element={<CourseDetailsPage />}
           />
           <Route
-            element={
-              <PrivateRoute allowedRoles={["STUDENT", "INSTRUCTOR", "ADMIN"]} />
-            }
+            element={<PrivateRoute allowedRoles={["STUDENT", "INSTRUCTOR"]} />}
           >
             <Route path="/user" element={<ProfileLayout />}>
               <Route index element={<Navigate to="info" replace />} />
@@ -114,19 +108,6 @@ const AppRouter = () => {
             <Route path="analytics" element={<div>Phân tích chi tiết</div>} />
             <Route path="earnings" element={<div>Ví & Doanh thu</div>} />
             <Route path="settings" element={<InstructorSettingsPage />} />
-          </Route>
-        </Route>
-
-        <Route element={<PrivateRoute allowedRoles={["ADMIN"]} />}>
-          <Route
-            path="/admin"
-            element={<Navigate to={"/admin/dashboard"} replace />}
-          />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="users" element={<UserManagementPage />} />
-            <Route path="categories" element={<CategoryManagerPage />} />
           </Route>
         </Route>
 

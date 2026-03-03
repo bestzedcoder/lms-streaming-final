@@ -49,10 +49,6 @@ export const authService = {
     return axiosClient.post("/auth/change-password", data);
   },
 
-  checkAdmin: async (): Promise<ResponseData> => {
-    return axiosClient.get("/auth/check-admin");
-  },
-
   getMe: async (): Promise<ResponseData<AuthUserInfoResponse>> => {
     return axiosClient.get("/auth/check-auth");
   },

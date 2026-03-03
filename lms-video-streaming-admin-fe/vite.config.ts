@@ -10,7 +10,13 @@ export default defineConfig({
       },
     }),
   ],
+  base: "/admin/",
+
+  server: {
+    port: 5174,
+    strictPort: true,
+  },
   preview: {
-    port: 5173,
+    port: 5174,
   },
 });
