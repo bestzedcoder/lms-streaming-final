@@ -1,5 +1,6 @@
 package com.hust.lms.streaming.mapper;
 
+import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.dto.response.auth.LoginResponse;
 import com.hust.lms.streaming.dto.response.auth.LoginUserInfoResponse;
 import com.hust.lms.streaming.model.User;
@@ -28,6 +29,15 @@ public class AuthMapper {
     response.setAvatarUrl(user.getAvatarUrl());
     response.setRole(user.getRole());
     response.setUpdateProfile(user.getUpdateProfile());
+    return response;
+  }
+
+  public static AdminResponse toAdminResponse(User user) {
+    if (user == null) return null;
+
+    AdminResponse response = new AdminResponse();
+    response.setEmail(user.getEmail());
+    response.setFullName(user.getFullName());
     return response;
   }
 }

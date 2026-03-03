@@ -63,10 +63,10 @@ public class SecurityConfiguration {
                 "/overview/**",
                 "/api/payment/vn-pay/callback",
                 "/api/payment/momo/callback",
-                "/api/admin/login").permitAll()
-            .requestMatchers("/admin/login" , "/403.html" , "/static/**", "/css/**" , "/error/**").permitAll()
+                "/api/admin/login",
+                "/error/**").permitAll()
             .requestMatchers("/api/instructor/**").hasRole(Role.INSTRUCTOR.name())
-            .requestMatchers("/api/admin/**", "/admin/**").hasRole(Role.ADMIN.name())
+            .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
             .anyRequest().authenticated()
         )
         .addFilterBefore(jwtFilter , UsernamePasswordAuthenticationFilter.class);

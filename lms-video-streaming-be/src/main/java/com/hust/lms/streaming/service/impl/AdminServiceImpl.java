@@ -3,12 +3,16 @@ package com.hust.lms.streaming.service.impl;
 import com.hust.lms.streaming.common.CookieUtils;
 import com.hust.lms.streaming.dto.request.auth.LoginRequest;
 import com.hust.lms.streaming.dto.response.admin.CoursePendingResponse;
+import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
+import com.hust.lms.streaming.enums.Role;
 import com.hust.lms.streaming.event.custom.AuthEvent;
 import com.hust.lms.streaming.event.custom.CourseEvent;
 import com.hust.lms.streaming.event.enums.AuthEventType;
 import com.hust.lms.streaming.event.enums.CourseEventType;
+import com.hust.lms.streaming.exception.AdminException;
 import com.hust.lms.streaming.mapper.AdminMapper;
+import com.hust.lms.streaming.mapper.AuthMapper;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.redis.RedisService;
@@ -42,7 +46,6 @@ public class AdminServiceImpl implements AdminService {
   private long accessTokenExpire;
 
 
-
   @Override
   public void approve(UUID courseId) {
     Course course = this.courseRepository.findById(courseId).orElse(null);
@@ -56,7 +59,7 @@ public class AdminServiceImpl implements AdminService {
   }
 
   @Override
-  public void login(LoginRequest data, HttpServletResponse response) {
+  public AdminResponse login(LoginRequest data, HttpServletResponse response) {
     Authentication authenticationToken = new UsernamePasswordAuthenticationToken(data.getEmail(), data.getPassword());
     Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
@@ -66,11 +69,16 @@ public class AdminServiceImpl implements AdminService {
 
     User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
 
+    if (!currentUser.getRole().equals(Role.ADMIN)) {
+      throw new AdminException("Trang này chỉ có tài khoản admin mới có thể truy cập");
+    }
+
     String accessToken = jwtUtils.generateAccessToken(currentUser);
 
     this.redisService.deleteKey("lms:auth:blacklist:" + currentUser.getUsername());
 
     CookieUtils.setCookieValue(response, "accessToken", accessToken, this.accessTokenExpire, "/");
+    return AuthMapper.toAdminResponse(currentUser);
   }
 
   @Override
@@ -87,5 +95,10 @@ public class AdminServiceImpl implements AdminService {
   public List<CoursePendingResponse> getCoursesPending() {
     List<Course> courses = this.courseRepository.findCoursesByStatus(CourseStatus.PENDING);
     return courses.stream().map(AdminMapper::mapCourseToCoursePendingResponse).toList();
+  }
+
+  @Override
+  public Integer getCoursesPendingCount() {
+    return this.courseRepository.countByStatus(CourseStatus.PENDING);
   }
 }

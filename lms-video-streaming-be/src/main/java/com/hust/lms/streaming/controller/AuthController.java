@@ -7,6 +7,7 @@ import com.hust.lms.streaming.dto.request.auth.LoginRequest;
 import com.hust.lms.streaming.dto.request.auth.ResetPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.SignUpRequest;
 import com.hust.lms.streaming.dto.request.auth.VerifyAccountRequest;
+import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.dto.response.auth.LoginUserInfoResponse;
 import com.hust.lms.streaming.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -127,10 +128,11 @@ public class AuthController {
 
   @GetMapping("check-admin")
   public ResponseEntity<BaseResponse<?>> checkAdmin() {
-    this.authService.checkAdmin();
+    AdminResponse res = this.authService.checkAdmin();
     return ResponseEntity.ok(BaseResponse.builder()
             .code(200)
             .success(true)
+            .data(res)
             .message("Success")
             .timestamp(LocalDateTime.now())
         .build());

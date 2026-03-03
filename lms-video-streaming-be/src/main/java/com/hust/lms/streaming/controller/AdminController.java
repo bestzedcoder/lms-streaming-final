@@ -10,6 +10,7 @@ import com.hust.lms.streaming.dto.request.user.LockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UnlockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UserCreatingRequest;
 import com.hust.lms.streaming.dto.request.user.UserUpdatingRequest;
+import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.dto.response.category.CategoryResponse;
 import com.hust.lms.streaming.dto.response.user.UserResponse;
 import com.hust.lms.streaming.service.AdminService;
@@ -45,10 +46,11 @@ public class AdminController {
   public ResponseEntity<BaseResponse<?>> login(
       @RequestBody @Valid LoginRequest data,
       @NotNull HttpServletResponse response) {
-    this.adminService.login(data, response);
+    AdminResponse res = this.adminService.login(data, response);
     return ResponseEntity.ok(BaseResponse.builder()
             .code(200)
             .message("Success")
+            .data(res)
             .success(true)
             .timestamp(LocalDateTime.now())
         .build());
@@ -68,6 +70,18 @@ public class AdminController {
   }
 
   // Course
+  @GetMapping("course/count-pending")
+  public ResponseEntity<BaseResponse<?>> getCourseCountPending() {
+    Integer res = this.adminService.getCoursesPendingCount();
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
   @PostMapping("approve-course/{uuid}")
   public ResponseEntity<BaseResponse<?>> approveCourse(@PathVariable("uuid") UUID courseId) {
     this.adminService.approve(courseId);
