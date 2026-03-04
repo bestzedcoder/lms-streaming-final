@@ -17,6 +17,7 @@ public class CategoryMapper {
     response.setName(category.getName());
     response.setSlug(category.getSlug());
     response.setIcon(category.getIcon());
+    response.setCountCourses(category.getCourses().size());
     response.setCreatedAt(category.getCreatedAt());
     response.setUpdatedAt(category.getUpdatedAt());
     response.setUpdatedBy(category.getUpdatedBy());

@@ -42,6 +42,10 @@ public class AdminController {
   private final UserService userService;
   private final CategoryService categoryService;
 
+
+  // Summary
+
+  // Auth
   @PostMapping("login")
   public ResponseEntity<BaseResponse<?>> login(
       @RequestBody @Valid LoginRequest data,
@@ -58,8 +62,7 @@ public class AdminController {
 
   @PostMapping("logout")
   public ResponseEntity<BaseResponse<?>> logout(
-      @NotNull HttpServletResponse response
-  ) {
+      @NotNull HttpServletResponse response) {
     this.adminService.logout(response);
     return ResponseEntity.ok(BaseResponse.builder()
             .code(200)
@@ -95,7 +98,6 @@ public class AdminController {
   }
 
   // User
-
   @GetMapping("users")
   public ResponseEntity<BaseResponse<?>> getUsers(
       @RequestParam(value = "page", defaultValue = "1") int page,

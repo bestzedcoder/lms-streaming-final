@@ -16,6 +16,7 @@ public class CategoryResponse {
   private String name;
   private String slug;
   private String icon;
+  private int countCourses;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private String updatedBy;
