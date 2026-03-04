@@ -26,7 +26,6 @@ export interface AdminUserCreate {
   fullName: string;
   phone: string;
   role: "STUDENT" | "INSTRUCTOR";
-  password?: string;
 }
 
 export interface AdminUserUpdate {

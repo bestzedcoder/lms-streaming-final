@@ -1,7 +1,6 @@
 import type {
   AdminCategoryCreatingRequest,
   AdminCategoryResponse,
-  AdminCategoryUpdatingRequest,
 } from "../@types/category.type";
 import type { ResponseData } from "../@types/common.type";
 import axiosClient from "../api/axiosClient";
@@ -15,13 +14,6 @@ export const categoryService = {
     data: AdminCategoryCreatingRequest,
   ): Promise<ResponseData> => {
     return axiosClient.post("/admin/categories", data);
-  },
-
-  updateCategory: async (
-    id: string,
-    data: AdminCategoryUpdatingRequest,
-  ): Promise<ResponseData> => {
-    return axiosClient.post(`/admin/categories/${id}`, data);
   },
 
   deleteCategory: async (id: string): Promise<ResponseData> => {

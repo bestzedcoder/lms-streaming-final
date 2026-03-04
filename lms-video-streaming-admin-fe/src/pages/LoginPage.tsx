@@ -15,8 +15,8 @@ const LoginPage: React.FC = () => {
       const res: any = await axiosClient.post("/admin/login", values);
       message.success("Đăng nhập thành công!");
       login(res.data);
-    } catch (error) {
-      message.error("Đăng nhập thất bại");
+    } catch (error: any) {
+      message.error(error.message);
     } finally {
       setLoading(false);
     }
