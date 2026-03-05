@@ -35,10 +35,9 @@ public class Instructor extends BaseEntity {
   @Column(name = "_user_id")
   private UUID id;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.EAGER)
   @MapsId
   @JoinColumn(name = "_user_id")
-  @JsonIgnore
   private User user;
 
   @Column(name = "_title")

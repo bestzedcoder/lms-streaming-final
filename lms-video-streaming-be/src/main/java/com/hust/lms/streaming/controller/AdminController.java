@@ -10,6 +10,8 @@ import com.hust.lms.streaming.dto.request.user.LockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UnlockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UserCreatingRequest;
 import com.hust.lms.streaming.dto.request.user.UserUpdatingRequest;
+import com.hust.lms.streaming.dto.response.admin.CourseOfInstructorResponse;
+import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
 import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.dto.response.category.CategoryResponse;
 import com.hust.lms.streaming.dto.response.user.UserResponse;
@@ -85,6 +87,34 @@ public class AdminController {
         .build());
   }
 
+  @GetMapping("get-all/instructor")
+  public ResponseEntity<BaseResponse<?>> getAllInstructor(
+      @RequestParam(value = "page", defaultValue = "1") int page,
+      @RequestParam(value = "limit", defaultValue = "10") int limit,
+      @RequestParam(value = "email", defaultValue = "") String email
+  ) {
+    PageResponse<InstructorResponse> res = this.adminService.getAllInstructor(page, limit, email);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("get-courses/instructor/{uuid}")
+  public ResponseEntity<BaseResponse<?>> getCourses(@PathVariable("uuid") UUID instructorId) {
+    List<CourseOfInstructorResponse> res = this.adminService.getCoursesOfInstructor(instructorId);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
   @PostMapping("approve-course/{uuid}")
   public ResponseEntity<BaseResponse<?>> approveCourse(@PathVariable("uuid") UUID courseId) {
     this.adminService.approve(courseId);
@@ -92,6 +122,28 @@ public class AdminController {
             .code(200)
             .message("Success")
             .data("Khóa học được phê duyệt thành công")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("course/lock/{uuid}")
+  public ResponseEntity<BaseResponse<?>> lockCourse(@PathVariable("uuid") UUID courseId) {
+    this.adminService.lockCourse(courseId);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("course/unlock/{uuid}")
+  public ResponseEntity<BaseResponse<?>> unlockCourse(@PathVariable("uuid") UUID courseId) {
+    this.adminService.unlockCourse(courseId);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
             .success(true)
             .timestamp(LocalDateTime.now())
         .build());

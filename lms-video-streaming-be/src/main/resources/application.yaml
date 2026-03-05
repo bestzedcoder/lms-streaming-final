@@ -74,6 +74,7 @@ app:
     jwt:
       secretKey: ${JWT_SECRET_KEY}
       accessExpiration: ${JWT_ACCESS_EXPIRATION}
+      accessAdminExpiration: ${JWT_ACCESS_ADMIN_EXPIRATION}
       refreshExpiration: ${JWT_REFRESH_EXPIRATION}
   cloudinary:
     cloud-name: ${CLOUDINARY_CLOUD_NAME}
@@ -120,6 +121,6 @@ logging:
     com.hust.lms.streaming.middleware: INFO
 
     # Tắt triệt để các log từ framework
-    org.hibernate: WARN
+    org.hibernate: INFO
 
 

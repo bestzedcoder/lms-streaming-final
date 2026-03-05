@@ -40,14 +40,7 @@ public class SecurityConfiguration {
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(AbstractHttpConfigurer::disable)
         .exceptionHandling(exception -> exception
-            .authenticationEntryPoint((request, response, authException) -> {
-              String uri = request.getRequestURI();
-              if (uri.startsWith("/api/")) {
-                customAuthenticationEntryPoint.commence(request, response, authException); // Xử lý 401
-              } else {
-                response.sendRedirect("/admin/login");
-              }
-            })
+            .authenticationEntryPoint(customAuthenticationEntryPoint) // Xử lý 401
             .accessDeniedHandler(customAccessDeniedHandler)           // Xử lý 403
         )
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

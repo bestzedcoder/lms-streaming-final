@@ -24,8 +24,8 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
 
   List<Course> findCoursesByStatus(CourseStatus status);
   List<Course> findByInstructorId(UUID instructorId);
-
+  List<Course> findCoursesByInstructorId(UUID instructorId);
   Optional<Course> findBySlugAndStatus(String slug, CourseStatus status);
-
   Integer countByStatus(CourseStatus status);
+
 }

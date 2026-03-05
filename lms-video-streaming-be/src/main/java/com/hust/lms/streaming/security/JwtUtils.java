@@ -25,16 +25,22 @@ public class JwtUtils {
   @Value("${app.security.jwt.accessExpiration}")
   private long accessExpiration;
 
+  @Value("${app.security.jwt.accessAdminExpiration}")
+  private long accessAdminExpiration;
+
   @Value("${app.security.jwt.refreshExpiration}")
   private long refreshExpiration;
 
   public String generateAccessToken(User user) {
     Map<String, Object> claims = new HashMap<>();
     claims.put("role", user.getRole().name());
-    claims.put("uuid", user.getId());
-    claims.put("email", user.getEmail());
-
     return buildToken(claims, user.getEmail(), accessExpiration);
+  }
+
+  public String generateAccessAdminToken(User user) {
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("role", user.getRole().name());
+    return buildToken(claims, user.getEmail(), accessAdminExpiration);
   }
 
   public String generateRefreshToken(User user) {

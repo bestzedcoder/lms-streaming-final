@@ -101,7 +101,7 @@ public class OrderServiceImpl implements OrderService {
     }
     this.enrollmentRepository.saveAll(enrollments);
     enrollments.forEach(enrollment -> {
-      this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.ADD_STUDENT, enrollment.getCourse().getInstructor().getId(), enrollment.getCourse().getId(), null, null ));
+      this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.ADD_STUDENT, enrollment.getCourse().getInstructor().getId(), enrollment.getCourse().getId(), null, enrollment.getUser().getId() ));
     });
   }
 

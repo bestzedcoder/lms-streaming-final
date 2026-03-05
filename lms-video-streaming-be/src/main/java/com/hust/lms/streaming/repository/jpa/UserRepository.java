@@ -1,5 +1,6 @@
 package com.hust.lms.streaming.repository.jpa;
 
+import com.hust.lms.streaming.enums.Role;
 import com.hust.lms.streaming.model.User;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,4 +14,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
   Optional<User> findByEmail(String email);
   boolean existsByEmail(String email);
   Page<User> findByEmailContainingIgnoreCase(String email, Pageable pageable);
+  Page<User> findByRoleAndEmailContainingIgnoreCase(Role role,String email, Pageable pageable);
 }

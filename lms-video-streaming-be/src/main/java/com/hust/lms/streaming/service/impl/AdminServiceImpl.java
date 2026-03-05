@@ -1,8 +1,12 @@
 package com.hust.lms.streaming.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.hust.lms.streaming.common.CookieUtils;
+import com.hust.lms.streaming.dto.common.PageResponse;
 import com.hust.lms.streaming.dto.request.auth.LoginRequest;
+import com.hust.lms.streaming.dto.response.admin.CourseOfInstructorResponse;
 import com.hust.lms.streaming.dto.response.admin.CoursePendingResponse;
+import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
 import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
 import com.hust.lms.streaming.enums.Role;
@@ -14,18 +18,25 @@ import com.hust.lms.streaming.exception.AdminException;
 import com.hust.lms.streaming.mapper.AdminMapper;
 import com.hust.lms.streaming.mapper.AuthMapper;
 import com.hust.lms.streaming.model.Course;
+import com.hust.lms.streaming.model.Instructor;
 import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.redis.RedisService;
 import com.hust.lms.streaming.repository.jpa.CourseRepository;
+import com.hust.lms.streaming.repository.jpa.EnrollmentRepository;
+import com.hust.lms.streaming.repository.jpa.InstructorRepository;
 import com.hust.lms.streaming.repository.jpa.UserRepository;
 import com.hust.lms.streaming.security.JwtUtils;
 import com.hust.lms.streaming.service.AdminService;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -39,10 +50,12 @@ public class AdminServiceImpl implements AdminService {
   private final ApplicationEventPublisher eventPublisher;
   private final AuthenticationManager authenticationManager;
   private final UserRepository userRepository;
+  private final EnrollmentRepository enrollmentRepository;
+  private final InstructorRepository instructorRepository;
   private final JwtUtils jwtUtils;
   private final RedisService redisService;
 
-  @Value("${app.security.jwt.accessExpiration}")
+  @Value("${app.security.jwt.accessAdminExpiration}")
   private long accessTokenExpire;
 
 
@@ -73,7 +86,7 @@ public class AdminServiceImpl implements AdminService {
       throw new AdminException("Trang này chỉ có tài khoản admin mới có thể truy cập");
     }
 
-    String accessToken = jwtUtils.generateAccessToken(currentUser);
+    String accessToken = jwtUtils.generateAccessAdminToken(currentUser);
 
     this.redisService.deleteKey("lms:auth:blacklist:" + currentUser.getUsername());
 
@@ -100,5 +113,56 @@ public class AdminServiceImpl implements AdminService {
   @Override
   public Integer getCoursesPendingCount() {
     return this.courseRepository.countByStatus(CourseStatus.PENDING);
+  }
+
+  @Override
+  public PageResponse<InstructorResponse> getAllInstructor(int page, int limit, String email) {
+    String cacheKey = String.format("lms:admin:get:instructor:page:%d:limit:%d:email:%s", page, limit, email);
+    PageResponse<InstructorResponse> dataCache = this.redisService.getValue(cacheKey , new TypeReference<PageResponse<InstructorResponse>>() {});
+
+    if (dataCache != null) {
+      return dataCache;
+    }
+
+    Pageable pageable = PageRequest.of(page - 1, limit);
+    Page<User> data = this.userRepository.findByRoleAndEmailContainingIgnoreCase(Role.INSTRUCTOR, email, pageable);
+    PageResponse<InstructorResponse> res = PageResponse.<InstructorResponse>builder()
+        .currentPages(page)
+        .pageSizes(limit)
+        .totalElements(data.getTotalElements())
+        .totalPages(data.getTotalPages())
+        .result(data.getContent().stream().map(user -> {
+          Instructor instructor = this.instructorRepository.findById(user.getId()).orElse(null);
+          if (instructor == null) return null;
+          return AdminMapper.mapUserToInstructorResponse(user, instructor.getCourses().size(), instructor.getTotalStudent());
+        }).toList())
+        .build();
+    this.redisService.saveKeyAndValue(cacheKey, res, 1, TimeUnit.MINUTES);
+    return res;
+  }
+
+
+  @Override
+  public void lockCourse(UUID courseId) {
+    Course course = this.courseRepository.findById(courseId).orElse(null);
+    if (course == null) return;
+    course.setStatus(CourseStatus.LOCKED);
+    this.courseRepository.save(course);
+    this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.LOCKED, course.getInstructor().getId(), courseId, null, null ));
+  }
+
+  @Override
+  public void unlockCourse(UUID courseId) {
+    Course course = this.courseRepository.findById(courseId).orElse(null);
+    if (course == null) return;
+    course.setStatus(CourseStatus.PRIVATE);
+    this.courseRepository.save(course);
+    this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.UNLOCKED, course.getInstructor().getId(), courseId, null, null ));
+  }
+
+  @Override
+  public List<CourseOfInstructorResponse> getCoursesOfInstructor(UUID instructorId) {
+    List<Course> data = this.courseRepository.findCoursesByInstructorId(instructorId);
+    return data.stream().map(AdminMapper::mapCourseToCourseOfInstructorResponse).toList();
   }
 }

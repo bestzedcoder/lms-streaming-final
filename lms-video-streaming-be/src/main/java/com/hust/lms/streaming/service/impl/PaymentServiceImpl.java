@@ -106,7 +106,7 @@ public class PaymentServiceImpl implements PaymentService {
         this.enrollmentRepository.saveAll(enrollments);
 
         for (Enrollment enrollment : enrollments) {
-          this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.ADD_STUDENT, enrollment.getCourse().getInstructor().getId(), enrollment.getCourse().getId(), null, null));
+          this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.ADD_STUDENT, enrollment.getCourse().getInstructor().getId(), enrollment.getCourse().getId(), null, enrollment.getUser().getId()));
         }
 
       } else {
