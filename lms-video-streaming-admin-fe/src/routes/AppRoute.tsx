@@ -8,6 +8,8 @@ import UserPage from "../pages/UserPage";
 import CategoryPage from "../pages/CategoryPage";
 import RevenuePage from "../pages/RevenuePage";
 import CoursePendingPage from "../pages/CoursePendingPage";
+import InstructorCoursesPage from "../pages/InstructorCoursesPage";
+import InstructorStatsPage from "../pages/InstructorStatsPage";
 
 function AppRoutes() {
   return (
@@ -28,6 +30,8 @@ function AppRoutes() {
           <Route path="categories" element={<CategoryPage />} />
           <Route path="revenue" element={<RevenuePage />} />
           <Route path="pending-courses" element={<CoursePendingPage />} />
+          <Route path="courses-search" element={<InstructorCoursesPage />} />
+          <Route path="instructor-stats" element={<InstructorStatsPage />} />
         </Route>
       </Route>
 
