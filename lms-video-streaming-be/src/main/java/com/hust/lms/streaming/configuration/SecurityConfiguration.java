@@ -56,8 +56,7 @@ public class SecurityConfiguration {
                 "/overview/**",
                 "/api/payment/vn-pay/callback",
                 "/api/payment/momo/callback",
-                "/api/admin/login",
-                "/error/**").permitAll()
+                "/api/admin/login").permitAll()
             .requestMatchers("/api/instructor/**").hasRole(Role.INSTRUCTOR.name())
             .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
             .anyRequest().authenticated()

@@ -11,7 +11,10 @@ import com.hust.lms.streaming.dto.request.user.UnlockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UserCreatingRequest;
 import com.hust.lms.streaming.dto.request.user.UserUpdatingRequest;
 import com.hust.lms.streaming.dto.response.admin.CourseOfInstructorResponse;
+import com.hust.lms.streaming.dto.response.admin.CoursePendingResponse;
 import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
+import com.hust.lms.streaming.dto.response.admin.MonthlyRevenueResponse;
+import com.hust.lms.streaming.dto.response.admin.SummaryDashboardResponse;
 import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.dto.response.category.CategoryResponse;
 import com.hust.lms.streaming.dto.response.user.UserResponse;
@@ -44,8 +47,30 @@ public class AdminController {
   private final UserService userService;
   private final CategoryService categoryService;
 
+  // Summary,
+  @GetMapping("summary/dashboard")
+  public ResponseEntity<BaseResponse<?>> getSummaryDashboard() {
+    SummaryDashboardResponse res = this.adminService.getSummaryDashboard();
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
 
-  // Summary
+  @GetMapping("summary/monthly")
+  public ResponseEntity<BaseListResponse<?>> getSummaryMonthly() {
+    List<MonthlyRevenueResponse> res = this.adminService.getRecent10MonthsRevenue();
+    return ResponseEntity.ok(BaseListResponse.<MonthlyRevenueResponse>builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
 
   // Auth
   @PostMapping("login")
@@ -79,6 +104,18 @@ public class AdminController {
   public ResponseEntity<BaseResponse<?>> getCourseCountPending() {
     Integer res = this.adminService.getCoursesPendingCount();
     return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("course/pending")
+  public ResponseEntity<BaseListResponse<?>> getCoursesPending() {
+    List<CoursePendingResponse> res = this.adminService.getCoursesPending();
+    return ResponseEntity.ok(BaseListResponse.<CoursePendingResponse>builder()
             .code(200)
             .message("Success")
             .data(res)

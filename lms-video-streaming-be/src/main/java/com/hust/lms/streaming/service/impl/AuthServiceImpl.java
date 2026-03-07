@@ -75,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
     this.redisService.deleteKey("lms:auth:blacklist:" + currentUser.getUsername());
 
     CookieUtils.setCookieValue(response, "refreshToken", refreshToken, this.refreshTokenExpireTime, "/api/auth/refresh");
-    CookieUtils.setCookieValue(response, "accessToken", accessToken, this.refreshTokenExpireTime, "/");
+    CookieUtils.setCookieValue(response, "accessToken", accessToken, this.refreshTokenExpireTime, "/api");
 
     return AuthMapper.toLoginUserInfoResponse(currentUser);
   }
@@ -170,7 +170,7 @@ public class AuthServiceImpl implements AuthService {
     long expires = this.jwtUtils.getRemainingTime(token);
     User user = this.userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
     String newToken = this.jwtUtils.generateAccessToken(user);
-    CookieUtils.setCookieValue(response, "accessToken", newToken, expires, "/");
+    CookieUtils.setCookieValue(response, "accessToken", newToken, expires, "/api");
   }
 
   @Override
@@ -180,7 +180,7 @@ public class AuthServiceImpl implements AuthService {
     User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
 
     CookieUtils.setCookieValue(response, "refreshToken", null, 0, "/api/auth/refresh");
-    CookieUtils.setCookieValue(response, "accessToken", null, 0, "/");
+    CookieUtils.setCookieValue(response, "accessToken", null, 0, "/api");
 
     this.eventPublisher.publishEvent(new AuthEvent(AuthEventType.LOGOUT , currentUser.getEmail() , String.valueOf(accessTokenExpireTime)));
   }
