@@ -1,0 +1,293 @@
+[33mcommit 9e771f26e26cb5532eaf70515b959c28bf0de7e4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sat Mar 7 23:11:25 2026 +0700
+
+    (frontend) thêm phần ui smmary dashboard cho admin
+
+[33mcommit d7b96eb979cabdc9db94ee56dd29cb05bde84992[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sat Mar 7 23:10:02 2026 +0700
+
+    (backend) thêm các summary cho admin (tạm thời)
+
+[33mcommit ffb9075dc1fa3c9974c013a13742c3102053f8cd[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Fri Mar 6 00:52:45 2026 +0700
+
+    (backend) thêm endpoint quản lý course cho admin
+
+[33mcommit f970a4436e0bd0fb082a7d2335c50b1ef8e51546[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Wed Mar 4 22:06:29 2026 +0700
+
+    (frontend) chỉnh sửa ui bên admin quản lý user và category
+
+[33mcommit c003215d1d06952cf8dab3be43c8419ea19054d3[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Wed Mar 4 22:05:37 2026 +0700
+
+    (backend) chỉnh lại CategoryResponse thêm field countCourses
+
+[33mcommit de1dc0e64b333f07fdd5273d06116821137158f7[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Wed Mar 4 00:20:01 2026 +0700
+
+    (frontend) chuyển admin sang 1 vite khác ở phân vùng mạng được cấu hình ở nginx
+
+[33mcommit e6c88b59ee9b4e09f9dd9e363da3021fe2cc51eb[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Wed Mar 4 00:18:54 2026 +0700
+
+    (backend) thêm một só endpoint dành cho admin đổi chiến lực phân vùng mạng admin bằng 1 vite khác
+
+[33mcommit b63291b2231c0feda9bf206a2cecffaa406fe615[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Tue Mar 3 19:36:37 2026 +0700
+
+    (backend) fix một số lỗi và chỉnh lại config trước khi xây dựng ui admin
+
+[33mcommit f38430c963da067a05ea1a9fd853559616691d24[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Mon Mar 2 14:36:25 2026 +0700
+
+    (frontend) chỉnh sửa logic về xác thực
+
+[33mcommit 98f6b47e87a7089a30870d1acc8623bdab0004fe[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Mon Mar 2 14:34:40 2026 +0700
+
+    (backend) setup lại dự án đúng form , đưa logic của admin về controller admin và chuyển lưu trữ accessToken vào cookie HttpOnly sửa lại prefix đê chuẩn bị tách ui admin
+
+[33mcommit 2b3998750e4ff98a8f51ea4d409fc10343900c3b[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sun Mar 1 21:28:50 2026 +0700
+
+    (frontend) cập hật ui phần order cart thanh toán và fix một số bug ui
+
+[33mcommit 4486e515a07c1b0a6e5a6b573587ec289f593356[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sun Mar 1 21:27:35 2026 +0700
+
+    (backend) thêm hiển thị mã thanh toán cho người dùng và kết quả trả về thanh toán thành công và chỉnh sửa fetch để tránh query N+1
+
+[33mcommit d5517de1ebf47133a6b9c331c27c5324886a845d[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sat Feb 28 16:47:39 2026 +0700
+
+    (backend) sửa lại bug khi order và chuyển api check-admin vào auth thêm api số item trong giỏ hàng của người dùng
+
+[33mcommit 55b1aaa73dcdba89346eed4e47f6e764366d6073[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Thu Feb 26 10:34:30 2026 +0700
+
+    (backend) sửa lại liên kết payment và order , tích hợp cổng thanh toán vnpay và momo
+
+[33mcommit ed30457649b82267755320bbf36f40da27e5a56b[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Tue Feb 24 22:12:46 2026 +0700
+
+    (backend) bổ sung migration version 2
+
+[33mcommit a1d8e4838092d448ff850c616d44ed182cbba3a8[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Tue Feb 24 01:34:16 2026 +0700
+
+    (frontend) fix lỗi ui của trang chi tiết course instructor do sai field trong UserPublicResponse
+
+[33mcommit d3216601b1bab7cd80b0b6246ec5e05afebac6b9[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Tue Feb 24 01:33:03 2026 +0700
+
+    (backend) fix một số lỗi trong giỏ hàng và tạm hoàn thành logic order (thiếu logic mua ngay) và phần payment chưa xong , bỏ prefix /admin trong users
+
+[33mcommit 1afa3e5dc41dd8c0b11ce8b6ccd2a4e074bb8fb4[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sun Feb 22 02:02:22 2026 +0700
+
+    (backend) fix lỗi liên kết trong database cart - cartItem && order - orderItem và thực hiện logic crud cart
+
+[33mcommit b449d6764a4bfa5bf20785242390e36eb8b1690b[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sun Feb 22 00:01:06 2026 +0700
+
+    (backend) bổ sung url được truy cập backend
+
+[33mcommit 2f3d6b68265bcc04cc54f13cbf7b09e610cfef5e[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sat Feb 21 22:40:38 2026 +0700
+
+    (backend) migration_v1 database
+
+[33mcommit d1165609db9e9b3377810eaa7f4f03e00524e0dd[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sat Feb 21 22:12:48 2026 +0700
+
+    (backend) chỉnh lại database thêm các bảng : cart, cart_item, order, order_item, payment
+
+[33mcommit e1251c94460047ae5f49d4cb6c1d83722355cfba[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Fri Feb 20 21:52:58 2026 +0700
+
+    (frontend) chỉnh logic update course instructor và thêm ui phần search course public và course details
+
+[33mcommit dacc9a67e8223e737a1a19b12a3a2cf64e81b696[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Fri Feb 20 21:42:44 2026 +0700
+
+    (backend) bỏ ghi log vào file và sửa logic update status course , tạo sự kiện thay đổi course và tạm hoàn thành logic public cho search course và course details
+
+[33mcommit cca176043894fad92018bc43331441666e631423[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Tue Feb 17 21:16:43 2026 +0700
+
+    (frontend) chỉnh sửa ui từ thay đổi field trong course table và các response
+
+[33mcommit 9f5a0f9cec8c2798921e718b138a4a69e4873904[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Tue Feb 17 21:15:06 2026 +0700
+
+    (backend) fix bug convert Object Data -> Object Redis và bổ sung field trong course table và xử lý logic tìm kiếm course public (tạm thời chưa xong)
+
+[33mcommit e857498b0b209b7743cb94d808b2fc1bb0ac646b[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Mon Feb 16 14:38:18 2026 +0700
+
+    (frontend) giao diện quản lý danh mục cho admin và chỉnh sửa ui khóa học chi tiết dành cho instructor
+
+[33mcommit e3d9fe24b1dcb7109858287020bece26d0334e72[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Mon Feb 16 14:36:36 2026 +0700
+
+    (backend) fix một số bug , thêm trường database course , xử lý dữ liệu review trả về ( chưa c dữ liệu test)
+
+[33mcommit c44b971bd4d7257495cd5e37aa369a0c3aca6be8[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sun Feb 15 00:03:45 2026 +0700
+
+    (frontend) cập nhật giao diện quản lý khóa học cho instructor (chưa xong)
+
+[33mcommit 3caf3d2a5fca7f4a195b0b6c0a9c00e870efecd1[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sat Feb 14 23:50:16 2026 +0700
+
+    (backend) logic quản lý khóa học tạo/sửa khóa học, thêm/sửa chương học, thêm/sửa bài học và fix một số bug khác tạm thời ổn
+
+[33mcommit c1622423615d1d6f93d07913258ecfd036098fde[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Fri Feb 13 14:28:59 2026 +0700
+
+    (frontend) cập nhật giao diện thay đổi mật khẩu
+
+[33mcommit 7b51acd9059040fccc630705cac78b139ce48bc3[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Fri Feb 13 14:08:10 2026 +0700
+
+    (backend) cập nhật logic đổi mật khẩu
+
+[33mcommit 2e837cf71837c9bb8ab199fd04f65863e4cfbbd3[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Thu Feb 12 23:56:57 2026 +0700
+
+    (frontend) xây dựng ui phần student , profile và xây lại route và layout của instructor và admin
+
+[33mcommit 1dd0d522282ef80fef224a644251e0abf2027a32[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Thu Feb 12 23:56:36 2026 +0700
+
+    (backend) cập nhật kích thước file và request tối đa gửi lên server
+
+[33mcommit 69f2d05d066d7234feaf16b85c27e6abcbba9c1f[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Thu Feb 12 23:27:26 2026 +0700
+
+    (backend) update commit thiếu
+
+[33mcommit 587755a881ed1540583a6933bb7c9e7227f3e20b[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Thu Feb 12 23:17:26 2026 +0700
+
+    (backend) cập nhật logic profile và logic xác thực admin và fix một số bug
+
+[33mcommit 4741b2030eca06645d85c9e40398f77a910ab4ea[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Wed Feb 11 23:45:59 2026 +0700
+
+    (frontend) code base kiến trúc frontend và làm các trang liên quan đến xác thực
+
+[33mcommit 97c80fef83f7904b5a77b533acefe23631f73d20[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Wed Feb 11 23:43:02 2026 +0700
+
+    (backend) cập nhật lại hệ thống xác thực và chuyển đổi một số utility class và fix một số bug
+
+[33mcommit 49f7170f2ec9b7c5ca8e70126879221c16fc129b[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Tue Feb 10 16:55:34 2026 +0700
+
+    (backend) Xứ lý logic làm sạch dữ liệu bằng sử dụng lib jsoup, thêm LoggingFilter , xử lý logic cập nhật thông tin instructor và logic thêm sửa khóa học
+
+[33mcommit 54d1bf20c9e7f280f9a719f98ca474a8543950ee[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Mon Feb 9 23:10:25 2026 +0700
+
+    (backend) tạo trang overview backend và thêm logging middleware và xử lý logic crud category
+
+[33mcommit f45fc189bd7e632d97570a98e91ab22c619da238[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sat Feb 7 00:15:47 2026 +0700
+
+    (backend) setup tạm thời database của hệ thống
+
+[33mcommit e4a3df4638e0cbe170e57de767b37e249862140b[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Thu Feb 5 15:54:13 2026 +0700
+
+    Tách riêng tiến trình gửi mail ra khởi chương trình , cấu hình message queue (RabbitMQ) tạm thời ổn không lỗi
+
+[33mcommit 332f8f2fa091296f0432d80ec9b91333a95e292e[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Tue Feb 3 17:30:25 2026 +0700
+
+    (backend) hoàn thiện logic xác thực bắt AuthEvent và validation input của auth và setCookie httpOnly cho refreshToken và fix logic jwtFilter locked account và tạo seeding account admin
+
+[33mcommit f6fefb3829b4962b33110ca14fd2f348df4a52b9[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Tue Feb 3 00:21:59 2026 +0700
+
+    (backend) cấu hình gửi mail và logic hệ thống xác thực (chưa xong)
+
+[33mcommit ddd3923299806fb21af1c344f83b6395fc9ebaf3[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Mon Feb 2 21:58:00 2026 +0700
+
+    (backend) cấu hình cloudinary và logic profile người dùng (upload ảnh, cập nhất profile , get profile) và fix bug ở exception UsernameNotFoundException và cập nhật DTO user-updating
+
+[33mcommit 8d96fd77c781e2778b24de3cce476ae6ff739a66[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Mon Feb 2 16:58:11 2026 +0700
+
+    (backend) bắt sự kiện user xóa cache khi thay đổi và fix một số chỗ exception và tìm kiếm danh sách người dùng
+
+[33mcommit e0018757da233551ddf05be1c53977dee07e8a24[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Mon Feb 2 02:08:59 2026 +0700
+
+    cấu hình redis từ redis-factory và redis-template. Đã viết test tạm thời thành công
+
+[33mcommit 7eef2e35f02ec217a0e6e26402e1bcd44f97b8f4[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sun Feb 1 18:15:11 2026 +0700
+
+    (backend) tạm hoàn thành crud user và bảng user.Logic khoán tài khoản thao tác với endpoint chỉ có ADMIN còn thiết một số logic do chưa hoàn thiện logic gửi mail.
+
+[33mcommit b5e03639fc156a123939ff2317c39ba34e9b23c6[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sun Feb 1 14:01:43 2026 +0700
+
+    (backend) thêm cấu hình bắt lỗi badrequest và resource not found
+
+[33mcommit eb7ebea67e1e91367e4cd5e3f2c5856f0eefe798[m
+Author: bestzedcoder <quachlinh1252004@gmail.com>
+Date:   Sun Feb 1 13:39:37 2026 +0700
+
+    setup lms-streaming project fe and be. Code base backend security , dependency lib
