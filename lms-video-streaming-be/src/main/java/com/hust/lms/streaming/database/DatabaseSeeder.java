@@ -21,8 +21,6 @@ public class DatabaseSeeder implements CommandLineRunner {
   private String adminEmail;
   @Value("${app.admin.account.password}")
   private String adminPassword;
-  @Value("${app.admin.name}")
-  private String adminName;
   @Value("${app.admin.phone}")
   private String adminPhone;
 
@@ -43,8 +41,10 @@ public class DatabaseSeeder implements CommandLineRunner {
     user.setEmail(adminEmail);
     user.setPassword(this.passwordEncoder.encode(adminPassword));
     user.setPhone(adminPhone);
-    user.setFullName(adminName);
+    user.setFirstName("administrator");
+    user.setLastName("system");
     user.setEnabled(true);
+    user.setLocked(false);
     user.setRole(Role.ADMIN);
     user.setUpdateProfile(true);
     this.userRepository.save(user);

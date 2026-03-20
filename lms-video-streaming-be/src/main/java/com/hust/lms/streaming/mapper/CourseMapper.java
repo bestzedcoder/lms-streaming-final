@@ -31,12 +31,10 @@ public class CourseMapper {
     response.setDescription(course.getDescription());
     response.setDescriptionShort(course.getDescriptionShort());
     response.setRequirements(course.getRequirements());
-    response.setPrice(course.getPrice());
-    response.setSalePrice(course.getSalePrice());
     response.setLevel(course.getLevel());
     response.setAverageRating(course.getAverageRating());
     response.setCountRating(course.getCountRating());
-    response.setCountStudents(course.getEnrollments().size());
+    response.setTotalStudents(course.getEnrollments().size());
     response.setThumbnail(course.getThumbnail());
     response.setTotalSections(course.getSections().size());
     response.setTotalLessons(course.getSections().stream().map(section -> section.getLessons().size()).reduce(0, Integer::sum));
@@ -70,8 +68,7 @@ public class CourseMapper {
     if (instructor == null)  return null;
 
     InstructorPublicResponse response = new InstructorPublicResponse();
-    response.setFullName(instructor.getUser().getFullName());
-    response.setTitle(instructor.getTitle());
+    response.setNickname(instructor.getNickname());
     response.setBio(instructor.getBio());
     response.setAvatarUrl(instructor.getUser().getAvatarUrl());
     response.setTotalCourses(instructor.getCourses().size());

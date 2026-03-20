@@ -22,8 +22,6 @@ public class InstructorCourseResponse {
   private String description;
   private String descriptionShort;
   private String requirements;
-  private BigDecimal price;
-  private BigDecimal salePrice;
   private String thumbnail;
   private LevelCourse level;
   private CourseStatus status;

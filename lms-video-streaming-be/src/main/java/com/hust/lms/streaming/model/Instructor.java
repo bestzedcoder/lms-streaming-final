@@ -32,21 +32,24 @@ import lombok.experimental.SuperBuilder;
 public class Instructor extends BaseEntity {
 
   @Id
-  @Column(name = "_user_id")
+  @Column(name = "user_id")
   private UUID id;
 
   @OneToOne(fetch = FetchType.EAGER)
   @MapsId
-  @JoinColumn(name = "_user_id")
+  @JoinColumn(name = "user_id")
   private User user;
 
-  @Column(name = "_title")
-  private String title;
+  @Column(name = "nickname", nullable = false)
+  private String nickname;
 
-  @Column(name = "_bio",columnDefinition = "TEXT")
+  @Column(name = "job_title", nullable = false)
+  private String jobTitle;
+
+  @Column(name = "bio",columnDefinition = "TEXT")
   private String bio;
 
-  @Column(name = "_total_student")
+  @Column(name = "total_student")
   @Builder.Default
   private Integer totalStudent = 0;
 

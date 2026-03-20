@@ -28,58 +28,58 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
-@Entity
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
 @Table(name = "users")
 public class User extends BaseEntity implements UserDetails {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "_id")
+  @Column(name = "id")
   private UUID id;
 
-  @Column(name = "_email" , nullable = false , unique = true , updatable = false)
+  @Column(name = "email" , nullable = false , unique = true , updatable = false)
   private String email;
 
-  @Column(name = "_password" , nullable = false)
+  @Column(name = "password" , nullable = false)
   private String password;
 
-  @Column(name = "_full_name" , nullable = false)
-  private String fullName;
+  @Column(name = "first_name" , nullable = false)
+  private String firstName;
 
-  @Column(name = "_phone" , unique = true)
+  @Column(name = "last_name" , nullable = false)
+  private String lastName;
+
+  @Column(name = "phone" , unique = true)
   private String phone;
 
-  @Column(name = "_facebook_url")
-  private String facebookUrl;
-
-  @Column(name = "_avatar_url")
+  @Column(name = "avatar_url")
   private String avatarUrl;
 
-  @Column(name = "_public_id")
+  @Column(name = "public_id")
   private String publicId;
 
-  @Column(name = "_active" , nullable = false)
+  @Column(name = "active" , nullable = false)
   @Builder.Default
   private Boolean enabled = false;
 
-  @Column(name = "_locked" , nullable = false)
+  @Column(name = "locked" , nullable = false)
   @Builder.Default
   private Boolean locked = false;
 
-  @Column(name = "_update_profile" , nullable = false)
+  @Column(name = "update_profile" , nullable = false)
   @Builder.Default
   private Boolean updateProfile = false;
 
-  @Column(name = "_lock_reason", columnDefinition = "TEXT")
+  @Column(name = "lock_reason", columnDefinition = "TEXT")
   private String lockReason;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "_role" , nullable = false)
+  @Column(name = "role" , nullable = false)
   @Builder.Default
   private Role role = Role.STUDENT;
 

@@ -11,39 +11,36 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 @Entity
 @Table(name = "enrollments", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"_user_id", "_course_id"})
+    @UniqueConstraint(columnNames = {"user_id", "course_id"})
 })
 public class Enrollment extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "_id")
+  @Column(name = "id")
   private UUID id;
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "_user_id", nullable = false, updatable = false)
+  @JoinColumn(name = "user_id", nullable = false, updatable = false)
   private User user;
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "_course_id", nullable = false, updatable = false)
+  @JoinColumn(name = "course_id", nullable = false, updatable = false)
   private Course course;
-
-  @Column(name = "_price_paid", nullable = false)
-  private BigDecimal pricePaid;
 
   @Column(name = "_progress")
   @Builder.Default
-  private Double progress = 0.0; // 0.0 -> 100.0
+  private Double progress = 0.0;
 
   @Column(name = "_completed_at")
-  private LocalDateTime completedAt; // Ngày hoàn thành
+  private LocalDateTime completedAt;
 
   @Column(name = "_last_accessed_at")
-  private LocalDateTime lastAccessedAt; // Để sort danh sách "Học gần đây"
+  private LocalDateTime lastAccessedAt;
 
 }

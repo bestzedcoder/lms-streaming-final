@@ -1,6 +1,6 @@
 package com.hust.lms.streaming.model;
 
-import com.hust.lms.streaming.enums.VideoStatus;
+import com.hust.lms.streaming.enums.EnrollmentStatus;
 import com.hust.lms.streaming.model.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,53 +22,38 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-
-@Setter
 @Getter
+@Setter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "videos")
-public class Video extends BaseEntity {
-
+@Table(name = "registrations")
+public class Registration extends BaseEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "id")
   private UUID id;
 
-  @Column(name = "title", nullable = false)
-  private String title;
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "student_id", nullable = false)
+  private User student;
 
-  @Column(name = "file_name", nullable = false)
-  private String fileName;
-
-  @Column(name = "size", nullable = false)
-  private Long size;
-
-  @Column(name = "duration", nullable = false)
-  private Integer duration;
-
-  // Các đường dẫn Stream
-  @Column(name = "hls_url")
-  private String hlsUrl;
-
-  @Column(name = "original_url", nullable = false)
-  private String originalUrl;
-
-  @Column(name = "thumbnail")
-  private String thumbnail;
-
-  @Column(name = "public_id")
-  private String publicId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "course_id", nullable = false)
+  private Course course;
 
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
   @Builder.Default
-  private VideoStatus status = VideoStatus.PENDING;
+  private EnrollmentStatus status = EnrollmentStatus.PENDING;
 
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "owner_id", nullable = false)
-  private User owner;
+  @Column(name = "student_message", columnDefinition = "TEXT")
+  private String studentMessage;
 
+  @Column(name = "teacher_note", columnDefinition = "TEXT")
+  private String teacherNote;
+
+  @Column(name = "resolved_at")
+  private LocalDateTime resolvedAt;
 }

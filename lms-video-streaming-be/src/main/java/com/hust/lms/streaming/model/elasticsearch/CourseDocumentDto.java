@@ -13,12 +13,10 @@ public class CourseDocumentDto {
   private String id;
   private String title;
   private String slug;
-  private Double price;
-  private Double salePrice;
   private String descriptionShort;
   private String thumbnail;
-  private String instructorName;
+  private String nickname;
   private String categorySlug;
   private Double averageRating;
-  private Integer countLesson;
+  private Integer totalLessons;
 }

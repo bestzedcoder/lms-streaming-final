@@ -9,34 +9,34 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 @Entity
 @Table(name = "lesson_progress", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"_user_id", "_lesson_id"})
+    @UniqueConstraint(columnNames = {"user_id", "lesson_id"})
 })
 public class LessonProgress extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "_id")
+  @Column(name = "id")
   private UUID id;
 
-  @Column(name = "_is_completed", nullable = false)
+  @Column(name = "is_completed", nullable = false)
   @Builder.Default
   private boolean isCompleted = false;
 
-  @Column(name = "_last_watched_second")
+  @Column(name = "last_watched_second")
   @Builder.Default
   private Integer lastWatchedSecond = 0;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "_user_id", nullable = false, updatable = false)
+  @JoinColumn(name = "user_id", nullable = false, updatable = false)
   private User user;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "_lesson_id", nullable = false, updatable = false)
+  @JoinColumn(name = "lesson_id", nullable = false, updatable = false)
   private Lesson lesson;
 
 }

@@ -15,6 +15,7 @@ public class CoursePendingResponse {
   private String title;
   private String description;
   private String thumbnail;
-  private String instructorName;
+  private String nickname;
+  private String instructorPhone;
   private String instructorEmail;
 }

@@ -8,35 +8,34 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@SuperBuilder
 @Getter
 @Setter
+@SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "reviews", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"_user_id", "_course_id"})
+    @UniqueConstraint(columnNames = {"user_id", "course_id"})
 })
 public class Review extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "_id")
+  @Column(name = "id")
   private UUID id;
 
-  @Column(name = "_rating", nullable = false)
+  @Column(name = "rating", nullable = false)
   @Enumerated(EnumType.STRING)
   private ReviewRate rating = ReviewRate.FIVE;
 
-  @Column(name = "_content", columnDefinition = "TEXT")
+  @Column(name = "content", columnDefinition = "TEXT")
   private String content;
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "_user_id", nullable = false)
+  @JoinColumn(name = "user_id", nullable = false, updatable = false)
   private User user;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "_course_id", nullable = false)
+  @JoinColumn(name = "course_id", nullable = false, updatable = false)
   private Course course;
-
 }

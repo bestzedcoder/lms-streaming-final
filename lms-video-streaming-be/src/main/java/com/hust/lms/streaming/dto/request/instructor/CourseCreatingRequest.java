@@ -18,7 +18,7 @@ public class CourseCreatingRequest {
   @NotBlank(message = "Tên khóa học không được để trống")
   @Size(min = 10, max = 200, message = "Tên khóa học phải từ 10 đến 200 ký tự")
   @NoHtml(message = "Tên khóa học chứa ký tự không hợp lệ")
-  private String title;
+  private String jobTitle;
 
   @NotBlank(message = "Slug không được để trống")
   @Pattern(regexp = "^[a-z0-9-]+$", message = "Slug chỉ được chứa chữ thường, số và dấu gạch ngang")

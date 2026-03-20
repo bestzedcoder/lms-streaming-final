@@ -1,7 +1,6 @@
 package com.hust.lms.streaming.service.impl;
 
 import com.hust.lms.streaming.dto.request.category.CategoryCreatingRequest;
-import com.hust.lms.streaming.dto.request.category.CategoryUpdatingRequest;
 import com.hust.lms.streaming.dto.response.category.CategoryResponse;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.exception.ResourceNotFoundException;
@@ -33,23 +32,8 @@ public class CategoryServiceImpl implements CategoryService {
     Category category = Category.builder()
         .name(request.getName())
         .slug(request.getSlug())
-        .icon(request.getIcon())
         .build();
 
-    this.categoryRepository.save(category);
-  }
-
-  @Override
-  public void update(UUID id ,CategoryUpdatingRequest request) {
-    if (this.categoryRepository.existsBySlug(request.getSlug()) || this.categoryRepository.existsByName(request.getName())) {
-      throw new BadRequestException("Danh mục này đã tồn tại");
-    }
-
-    Category category = this.categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category" , "id", id));
-
-    category.setName(request.getName());
-    category.setSlug(request.getSlug());
-    category.setIcon(request.getIcon());
     this.categoryRepository.save(category);
   }
 

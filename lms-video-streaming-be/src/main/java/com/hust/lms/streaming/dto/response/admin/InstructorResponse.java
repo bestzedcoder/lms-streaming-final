@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 public class InstructorResponse {
   private UUID instructorId;
   private String email;
-  private String fullName;
+  private String nickname;
   private String phoneNumber;
-  private long countCourses;
-  private long countStudents;
+  private int totalCourses;
+  private int totalStudents;
 }

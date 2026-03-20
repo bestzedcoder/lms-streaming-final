@@ -13,5 +13,4 @@ public class SummaryDashboardResponse {
   private long totalStudents;
   private long totalTeachers;
   private long totalCourses;
-  private long totalRevenues;
 }

@@ -31,25 +31,25 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@SuperBuilder
 @Entity
 @Table(name = "courses")
 public class Course extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "_id")
+  @Column(name = "id")
   private UUID id;
 
-  @Column(name = "_title", nullable = false)
+  @Column(name = "title", nullable = false, updatable = false)
   private String title;
 
-  @Column(name = "_slug" , nullable = false , unique = true)
+  @Column(name = "slug", nullable = false, updatable = false, unique = true)
   private String slug;
 
-  @Column(name = "_description", columnDefinition = "TEXT")
+  @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
   @Column(name = "_description_short", columnDefinition = "TEXT")
@@ -58,49 +58,39 @@ public class Course extends BaseEntity {
   @Column(name = "_course_requirements", columnDefinition = "TEXT")
   private String requirements;
 
-  @Column(name = "_price" , nullable = false)
-  @Builder.Default
-  private BigDecimal price = BigDecimal.ZERO;
-
-  @Column(name = "_sale_price")
-  @Builder.Default
-  private BigDecimal salePrice = BigDecimal.ZERO;
-
-  @Column(name = "_thumbnail")
+  @Column(name = "thumbnail")
   private String thumbnail;
 
-  @Column(name = "_public_id")
+  @Column(name = "public_id")
   private String publicId;
 
-  @Column(name = "_level", nullable = false)
+  @Column(name = "level", nullable = false)
   @Enumerated(EnumType.STRING)
   @Builder.Default
   private LevelCourse level = LevelCourse.BEGINNER;
 
-  @Column(name = "_status", nullable = false)
+  @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
   @Builder.Default
   private CourseStatus status = CourseStatus.PENDING;
 
-  @Column(name = "_average_rating")
+  @Column(name = "average_rating")
   @Builder.Default
   private Double averageRating = 0.0;
 
-  @Column(name = "_count_rating")
+  @Column(name = "count_rating")
   @Builder.Default
   private Integer countRating = 0;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "_category_id" , nullable = false , updatable = false)
-  @JsonIgnore
+  @ManyToOne
+  @JoinColumn(name = "category_id" , nullable = false , updatable = false)
   private Category category;
 
   @ManyToOne
-  @JoinColumn(name = "_instructor_id" , nullable = false , updatable = false)
-  @JsonIgnore
+  @JoinColumn(name = "instructor_id" , nullable = false , updatable = false)
   private Instructor instructor;
 
-  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   @OrderBy("orderIndex ASC")
   @Builder.Default
   private List<Section> sections = new ArrayList<>();

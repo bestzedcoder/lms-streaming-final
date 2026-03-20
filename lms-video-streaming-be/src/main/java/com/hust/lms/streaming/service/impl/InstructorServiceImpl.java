@@ -73,7 +73,7 @@ public class InstructorServiceImpl implements InstructorService {
             .build()
     );
 
-    instructor.setTitle(request.getTitle());
+    instructor.setJobTitle(request.getJobTitle());
     instructor.setBio(request.getBio());
     return this.instructorRepository.save(instructor);
   }
@@ -91,7 +91,7 @@ public class InstructorServiceImpl implements InstructorService {
     Category category = this.categoryRepository.findBySlug(request.getCategorySlug()).orElseThrow(() -> new BadRequestException("Danh mục này không tồn tại!"));
 
     Course course = Course.builder()
-        .title(request.getTitle())
+        .title(request.getJobTitle())
         .slug(request.getSlug())
         .description(request.getDescription())
         .descriptionShort(request.getDescriptionShort())
@@ -119,13 +119,10 @@ public class InstructorServiceImpl implements InstructorService {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
     Course course = this.courseRepository.findByIdAndInstructorId(id, UUID.fromString(authId)).orElseThrow(ResourceAccessDeniedException::new);
 
-    course.setTitle(request.getTitle());
     course.setDescriptionShort(request.getDescriptionShort());
     course.setRequirements(request.getRequirements());
     course.setDescription(request.getDescription());
     course.setLevel(request.getLevel());
-    course.setPrice(request.getPrice());
-    course.setSalePrice(request.getSalePrice());
     if (image != null) {
       if (course.getThumbnail() != null) this.cloudinaryService.deleteImage(course.getPublicId());
       CloudinaryUploadResult res = this.cloudinaryService.uploadImage(image, "courses");
@@ -242,7 +239,7 @@ public class InstructorServiceImpl implements InstructorService {
     section.getLessons().add(lesson);
     this.sectionRepository.save(section);
     Course course = this.courseRepository.findByIdAndInstructorId(courseId, UUID.fromString(authId)).orElse(null);
-    this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.CONTENT_UPDATED, UUID.fromString(authId), courseId, null, CourseElasticsearchMapper.getCountLesson(course)));
+    this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.CONTENT_UPDATED, UUID.fromString(authId), courseId, null, CourseElasticsearchMapper.getTotalLessons(course)));
 
   }
 

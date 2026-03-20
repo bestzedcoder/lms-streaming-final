@@ -17,7 +17,12 @@ public class SignUpRequest {
   private String password;
 
   @NotBlank(message = "Họ tên không được để trống")
-  @Size(min = 2, max = 100, message = "Họ tên phải từ 2 đến 100 ký tự")
+  @Size(min = 2, max = 10, message = "Họ tên phải từ 2 đến 10 ký tự")
   @NoHtml(message = "Họ tên chứa ký tự không hợp lệ")
-  private String fullName;
+  private String firstName;
+
+  @NotBlank(message = "Họ tên không được để trống")
+  @Size(min = 2, max = 10, message = "Họ tên phải từ 2 đến 10 ký tự")
+  @NoHtml(message = "Họ tên chứa ký tự không hợp lệ")
+  private String lastName;
 }

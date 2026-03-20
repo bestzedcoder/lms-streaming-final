@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class InstructorCourseInfoResponse {
   private InstructorCourseResponse course;
-  private BigDecimal revenue;
   @Builder.Default
   private List<UserPublicResponse> students = new ArrayList<>();
   @Builder.Default

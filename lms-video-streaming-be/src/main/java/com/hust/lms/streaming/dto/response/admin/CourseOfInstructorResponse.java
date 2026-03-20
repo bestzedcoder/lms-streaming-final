@@ -16,8 +16,7 @@ public class CourseOfInstructorResponse {
   private UUID courseId;
   private String title;
   private String slug;
-  private BigDecimal price;
   private CourseStatus status;
   private String category;
-  private int countStudents;
+  private int totalStudents;
 }

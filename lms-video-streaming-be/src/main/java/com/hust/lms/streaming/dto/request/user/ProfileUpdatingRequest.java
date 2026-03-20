@@ -9,10 +9,15 @@ import lombok.Getter;
 @Getter
 public class ProfileUpdatingRequest {
 
-  @NotBlank(message = "Họ tên không được để trống")
-  @Size(min = 4, max = 100, message = "Họ tên phải từ 2 đến 100 ký tự")
+  @NotBlank(message = "Tên đầu không được để trống")
+  @Size(min = 2, max = 10, message = "Tên đầu phải từ 2 đến 10 ký tự")
   @NoHtml(message = "Họ tên chứa ký tự không hợp lệ")
-  private String fullName;
+  private String firstName;
+
+  @NotBlank(message = "Họ không được để trống")
+  @Size(min = 2, max = 10, message = "Họ phải từ 2 đến 10 ký tự")
+  @NoHtml(message = "Họ chứa ký tự không hợp lệ")
+  private String lastName;
 
   @NotBlank(message = "Số điện thoại không được để trống")
   @Pattern(regexp = "^0\\d{9}$", message = "Số điện thoại không hợp lệ")

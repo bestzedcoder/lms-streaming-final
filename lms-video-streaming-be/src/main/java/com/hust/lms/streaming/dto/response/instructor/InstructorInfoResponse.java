@@ -11,7 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InstructorInfoResponse {
-  private String title;
+  private String nickname;
+  private String jobTitle;
   private String bio;
   private int totalStudents;
   private int totalCourses;

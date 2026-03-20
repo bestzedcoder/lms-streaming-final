@@ -5,7 +5,6 @@ import com.hust.lms.streaming.dto.request.auth.LoginRequest;
 import com.hust.lms.streaming.dto.response.admin.CourseOfInstructorResponse;
 import com.hust.lms.streaming.dto.response.admin.CoursePendingResponse;
 import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
-import com.hust.lms.streaming.dto.response.admin.MonthlyRevenueResponse;
 import com.hust.lms.streaming.dto.response.admin.SummaryDashboardResponse;
 import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,6 +33,4 @@ public interface AdminService {
   // Summary
 
   SummaryDashboardResponse getSummaryDashboard();
-
-  List<MonthlyRevenueResponse> getRecent10MonthsRevenue();
 }

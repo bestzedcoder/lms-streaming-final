@@ -10,8 +10,10 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfiguration {
-  public static final String VIDEO_QUEUE = "video.queue";
+  public static final String SEND_VIDEO_QUEUE = "send.video.queue";
   public static final String MAIL_QUEUE = "mail.queue";
+  public static final String SEND_STREAMING_QUEUE = "send.streaming.queue";
+  public static final String RESULT_PROCESSING_QUEUE = "result.processing.queue";
 
   public static final String EXCHANGE = "lms.exchange";
 
@@ -21,7 +23,7 @@ public class RabbitConfiguration {
   // cấu hình 2 hàng đợi mail và video
   @Bean
   public Queue videoQueue() {
-    return new Queue(VIDEO_QUEUE , true);
+    return new Queue(SEND_VIDEO_QUEUE , true);
   }
 
   @Bean

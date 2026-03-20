@@ -23,27 +23,27 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "sections")
 public class Section extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "_id")
+  @Column(name = "id")
   private UUID id;
 
-  @Column(name = "_title", nullable = false)
+  @Column(name = "title", nullable = false)
   private String title;
 
-  @Column(name = "_description_short" , columnDefinition = "TEXT")
+  @Column(name = "description_short" , columnDefinition = "TEXT")
   private String descriptionShort;
 
-  @Column(name = "_order_index", nullable = false)
+  @Column(name = "order_index", nullable = false)
   private Integer orderIndex;
 
   @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -52,7 +52,7 @@ public class Section extends BaseEntity {
   private List<Lesson> lessons = new ArrayList<>();
 
   @ManyToOne
-  @JoinColumn(name = "_course_id" ,nullable = false ,updatable = false)
+  @JoinColumn(name = "course_id" ,nullable = false ,updatable = false)
   private Course course;
 
 }

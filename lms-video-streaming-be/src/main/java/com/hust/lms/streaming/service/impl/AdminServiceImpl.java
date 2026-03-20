@@ -7,12 +7,9 @@ import com.hust.lms.streaming.dto.request.auth.LoginRequest;
 import com.hust.lms.streaming.dto.response.admin.CourseOfInstructorResponse;
 import com.hust.lms.streaming.dto.response.admin.CoursePendingResponse;
 import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
-import com.hust.lms.streaming.dto.response.admin.MonthlyRevenueDto;
-import com.hust.lms.streaming.dto.response.admin.MonthlyRevenueResponse;
 import com.hust.lms.streaming.dto.response.admin.SummaryDashboardResponse;
 import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
-import com.hust.lms.streaming.enums.OrderStatus;
 import com.hust.lms.streaming.enums.Role;
 import com.hust.lms.streaming.event.custom.AuthEvent;
 import com.hust.lms.streaming.event.custom.CourseEvent;
@@ -23,24 +20,17 @@ import com.hust.lms.streaming.mapper.AdminMapper;
 import com.hust.lms.streaming.mapper.AuthMapper;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.Instructor;
-import com.hust.lms.streaming.model.Order;
 import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.redis.RedisService;
 import com.hust.lms.streaming.repository.jpa.CourseRepository;
 import com.hust.lms.streaming.repository.jpa.InstructorRepository;
-import com.hust.lms.streaming.repository.jpa.OrderRepository;
 import com.hust.lms.streaming.repository.jpa.UserRepository;
 import com.hust.lms.streaming.security.JwtUtils;
 import com.hust.lms.streaming.service.AdminService;
 import jakarta.servlet.http.HttpServletResponse;
-import java.math.BigDecimal;
-import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -60,7 +50,6 @@ public class AdminServiceImpl implements AdminService {
   private final ApplicationEventPublisher eventPublisher;
   private final AuthenticationManager authenticationManager;
   private final UserRepository userRepository;
-  private final OrderRepository orderRepository;
   private final InstructorRepository instructorRepository;
   private final JwtUtils jwtUtils;
   private final RedisService redisService;
@@ -144,7 +133,7 @@ public class AdminServiceImpl implements AdminService {
         .result(data.getContent().stream().map(user -> {
           Instructor instructor = this.instructorRepository.findById(user.getId()).orElse(null);
           if (instructor == null) return null;
-          return AdminMapper.mapUserToInstructorResponse(user, instructor.getCourses().size(), instructor.getTotalStudent());
+          return AdminMapper.mapUserToInstructorResponse(instructor, instructor.getCourses().size(), instructor.getTotalStudent());
         }).toList())
         .build();
     this.redisService.saveKeyAndValue(cacheKey, res, 1, TimeUnit.MINUTES);
@@ -185,42 +174,14 @@ public class AdminServiceImpl implements AdminService {
     long totalStudents = this.userRepository.countByRole(Role.STUDENT);
     long totalTeachers = this.userRepository.countByRole(Role.INSTRUCTOR);
     long totalCourses = this.courseRepository.countByStatus(CourseStatus.PUBLISHED);
-    long totalRevenues = this.orderRepository.findOrdersByStatus(OrderStatus.COMPLETED).stream().map(Order::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add).longValue();
 
     SummaryDashboardResponse res = SummaryDashboardResponse.builder()
         .totalStudents(totalStudents)
         .totalTeachers(totalTeachers)
         .totalCourses(totalCourses)
-        .totalRevenues(totalRevenues)
         .build();
     this.redisService.saveKeyAndValue(cacheKey, res, 1, TimeUnit.MINUTES);
     return res;
   }
 
-  @Override
-  public List<MonthlyRevenueResponse> getRecent10MonthsRevenue() {
-    List<MonthlyRevenueDto> rawData = orderRepository.getLast10MonthsRevenue();
-
-    Map<String, BigDecimal> revenueMap = rawData.stream()
-        .collect(Collectors.toMap(
-            dto -> dto.getYear() + "-" + dto.getMonth(),
-            MonthlyRevenueDto::getRevenue
-        ));
-
-    List<MonthlyRevenueResponse> finalResult = new ArrayList<>();
-    YearMonth currentMonth = YearMonth.now();
-
-    for (int i = 9; i >= 0; i--) {
-      YearMonth targetMonth = currentMonth.minusMonths(i);
-      String lookupKey = targetMonth.getYear() + "-" + targetMonth.getMonthValue();
-      BigDecimal revenue = revenueMap.getOrDefault(lookupKey, BigDecimal.ZERO);
-      String label = "T" + targetMonth.getMonthValue() + "/" + (targetMonth.getYear() % 100);
-      finalResult.add(MonthlyRevenueResponse.builder()
-              .time(label)
-              .revenue(revenue.longValue())
-          .build());
-    }
-
-    return finalResult;
-  }
 }

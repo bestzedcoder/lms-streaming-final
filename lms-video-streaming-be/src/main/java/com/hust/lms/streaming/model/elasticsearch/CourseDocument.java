@@ -32,12 +32,6 @@ public class CourseDocument {
   @Field(type = FieldType.Text)
   private String slug;
 
-  @Field(type = FieldType.Double)
-  private Double price;
-
-  @Field(type = FieldType.Double)
-  private Double salePrice;
-
   @Field(type = FieldType.Text)
   private String descriptionShort;
 
@@ -48,7 +42,7 @@ public class CourseDocument {
       otherFields = {
           @InnerField(suffix = "keyword", type = FieldType.Keyword)
       })
-  private String instructorName;
+  private String nickname;
 
   @Field(type = FieldType.Keyword)
   private String categorySlug;
@@ -56,8 +50,6 @@ public class CourseDocument {
   @Field(type = FieldType.Double)
   private Double averageRating;
 
-  // SỬA QUAN TRỌNG: Integer để range query (tìm khóa học > 10 bài)
   @Field(type = FieldType.Integer)
-  private Integer countLesson;
-
+  private Integer totalLessons;
 }

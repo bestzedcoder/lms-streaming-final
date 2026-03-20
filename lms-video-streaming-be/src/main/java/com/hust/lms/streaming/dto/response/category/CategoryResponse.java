@@ -15,8 +15,7 @@ public class CategoryResponse {
   private UUID id;
   private String name;
   private String slug;
-  private String icon;
-  private int countCourses;
+  private int totalCourses;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private String updatedBy;

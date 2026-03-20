@@ -33,29 +33,29 @@ public class Lesson extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "_id")
+  @Column(name = "id")
   private UUID id;
 
-  @Column(name = "_title", nullable = false)
+  @Column(name = "title", nullable = false)
   private String title;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "_lesson_type", nullable = false)
+  @Column(name = "lesson_type", nullable = false)
   @Builder.Default
   private LessonType lessonType = LessonType.VIDEO;
 
-  @Column(name = "_order_index", nullable = false)
+  @Column(name = "order_index", nullable = false)
   private Integer orderIndex;
 
-  @Column(name = "_preview", nullable = false)
+  @Column(name = "preview", nullable = false)
   @Builder.Default
   private Boolean preview = false;
 
   @OneToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "_video_id")
+  @JoinColumn(name = "video_id")
   private Video video;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "_section_id" ,nullable = false, updatable = false)
+  @JoinColumn(name = "section_id" ,nullable = false, updatable = false)
   private Section section;
 }

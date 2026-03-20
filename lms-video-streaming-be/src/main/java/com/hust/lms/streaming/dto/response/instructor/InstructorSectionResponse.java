@@ -16,7 +16,7 @@ public class InstructorSectionResponse {
   private UUID id;
   private String title;
   private String descriptionShort;
-  private int countLessons;
+  private int totalLessons;
   @Builder.Default
   private List<InstructorLessonResponse> lessons = new ArrayList<>();
 }

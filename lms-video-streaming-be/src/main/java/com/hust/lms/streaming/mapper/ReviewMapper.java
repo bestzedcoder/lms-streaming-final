@@ -37,7 +37,7 @@ public class ReviewMapper {
     ReviewPublicResponse response = new ReviewPublicResponse();
     response.setContent(review.getContent());
     response.setRating(review.getRating());
-    response.setUser(review.getUser().getFullName());
+    response.setFullName(review.getUser().getLastName() + " " + review.getUser().getFirstName());
     return response;
   }
 }

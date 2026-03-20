@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ReviewUserResponse {
   private String email;
+  private String fullName;
   private String avatarUrl;
 }

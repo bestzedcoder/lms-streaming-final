@@ -4,7 +4,6 @@ server:
   servlet:
     context-path: ${API_PREFIX}
 
-
 spring:
   application:
     name: LMS Streaming Platform
@@ -82,29 +81,6 @@ app:
     api-secret: ${CLOUDINARY_API_SECRET}
   origin:
     client: ${ORIGIN_CLIENT}
-
-# --- cấu hình thông tin thanh toán ---
-payment:
-  # --- VNPAY ---
-  vnpay:
-    tmn-code: ${VNPAY_TMN_CODE}       # Lấy từ email VNPay gửi
-    hash-secret: ${VNPAY_SECRET_KEY}  # Lấy từ email VNPay gửi
-    pay-url: ${VNPAY_PAY_URL} # URL môi trường Test
-    return-url: ${VNPAY_RETURN_URL} # Trả về Frontend sau khi thanh toán xong
-    version: ${VNPAY_VERSION}
-    command: ${VNPAY_COMMAND}
-    order-type: ${VNPAY_ORDER_TYPE}
-
-  # --- MOMO ---
-  momo:
-    partner-code: ${MOMO_PARTNER_CODE}
-    access-key: ${MOMO_ACCESS_KEY}
-    secret-key: ${MOMO_SECRET_KEY}
-    pay-url: ${MOMO_PAY_URL}
-    return-url: ${MOMO_RETURN_URL}
-    ipn-url: ${MOMO_RETURN_URL}
-
-
 
 
 # logging

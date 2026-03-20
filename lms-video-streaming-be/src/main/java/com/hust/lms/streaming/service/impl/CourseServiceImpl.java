@@ -28,5 +28,4 @@ public class CourseServiceImpl implements CourseService {
     }
     return CourseMapper.mapCourseToCourseAuthDetailsResponse(course, hasAccess);
   }
-
 }

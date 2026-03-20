@@ -46,10 +46,9 @@ public class CourseElasticsearchServiceImpl implements CourseElasticsearchServic
             return q.matchAll(m -> m);
           }
           return q.bool(b -> {
-            // Search theo keyword (Must)
             if (StringUtils.hasText(keyword)) {
               b.must(m -> m.multiMatch(mm -> mm
-                  .fields("title^3", "instructorName")
+                  .fields("title^3", "nickname")
                   .query(keyword)
                   .fuzziness("AUTO")
               ));
@@ -111,13 +110,11 @@ public class CourseElasticsearchServiceImpl implements CourseElasticsearchServic
         .title(req.getTitle())
         .slug(req.getSlug())
         .descriptionShort(req.getDescriptionShort())
-        .price(req.getPrice())
-        .salePrice(req.getSalePrice())
         .averageRating(req.getAverageRating())
         .thumbnail(req.getThumbnail())
         .categorySlug(req.getCategorySlug())
-        .instructorName(req.getInstructorName())
-        .countLesson(req.getCountLesson())
+        .nickname(req.getNickname())
+        .totalLessons(req.getTotalLessons())
         .build();
     this.elasticsearchOperations.save(courseDocument);
   }

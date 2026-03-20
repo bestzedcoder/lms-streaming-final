@@ -16,7 +16,5 @@ public class UserCourseResponse {
   private String title;
   private String slug;
   private String descriptionShort;
-  private BigDecimal price;
-  private BigDecimal salePrice;
   private String thumbnail;
 }

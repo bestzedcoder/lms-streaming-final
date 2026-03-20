@@ -6,7 +6,6 @@ import com.hust.lms.streaming.dto.response.user.UserPublicResponse;
 import com.hust.lms.streaming.dto.response.user.UserResponse;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.User;
-import java.math.BigDecimal;
 
 public class UserMapper {
 
@@ -20,7 +19,7 @@ public class UserMapper {
     UserResponse response = new UserResponse();
     response.setId(user.getId());
     response.setEmail(user.getEmail());
-    response.setFullName(user.getFullName());
+    response.setFullName(user.getLastName() + " " + user.getFirstName());
     response.setPhone(user.getPhone());
     response.setAvatarUrl(user.getAvatarUrl());
     response.setRole(user.getRole());
@@ -40,7 +39,7 @@ public class UserMapper {
 
     UserProfileResponse response = new UserProfileResponse();
     response.setId(user.getId());
-    response.setFullName(user.getFullName());
+    response.setFullName(user.getLastName() + " " + user.getFirstName());
     response.setEmail(user.getEmail());
     response.setPhone(user.getPhone());
     response.setAvatarUrl(user.getAvatarUrl());
@@ -54,13 +53,13 @@ public class UserMapper {
 
     UserPublicResponse response = new UserPublicResponse();
     response.setId(user.getId());
-    response.setFullName(user.getFullName());
+    response.setFullName(user.getLastName() + " " + user.getFirstName());
     response.setEmail(user.getEmail());
     response.setAvatarUrl(user.getAvatarUrl());
     return response;
   }
 
-  public static UserCourseResponse mapCourseToUserCourseResponse(Course course, BigDecimal price) {
+  public static UserCourseResponse mapCourseToUserCourseResponse(Course course) {
     if (course == null) return null;
 
     UserCourseResponse response = new UserCourseResponse();
@@ -68,8 +67,6 @@ public class UserMapper {
     response.setSlug(course.getSlug());
     response.setTitle(course.getTitle());
     response.setDescriptionShort(course.getDescriptionShort());
-    response.setPrice(price);
-    response.setSalePrice(course.getSalePrice());
     response.setThumbnail(course.getThumbnail());
     return response;
   }

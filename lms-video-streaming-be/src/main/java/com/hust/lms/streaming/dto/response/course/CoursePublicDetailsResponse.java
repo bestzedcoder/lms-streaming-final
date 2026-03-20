@@ -22,12 +22,10 @@ public class CoursePublicDetailsResponse {
   private String description;
   private String requirements;
   private String thumbnail;
-  private BigDecimal price;
-  private BigDecimal salePrice;
   private LevelCourse level;
   private Double averageRating;
   private int countRating;
-  private int countStudents;
+  private int totalStudents;
   private int totalSections;
   private int totalLessons;
   @Builder.Default

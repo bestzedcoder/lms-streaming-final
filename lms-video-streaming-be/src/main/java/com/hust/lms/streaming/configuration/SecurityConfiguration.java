@@ -36,7 +36,6 @@ public class SecurityConfiguration {
   @Bean
   public SecurityFilterChain configure(HttpSecurity http) throws Exception {
     http
-//        .anonymous(AbstractHttpConfigurer::disable)
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(AbstractHttpConfigurer::disable)
         .exceptionHandling(exception -> exception
@@ -54,8 +53,6 @@ public class SecurityConfiguration {
                 "/api/auth/refresh",
                 "/api/public/**",
                 "/overview/**",
-                "/api/payment/vn-pay/callback",
-                "/api/payment/momo/callback",
                 "/api/admin/login").permitAll()
             .requestMatchers("/api/instructor/**").hasRole(Role.INSTRUCTOR.name())
             .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())

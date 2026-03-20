@@ -55,7 +55,8 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     currentUser.setPhone(request.getPhone());
-    currentUser.setFullName(request.getFullName());
+    currentUser.setFirstName(request.getFirstName());
+    currentUser.setLastName(request.getLastName());
     currentUser.setUpdateProfile(true);
     this.userRepository.save(currentUser);
     this.eventPublisher.publishEvent(new UserEvent(UserEventType.UPDATED, currentUser.getEmail()));
@@ -74,6 +75,6 @@ public class ProfileServiceImpl implements ProfileService {
   public List<UserCourseResponse> getCourseMe() {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
     User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
-    return currentUser.getEnrollments().stream().map(enrollment -> UserMapper.mapCourseToUserCourseResponse(enrollment.getCourse(), enrollment.getPricePaid())).toList();
+    return currentUser.getEnrollments().stream().map(enrollment -> UserMapper.mapCourseToUserCourseResponse(enrollment.getCourse())).toList();
   }
 }

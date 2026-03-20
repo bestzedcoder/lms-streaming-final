@@ -8,11 +8,9 @@ import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorLessonResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorSectionResponse;
 import com.hust.lms.streaming.model.Course;
-import com.hust.lms.streaming.model.Enrollment;
 import com.hust.lms.streaming.model.Instructor;
 import com.hust.lms.streaming.model.Lesson;
 import com.hust.lms.streaming.model.Section;
-import java.math.BigDecimal;
 
 public class InstructorMapper {
   private InstructorMapper() {
@@ -23,7 +21,7 @@ public class InstructorMapper {
     if (instructor == null) return null;
 
     InstructorInfoResponse response = new InstructorInfoResponse();
-    response.setTitle(instructor.getTitle());
+    response.setJobTitle(instructor.getJobTitle());
     response.setBio(instructor.getBio());
     response.setTotalCourses(instructor.getCourses().size());
     response.setTotalStudents(instructor.getTotalStudent());
@@ -42,8 +40,6 @@ public class InstructorMapper {
     response.setDescription(course.getDescription());
     response.setDescriptionShort(course.getDescriptionShort());
     response.setRequirements(course.getRequirements());
-    response.setPrice(course.getPrice());
-    response.setSalePrice(course.getSalePrice());
     response.setThumbnail(course.getThumbnail());
     response.setLevel(course.getLevel());
     response.setStatus(course.getStatus());
@@ -80,7 +76,7 @@ public class InstructorMapper {
     InstructorSectionResponse response = new InstructorSectionResponse();
     response.setId(section.getId());
     response.setTitle(section.getTitle());
-    response.setCountLessons(section.getLessons().size());
+    response.setTotalLessons(section.getLessons().size());
     response.setDescriptionShort(section.getDescriptionShort());
     response.setLessons(section.getLessons().stream().map(InstructorMapper::mapLessonToInstructorLessonResponse).toList());
     return response;
@@ -104,7 +100,6 @@ public class InstructorMapper {
     response.setCourse(InstructorMapper.mapCourseToInstructorCourseResponse(course));
     response.setStudents(course.getEnrollments().stream().map(enrollment -> UserMapper.mapUserToUserPublicResponse(enrollment.getUser())).toList());
     response.setReviews(course.getReviews().stream().map(ReviewMapper::mapReviewToReviewCourseResponse).toList());
-    response.setRevenue(course.getEnrollments().stream().map(Enrollment::getPricePaid).reduce(BigDecimal.ZERO, BigDecimal::add));
     return response;
   }
 }

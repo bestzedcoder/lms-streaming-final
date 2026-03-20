@@ -89,7 +89,8 @@ public class AuthServiceImpl implements AuthService {
     User user = new User();
     user.setEmail(signUpRequest.getEmail());
     user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-    user.setFullName(signUpRequest.getFullName());
+    user.setFirstName(signUpRequest.getFirstName());
+    user.setLastName(signUpRequest.getLastName());
     user.setEnabled(false);
     this.userRepository.save(user);
     String otpCode = Gen.genCode(6);

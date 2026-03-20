@@ -30,17 +30,14 @@ public class Category extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "_id")
+  @Column(name = "id")
   private UUID id;
 
-  @Column(name = "_name", nullable = false, unique = true)
+  @Column(name = "name", nullable = false, unique = true)
   private String name;
 
-  @Column(name = "_slug", nullable = false, unique = true)
+  @Column(name = "slug", nullable = false, unique = true)
   private String slug;
-
-  @Column(name = "_icon")
-  private String icon;
 
   @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
   @Builder.Default

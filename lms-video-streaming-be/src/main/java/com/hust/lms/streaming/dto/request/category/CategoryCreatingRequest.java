@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
-import org.hibernate.validator.constraints.URL;
 
 @Getter
 public class CategoryCreatingRequest {
@@ -26,12 +25,4 @@ public class CategoryCreatingRequest {
   )
   @NoHtml(message = "Slug chứa ký tự không hợp lệ")
   private String slug;
-
-  //  @NotBlank(message = "Icon không được để trống")
-  @URL(message = "Icon phải là một đường dẫn hợp lệ")
-  @Pattern(
-      regexp = "^(http|https)://.*$",
-      message = "Icon phải bắt đầu bằng http:// hoặc https://"
-  )
-  private String icon;
 }

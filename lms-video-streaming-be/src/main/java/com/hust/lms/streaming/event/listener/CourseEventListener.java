@@ -34,10 +34,7 @@ public class CourseEventListener {
       case INFO_UPDATED:
         if (this.courseElasticsearchService.existsCourse(event.getCourseId())) {
           Map<String, Object> data = new HashMap<>();
-          data.put("title", event.getCourseDocument().getTitle());
           data.put("descriptionShort", event.getCourseDocument().getDescriptionShort());
-          data.put("price", event.getCourseDocument().getPrice());
-          data.put("salePrice", event.getCourseDocument().getSalePrice());
           data.put("thumbnail", event.getCourseDocument().getThumbnail());
           data.put("averageRating", event.getCourseDocument().getAverageRating());
           this.courseElasticsearchService.updateCourse(event.getCourseId().toString(), data);

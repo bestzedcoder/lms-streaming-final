@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 public class ReviewPublicResponse {
   private String content;
   private ReviewRate rating;
-  private String user;
+  private String fullName;
 }

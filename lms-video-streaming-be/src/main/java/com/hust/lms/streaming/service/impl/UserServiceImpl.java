@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
         .totalPages(userPage.getTotalPages())
         .build();
 
-    this.redisService.saveKeyAndValue(key, response, 300, TimeUnit.SECONDS);
+    this.redisService.saveKeyAndValue(key, response, 5, TimeUnit.MINUTES);
 
     return response;
   }
@@ -87,16 +87,13 @@ public class UserServiceImpl implements UserService {
   @Override
   public void create(UserCreatingRequest request) {
     if (this.userRepository.existsByEmail(request.getEmail())) {
-      throw new BadRequestException("Đã tồn tại user với email: " + request.getEmail());
-    }
-
-    if (request.getRole().equals(Role.ADMIN)) {
-      throw new BadRequestException("Không được tạo tài khoản ADMIN");
+      throw new BadRequestException("Email đã được sử dụng");
     }
 
     User user = new User();
     user.setEmail(request.getEmail());
-    user.setFullName(request.getFullName());
+    user.setFirstName(request.getFirstName());
+    user.setLastName(request.getLastName());
     String rawPassword = Gen.genPasswordRaw(16);
     user.setPassword(this.passwordEncoder.encode(rawPassword));
     user.setPhone(request.getPhone());
@@ -110,11 +107,10 @@ public class UserServiceImpl implements UserService {
   @Override
   public void update(UUID uuid, UserUpdatingRequest request) {
     User user = this.userRepository.findById(uuid).orElseThrow(() -> new ResourceNotFoundException("User", "id", uuid));
-    if (user.getRole().equals(Role.ADMIN) || request.getRole().equals(Role.ADMIN)) {
-      throw new BadRequestException("Tài khoản hoặc dữ liệu cập nhật không hợp lệ");
-    }
+    if (user.getRole().equals(Role.ADMIN)) throw new BadRequestException("Không thể thao tác thay đổi dữ liệu với tài khoản này");
     user.setRole(request.getRole());
-    user.setFullName(request.getFullName());
+    user.setFirstName(request.getFirstName());
+    user.setLastName(request.getLastName());
     user.setPhone(request.getPhone());
     this.userRepository.save(user);
     this.eventPublisher.publishEvent(new UserEvent(UserEventType.UPDATED, user.getEmail()));
@@ -123,7 +119,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public void delete(UUID uuid) {
     User user = this.userRepository.findById(uuid).orElseThrow(() -> new ResourceNotFoundException("User", "id", uuid));
-    if (user.getRole().equals(Role.ADMIN)) throw new BadRequestException("Không thể xóa tài khoản admin.");
+    if (user.getRole().equals(Role.ADMIN)) throw new BadRequestException("Không thể xóa tài khoản admin");
     if (user.getAvatarUrl() != null) {
       this.cloudinaryService.deleteImage(user.getPublicId());
     }
@@ -146,7 +142,6 @@ public class UserServiceImpl implements UserService {
   public void unlock(UnlockAccountRequest request) {
     UUID uuid = UUID.fromString(request.getId());
     User user = this.userRepository.findById(uuid).orElseThrow(() -> new ResourceNotFoundException("User", "id", uuid));
-    if (user.getRole().equals(Role.ADMIN)) throw new BadRequestException("Không thể thao tác lock và unlock với tài khoản admin");
     user.setLocked(false);
     user.setLockReason("");
     this.userRepository.save(user);

@@ -5,7 +5,6 @@ import com.hust.lms.streaming.dto.common.BaseResponse;
 import com.hust.lms.streaming.dto.common.PageResponse;
 import com.hust.lms.streaming.dto.request.auth.LoginRequest;
 import com.hust.lms.streaming.dto.request.category.CategoryCreatingRequest;
-import com.hust.lms.streaming.dto.request.category.CategoryUpdatingRequest;
 import com.hust.lms.streaming.dto.request.user.LockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UnlockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UserCreatingRequest;
@@ -13,7 +12,6 @@ import com.hust.lms.streaming.dto.request.user.UserUpdatingRequest;
 import com.hust.lms.streaming.dto.response.admin.CourseOfInstructorResponse;
 import com.hust.lms.streaming.dto.response.admin.CoursePendingResponse;
 import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
-import com.hust.lms.streaming.dto.response.admin.MonthlyRevenueResponse;
 import com.hust.lms.streaming.dto.response.admin.SummaryDashboardResponse;
 import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.dto.response.category.CategoryResponse;
@@ -52,18 +50,6 @@ public class AdminController {
   public ResponseEntity<BaseResponse<?>> getSummaryDashboard() {
     SummaryDashboardResponse res = this.adminService.getSummaryDashboard();
     return ResponseEntity.ok(BaseResponse.builder()
-            .code(200)
-            .message("Success")
-            .data(res)
-            .success(true)
-            .timestamp(LocalDateTime.now())
-        .build());
-  }
-
-  @GetMapping("summary/monthly")
-  public ResponseEntity<BaseListResponse<?>> getSummaryMonthly() {
-    List<MonthlyRevenueResponse> res = this.adminService.getRecent10MonthsRevenue();
-    return ResponseEntity.ok(BaseListResponse.<MonthlyRevenueResponse>builder()
             .code(200)
             .message("Success")
             .data(res)
@@ -286,17 +272,6 @@ public class AdminController {
         .build());
   }
 
-
-  @PostMapping("categories/{uuid}")
-  public ResponseEntity<BaseResponse<?>> update(@PathVariable("uuid") UUID id ,@RequestBody @Valid CategoryUpdatingRequest req) {
-    this.categoryService.update(id ,req);
-    return ResponseEntity.ok(BaseResponse.builder()
-        .code(200)
-        .message("Cập nhật danh mục thành công!")
-        .success(true)
-        .timestamp(LocalDateTime.now())
-        .build());
-  }
 
   @PostMapping("categories")
   public ResponseEntity<BaseResponse<?>> create(@RequestBody @Valid CategoryCreatingRequest req) {
