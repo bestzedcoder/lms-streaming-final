@@ -35,14 +35,14 @@ public class AdminMapper {
     return response;
   }
 
-  public static InstructorResponse mapUserToInstructorResponse(Instructor instructor, int totalCourses, int totalStudents) {
+  public static InstructorResponse mapUserToInstructorResponse(Instructor instructor) {
     InstructorResponse response = new InstructorResponse();
     response.setInstructorId(instructor.getId());
     response.setEmail(instructor.getUser().getEmail());
     response.setNickname(instructor.getNickname());
     response.setPhoneNumber(instructor.getUser().getPhone());
-    response.setTotalCourses(totalCourses);
-    response.setTotalStudents(totalStudents);
+    response.setTotalCourses(instructor.getCourses().size());
+    response.setTotalStudents(instructor.getTotalStudent());
     return response;
   }
 }

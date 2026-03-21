@@ -136,7 +136,7 @@ public class GlobalExceptionHandler {
         .timestamp(LocalDateTime.now())
         .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
         .success(false)
-        .message("Lỗi hệ thống: " + e.getMessage())
+        .message("Lỗi hệ thống hoặc thao tác với hệ thống sai")
         .path(request.getDescription(false).replace("uri=", ""))
         .build();
     return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);

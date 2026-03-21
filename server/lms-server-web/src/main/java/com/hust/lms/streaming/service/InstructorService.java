@@ -22,18 +22,5 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface InstructorService {
   Instructor update(InstructorUpdatingRequest request);
-  Course createCourse(CourseCreatingRequest request, MultipartFile image);
-  Course updateCourse(CourseUpdatingRequest request, MultipartFile image);
   InstructorInfoResponse getInfo();
-  InstructorCourseInfoResponse getCourse(UUID id);
-  Boolean isUploadInstructor();
-  void addSection(SectionCreatingRequest request);
-  void updateSection(SectionUpdatingRequest request);
-  void deleteSection(SectionCancelRequest request);
-  void addLesson(LessonCreatingRequest request);
-  void updateLesson(LessonUpdatingRequest request);
-  void deleteLesson(LessonCancelRequest request);
-  List<InstructorCourseResponse> getAllCourses();
-  InstructorCourseDetailsResponse getCourseDetails(UUID id);
-  void updateStatusCourse(UUID id, CourseStatus status);
 }

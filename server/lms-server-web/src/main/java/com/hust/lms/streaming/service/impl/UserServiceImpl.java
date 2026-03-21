@@ -73,7 +73,6 @@ public class UserServiceImpl implements UserService {
         .build();
 
     this.redisService.saveKeyAndValue(key, response, 5, TimeUnit.MINUTES);
-
     return response;
   }
 

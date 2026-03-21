@@ -27,7 +27,6 @@ public class CategoryMapper {
     if (category == null) return null;
 
     CategoryPublicResponse response = new CategoryPublicResponse();
-    response.setId(category.getId());
     response.setName(category.getName());
     response.setSlug(category.getSlug());
     return response;

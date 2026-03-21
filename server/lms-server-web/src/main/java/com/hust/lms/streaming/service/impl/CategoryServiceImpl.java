@@ -40,6 +40,7 @@ public class CategoryServiceImpl implements CategoryService {
   @Override
   public void delete(UUID id) {
     Category category = this.categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category" , "id", id));
+    if (!category.getCourses().isEmpty()) throw new BadRequestException("Danh mục này không thể xóa");
     this.categoryRepository.delete(category);
   }
 }

@@ -14,8 +14,8 @@ public interface SectionRepository extends JpaRepository<Section, UUID> {
        SELECT NOT EXISTS (
            SELECT 1
            FROM sections c
-           WHERE c._id = :id
-             AND c._course_id = :courseId
+           WHERE c.id = :id
+             AND c.course_id = :courseId
        )
        """, nativeQuery = true)
   boolean notExistsByIdAndCourseId(UUID id, UUID courseId);

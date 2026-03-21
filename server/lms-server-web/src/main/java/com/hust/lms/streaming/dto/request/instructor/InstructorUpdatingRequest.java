@@ -9,6 +9,11 @@ import lombok.Getter;
 
 @Getter
 public class InstructorUpdatingRequest {
+
+  @Size(min = 4, max = 20, message = "Biệt danh không thể ngắn quá 4 ký tự và không dài quá 20 ký tự")
+  @NoHtml(message = "Chức danh chứa ký tự không hợp lệ")
+  private String nickname;
+
   @Size(max = 100, message = "Chức danh không được vượt quá 100 ký tự")
   @NoHtml(message = "Chức danh chứa ký tự không hợp lệ")
   private String jobTitle;

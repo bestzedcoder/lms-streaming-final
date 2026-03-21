@@ -8,12 +8,20 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
-  @Query("""
-SELECT COUNT(e) = 1
-FROM Enrollment e
-JOIN e.course c
-WHERE e.user.id = :userId
-AND c.instructor.id = :instructorId
-""")
+  @Query(value = """
+  SELECT COUNT(e) >= 1
+  FROM enrollments e INNER JOIN courses c ON e.course_id = c.id
+  WHERE e.user_id = :userId AND c.instructor_id = :instructorId
+""", nativeQuery = true)
   boolean existsByUserAndInstructor(UUID userId, UUID instructorId);
+
+
+  @Query(value = """
+    SELECT EXISTS (
+        SELECT 1
+        FROM enrollments e
+        WHERE e.user_id = :userId AND e.course_id = :courseId
+    )
+""",nativeQuery = true)
+  boolean existsByUserIdAndCourseId(UUID userId, UUID courseId);
 }

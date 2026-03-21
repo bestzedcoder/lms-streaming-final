@@ -133,7 +133,7 @@ public class AdminServiceImpl implements AdminService {
         .result(data.getContent().stream().map(user -> {
           Instructor instructor = this.instructorRepository.findById(user.getId()).orElse(null);
           if (instructor == null) return null;
-          return AdminMapper.mapUserToInstructorResponse(instructor, instructor.getCourses().size(), instructor.getTotalStudent());
+          return AdminMapper.mapUserToInstructorResponse(instructor);
         }).toList())
         .build();
     this.redisService.saveKeyAndValue(cacheKey, res, 1, TimeUnit.MINUTES);

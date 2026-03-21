@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CategoryPublicResponse {
-  private UUID id;
   private String name;
   private String slug;
 }
