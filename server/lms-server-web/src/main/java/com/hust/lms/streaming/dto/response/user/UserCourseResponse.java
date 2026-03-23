@@ -1,6 +1,6 @@
 package com.hust.lms.streaming.dto.response.user;
 
-import java.math.BigDecimal;
+import com.hust.lms.streaming.enums.EnrollmentStatus;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,4 +17,5 @@ public class UserCourseResponse {
   private String slug;
   private String descriptionShort;
   private String thumbnail;
+  private EnrollmentStatus status;
 }

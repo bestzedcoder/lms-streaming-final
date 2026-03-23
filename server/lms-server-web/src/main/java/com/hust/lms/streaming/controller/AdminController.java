@@ -18,6 +18,7 @@ import com.hust.lms.streaming.dto.response.category.CategoryResponse;
 import com.hust.lms.streaming.dto.response.user.UserResponse;
 import com.hust.lms.streaming.service.AdminService;
 import com.hust.lms.streaming.service.CategoryService;
+import com.hust.lms.streaming.service.RequestService;
 import com.hust.lms.streaming.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -44,8 +45,32 @@ public class AdminController {
   private final AdminService adminService;
   private final UserService userService;
   private final CategoryService categoryService;
+  private final RequestService requestService;
 
-  // Summary,
+  // Handle request
+  @PostMapping("requests/instructor/{uuid}")
+  public ResponseEntity<BaseResponse<?>> handleInstructorRequest(@PathVariable("uuid") UUID requestId) {
+    this.requestService.handleInstructorRequest(requestId);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("requests/course/{uuid}")
+  public ResponseEntity<BaseResponse<?>> handleCourseRequest(@PathVariable("uuid") UUID requestId) {
+    this.requestService.handleCourseRequest(requestId);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("success")
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  // Summary
   @GetMapping("summary/dashboard")
   public ResponseEntity<BaseResponse<?>> getSummaryDashboard() {
     SummaryDashboardResponse res = this.adminService.getSummaryDashboard();

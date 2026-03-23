@@ -14,15 +14,16 @@ import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsRes
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
+import com.hust.lms.streaming.enums.EnrollmentStatus;
 import com.hust.lms.streaming.event.custom.CourseEvent;
 import com.hust.lms.streaming.event.enums.CourseEventType;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.exception.ResourceAccessDeniedException;
 import com.hust.lms.streaming.mapper.CourseElasticsearchMapper;
 import com.hust.lms.streaming.mapper.CourseMapper;
-import com.hust.lms.streaming.mapper.InstructorMapper;
 import com.hust.lms.streaming.model.Category;
 import com.hust.lms.streaming.model.Course;
+import com.hust.lms.streaming.model.Enrollment;
 import com.hust.lms.streaming.model.Instructor;
 import com.hust.lms.streaming.model.Lesson;
 import com.hust.lms.streaming.model.Section;
@@ -30,6 +31,7 @@ import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.redis.RedisService;
 import com.hust.lms.streaming.repository.jpa.CategoryRepository;
 import com.hust.lms.streaming.repository.jpa.CourseRepository;
+import com.hust.lms.streaming.repository.jpa.EnrollmentRepository;
 import com.hust.lms.streaming.repository.jpa.InstructorRepository;
 import com.hust.lms.streaming.repository.jpa.LessonRepository;
 import com.hust.lms.streaming.repository.jpa.SectionRepository;
@@ -56,6 +58,7 @@ public class CourseServiceImpl implements CourseService {
   private final SectionRepository sectionRepository;
   private final LessonRepository lessonRepository;
   private final InstructorRepository instructorRepository;
+  private final EnrollmentRepository enrollmentRepository;
   private final RedisService redisService;
   private final ApplicationEventPublisher eventPublisher;
 
@@ -70,11 +73,15 @@ public class CourseServiceImpl implements CourseService {
     Course course = this.courseRepository.findBySlugAndStatus(slug, CourseStatus.PUBLISHED).orElse(null);
 
     boolean hasAccess = false;
+    EnrollmentStatus status = EnrollmentStatus.ACTIVE;
     if (course != null) {
-      hasAccess = course.getEnrollments().stream().anyMatch(enrollment -> enrollment.getUser().getId().equals(
-          UUID.fromString(authId)));
+      Enrollment enrollment = this.enrollmentRepository.findByUserIdAndCourseId(UUID.fromString(authId), course.getId()).orElse(null);
+      if (enrollment != null) {
+        hasAccess = true;
+        status = enrollment.getStatus();
+      }
     }
-    return CourseMapper.mapCourseToCourseAuthDetailsResponse(course, hasAccess);
+    return CourseMapper.mapCourseToCourseAuthDetailsResponse(course, hasAccess, status);
   }
 
   @Override
@@ -90,7 +97,7 @@ public class CourseServiceImpl implements CourseService {
     Category category = this.categoryRepository.findBySlug(request.getCategorySlug()).orElseThrow(() -> new BadRequestException("Danh mục này không tồn tại!"));
 
     Course course = Course.builder()
-        .title(request.getJobTitle())
+        .title(request.getTitle())
         .slug(request.getSlug())
         .description(request.getDescription())
         .descriptionShort(request.getDescriptionShort())

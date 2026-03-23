@@ -68,13 +68,6 @@ public class PublicController {
     return ResponseEntity.ok("Đã reset thành công!");
   }
 
-  // Test Postman
-//  @PostMapping("courses/update/{uuid}")
-//  public ResponseEntity<?> updateCourse(@PathVariable String uuid, @RequestBody Map<String, Object> data) {
-//    this.courseElasticsearchService.updateCourse(uuid, data);
-//    return ResponseEntity.ok("Đã update thành công");
-//  }
-
 
   @GetMapping("courses/{slug}/details")
   public ResponseEntity<BaseResponse<?>> getPublicCourseDetails(@PathVariable("slug") String slug) {

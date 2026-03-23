@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class InstructorCourseInfoResponse {
   private InstructorCourseResponse course;
   @Builder.Default
-  private List<UserPublicResponse> students = new ArrayList<>();
+  private List<InstructorCourseParticipantResponse> students = new ArrayList<>();
   @Builder.Default
   private List<ReviewCourseResponse> reviews = new ArrayList<>();
 }

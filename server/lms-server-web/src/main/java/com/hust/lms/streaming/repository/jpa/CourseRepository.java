@@ -16,8 +16,8 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
     SELECT NOT EXISTS (
         SELECT 1
         FROM courses c
-        WHERE c._id = :id
-          AND c._instructor_id = :instructorId
+        WHERE c.id = :id
+          AND c.instructor_id = :instructorId
     )
     """, nativeQuery = true)
   boolean notExistsByIdAndInstructorId(UUID id, UUID instructorId);

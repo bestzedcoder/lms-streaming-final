@@ -2,7 +2,7 @@ package com.hust.lms.streaming.dto.response.registration;
 
 import com.hust.lms.streaming.dto.response.course.CoursePublicRegistrationResponse;
 import com.hust.lms.streaming.dto.response.user.UserPublicResponse;
-import com.hust.lms.streaming.enums.EnrollmentStatus;
+import com.hust.lms.streaming.enums.RegistrationStatus;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RegistrationResponse {
   private UUID id;
-  private EnrollmentStatus status;
+  private RegistrationStatus status;
   private UserPublicResponse student;
   private CoursePublicRegistrationResponse course;
 }

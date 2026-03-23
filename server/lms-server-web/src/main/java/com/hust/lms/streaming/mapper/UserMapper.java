@@ -4,6 +4,7 @@ import com.hust.lms.streaming.dto.response.user.UserCourseResponse;
 import com.hust.lms.streaming.dto.response.user.UserProfileResponse;
 import com.hust.lms.streaming.dto.response.user.UserPublicResponse;
 import com.hust.lms.streaming.dto.response.user.UserResponse;
+import com.hust.lms.streaming.enums.EnrollmentStatus;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.User;
 
@@ -19,7 +20,8 @@ public class UserMapper {
     UserResponse response = new UserResponse();
     response.setId(user.getId());
     response.setEmail(user.getEmail());
-    response.setFullName(user.getLastName() + " " + user.getFirstName());
+    response.setFirstName(user.getFirstName());
+    response.setLastName(user.getLastName());
     response.setPhone(user.getPhone());
     response.setAvatarUrl(user.getAvatarUrl());
     response.setRole(user.getRole());
@@ -39,7 +41,8 @@ public class UserMapper {
 
     UserProfileResponse response = new UserProfileResponse();
     response.setId(user.getId());
-    response.setFullName(user.getLastName() + " " + user.getFirstName());
+    response.setFirstName(user.getFirstName());
+    response.setLastName(user.getLastName());
     response.setEmail(user.getEmail());
     response.setPhone(user.getPhone());
     response.setAvatarUrl(user.getAvatarUrl());
@@ -55,11 +58,12 @@ public class UserMapper {
     response.setId(user.getId());
     response.setFullName(user.getLastName() + " " + user.getFirstName());
     response.setEmail(user.getEmail());
+    response.setPhone(user.getPhone());
     response.setAvatarUrl(user.getAvatarUrl());
     return response;
   }
 
-  public static UserCourseResponse mapCourseToUserCourseResponse(Course course) {
+  public static UserCourseResponse mapCourseToUserCourseResponse(Course course, EnrollmentStatus status) {
     if (course == null) return null;
 
     UserCourseResponse response = new UserCourseResponse();
@@ -68,6 +72,7 @@ public class UserMapper {
     response.setTitle(course.getTitle());
     response.setDescriptionShort(course.getDescriptionShort());
     response.setThumbnail(course.getThumbnail());
+    response.setStatus(status);
     return response;
   }
 }

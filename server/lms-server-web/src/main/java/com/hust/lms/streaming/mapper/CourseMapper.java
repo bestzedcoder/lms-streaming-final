@@ -8,21 +8,25 @@ import com.hust.lms.streaming.dto.response.course.LessonPublicResponse;
 import com.hust.lms.streaming.dto.response.course.SectionPublicResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
+import com.hust.lms.streaming.dto.response.instructor.InstructorCourseParticipantResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorLessonResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorSectionResponse;
+import com.hust.lms.streaming.enums.EnrollmentStatus;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.Lesson;
 import com.hust.lms.streaming.model.Section;
+import com.hust.lms.streaming.model.User;
 
 public class CourseMapper {
   private CourseMapper() {
     throw new AssertionError("Utility class");
   }
 
-  public static CourseAuthDetailsResponse mapCourseToCourseAuthDetailsResponse(Course course, Boolean hasAccess) {
+  public static CourseAuthDetailsResponse mapCourseToCourseAuthDetailsResponse(Course course, Boolean hasAccess, EnrollmentStatus status) {
     CourseAuthDetailsResponse response = new CourseAuthDetailsResponse();
     response.setCourse(CourseMapper.mapCourseToCoursePublicDetailsResponse(course));
+    response.setStatus(status);
     response.setHasAccess(hasAccess);
     return response;
   }
@@ -146,8 +150,20 @@ public class CourseMapper {
 
     InstructorCourseInfoResponse response = new InstructorCourseInfoResponse();
     response.setCourse(CourseMapper.mapCourseToInstructorCourseResponse(course));
-    response.setStudents(course.getEnrollments().stream().map(enrollment -> UserMapper.mapUserToUserPublicResponse(enrollment.getUser())).toList());
+    response.setStudents(course.getEnrollments().stream().map(enrollment -> CourseMapper.mapUserToInstructorCourseParticipantResponse(enrollment.getUser(), enrollment.getStatus())).toList());
     response.setReviews(course.getReviews().stream().map(ReviewMapper::mapReviewToReviewCourseResponse).toList());
+    return response;
+  }
+
+  public static InstructorCourseParticipantResponse mapUserToInstructorCourseParticipantResponse(
+      User user, EnrollmentStatus status) {
+    InstructorCourseParticipantResponse response = new InstructorCourseParticipantResponse();
+    response.setId(user.getId());
+    response.setFullName(user.getLastName() + " " + user.getFirstName());
+    response.setEmail(user.getEmail());
+    response.setPhone(user.getPhone());
+    response.setAvatarUrl(user.getAvatarUrl());
+    response.setStatus(status);
     return response;
   }
 }

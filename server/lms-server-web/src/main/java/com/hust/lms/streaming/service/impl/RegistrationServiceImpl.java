@@ -2,7 +2,7 @@ package com.hust.lms.streaming.service.impl;
 
 import com.hust.lms.streaming.dto.response.registration.RegistrationResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
-import com.hust.lms.streaming.enums.EnrollmentStatus;
+import com.hust.lms.streaming.enums.RegistrationStatus;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.mapper.RegistrationMapper;
 import com.hust.lms.streaming.model.Course;
@@ -58,9 +58,9 @@ public class RegistrationServiceImpl implements RegistrationService {
   @Transactional
   public void approveRegistration(UUID registrationId, String message) {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    Registration registration = this.registrationRepository.findRegistrationByInstructor(UUID.fromString(authId), registrationId, EnrollmentStatus.PENDING).orElse(null);
+    Registration registration = this.registrationRepository.findRegistrationByInstructor(UUID.fromString(authId), registrationId, RegistrationStatus.PENDING).orElse(null);
     if (registration == null) return;
-    registration.setStatus(EnrollmentStatus.APPROVED);
+    registration.setStatus(RegistrationStatus.APPROVED);
     registration.setResolvedAt(LocalDateTime.now());
     registration.setTeacherNote(message);
 
@@ -77,26 +77,26 @@ public class RegistrationServiceImpl implements RegistrationService {
   }
 
   @Override
-  @Transactional
   public void rejectRegistration(UUID registrationId, String message) {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    Registration registration = this.registrationRepository.findRegistrationByInstructor(UUID.fromString(authId), registrationId, EnrollmentStatus.PENDING).orElse(null);
+    Registration registration = this.registrationRepository.findRegistrationByInstructor(UUID.fromString(authId), registrationId, RegistrationStatus.PENDING).orElse(null);
     if (registration == null) return;
-    registration.setStatus(EnrollmentStatus.REJECTED);
+    registration.setStatus(RegistrationStatus.REJECTED);
     registration.setResolvedAt(LocalDateTime.now());
     registration.setTeacherNote(message);
+    this.registrationRepository.save(registration);
   }
 
   @Override
   public List<RegistrationResponse> getPendingRegistrationsByUser(String email) {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    return this.registrationRepository.findRegistrationsByInstructorAndStudent(UUID.fromString(authId), email, EnrollmentStatus.PENDING)
+    return this.registrationRepository.findRegistrationsByInstructorAndStudent(UUID.fromString(authId), email, RegistrationStatus.PENDING)
         .stream().map(RegistrationMapper::toRegistrationResponse).toList();
   }
 
   @Override
   public int countPendingRegistrationsByInstructor() {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    return this.registrationRepository.countByInstructor(UUID.fromString(authId), EnrollmentStatus.PENDING);
+    return this.registrationRepository.countByInstructor(UUID.fromString(authId), RegistrationStatus.PENDING);
   }
 }

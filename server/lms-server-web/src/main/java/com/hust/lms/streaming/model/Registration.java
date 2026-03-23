@@ -1,6 +1,6 @@
 package com.hust.lms.streaming.model;
 
-import com.hust.lms.streaming.enums.EnrollmentStatus;
+import com.hust.lms.streaming.enums.RegistrationStatus;
 import com.hust.lms.streaming.model.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,7 +46,7 @@ public class Registration extends BaseEntity {
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
   @Builder.Default
-  private EnrollmentStatus status = EnrollmentStatus.PENDING;
+  private RegistrationStatus status = RegistrationStatus.PENDING;
 
   @Column(name = "student_message", columnDefinition = "TEXT")
   private String studentMessage;

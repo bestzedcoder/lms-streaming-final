@@ -12,9 +12,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
   Optional<User> findByEmail(String email);
+
   boolean existsByEmail(String email);
+
   Page<User> findByEmailContainingIgnoreCase(String email, Pageable pageable);
-  Page<User> findByRoleAndEmailContainingIgnoreCase(Role role,String email, Pageable pageable);
+
+  Page<User> findByRoleAndEmailContainingIgnoreCase(Role role, String email, Pageable pageable);
 
   long countByRole(Role role);
 }

@@ -1,4 +1,4 @@
-package com.hust.lms.streaming.dto.response.user;
+package com.hust.lms.streaming.dto.response.instructor;
 
 import com.hust.lms.streaming.enums.EnrollmentStatus;
 import java.util.UUID;
@@ -11,10 +11,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserPublicResponse {
+public class InstructorCourseParticipantResponse {
   private UUID id;
   private String fullName;
   private String email;
   private String phone;
   private String avatarUrl;
+  private EnrollmentStatus status;
 }

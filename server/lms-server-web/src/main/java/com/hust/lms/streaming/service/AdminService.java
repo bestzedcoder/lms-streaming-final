@@ -12,6 +12,12 @@ import java.util.List;
 import java.util.UUID;
 
 public interface AdminService {
+
+  // handle report
+
+
+  // manage courses
+
   void approve(UUID courseId);
 
   AdminResponse login(LoginRequest data, HttpServletResponse response);
