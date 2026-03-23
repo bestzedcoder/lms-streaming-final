@@ -8,11 +8,6 @@ export interface AuthUserInfoResponse {
   role: "STUDENT" | "INSTRUCTOR";
 }
 
-// export interface AuthLoginResponse {
-//   accessToken: string;
-//   user: AuthUserInfoResponse;
-// }
-
 export interface AuthLoginRequest {
   email: string;
   password: string;
@@ -21,7 +16,8 @@ export interface AuthLoginRequest {
 export interface AuthRegisterRequest {
   email: string;
   password: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface AuthVerifyAccountRequest {

@@ -18,8 +18,6 @@ public class CategoryMapper {
     response.setSlug(category.getSlug());
     response.setTotalCourses(category.getCourses().size());
     response.setCreatedAt(category.getCreatedAt());
-    response.setUpdatedAt(category.getUpdatedAt());
-    response.setUpdatedBy(category.getUpdatedBy());
     return response;
   }
 

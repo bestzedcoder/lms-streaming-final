@@ -18,7 +18,6 @@ import { useAuthStore } from "../../store/useAuthStore.store";
 import { useNavigate } from "react-router-dom";
 import { profileService } from "../../services/profile.service";
 import type { UserCourseResponse } from "../../@types/user.types";
-import { formatCurrency } from "../../utils/format.utils";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -118,85 +117,63 @@ const InfoPage = () => {
         />
       ) : courses.length > 0 ? (
         <List
-          grid={{ gutter: 16, xs: 1, sm: 2, lg: 2 }} // Nếu bạn muốn list 1 cột thì đổi thành { xs: 1, sm: 1, lg: 1 }
+          grid={{ gutter: 16, xs: 1, sm: 2, lg: 2 }}
           dataSource={courses}
-          renderItem={(item) => {
-            // --- 1. LOGIC GIÁ TIỀN MỚI (CHỈ HIỆN 1 GIÁ) ---
-            const renderPrice = () => {
-              if (item.price === 0) {
-                return (
-                  <span className="text-blue-600 font-bold text-lg">
-                    Miễn phí
-                  </span>
-                );
-              }
-              return (
-                <span className="text-red-600 font-bold text-lg">
-                  {formatCurrency(item.price)}
-                </span>
-              );
-            };
+          renderItem={(item) => (
+            <List.Item className="h-full pb-4">
+              <Card
+                hoverable
+                className="rounded-xl overflow-hidden border border-gray-200 shadow-sm transition-all hover:shadow-md h-full"
+                bodyStyle={{ padding: 16, height: "100%" }}
+                onClick={() => navigate(`/student/courses/${item.slug}`)}
+              >
+                <div className="flex gap-4 items-start h-full">
+                  <div className="w-24 h-24 flex-shrink-0">
+                    <img
+                      src={
+                        item.thumbnail ||
+                        "https://placehold.co/150?text=No+Image"
+                      }
+                      className="w-full h-full rounded-lg object-cover border border-gray-100"
+                      alt={item.title}
+                    />
+                  </div>
 
-            return (
-              <List.Item className="h-full pb-4">
-                <Card
-                  hoverable
-                  // Ép Card chiếm toàn bộ chiều cao của ô Grid
-                  className="rounded-xl overflow-hidden border border-gray-200 shadow-sm transition-all hover:shadow-md hover:border-blue-300 h-full"
-                  bodyStyle={{ padding: 16, height: "100%" }}
-                  onClick={() => navigate(`/student/courses/${item.slug}`)}
-                >
-                  {/* 2. Ép Flex giãn chiều cao */}
-                  <div className="flex gap-4 items-start h-full">
-                    {/* Cột trái: Ảnh (Kích thước cố định) */}
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0">
-                      <img
-                        src={
-                          item.thumbnail ||
-                          "https://placehold.co/150?text=No+Image"
-                        }
-                        className="w-full h-full rounded-lg object-cover border border-gray-100"
-                        alt={item.title}
-                      />
+                  <div className="flex flex-col flex-1 h-full min-h-[6rem]">
+                    <div>
+                      <h4 className="font-bold text-gray-800 m-0 text-base line-clamp-2 mb-1">
+                        {item.title}
+                      </h4>
+                      <Text type="secondary" className="text-sm line-clamp-1">
+                        {item.descriptionShort}
+                      </Text>
                     </div>
-
-                    {/* Cột phải: Nội dung (Dùng min-h để ép các card cao bằng nhau) */}
-                    <div className="flex flex-col flex-1 h-full min-h-[6rem] sm:min-h-[7rem]">
-                      <div>
-                        <h4
-                          className="font-bold text-gray-800 m-0 text-base line-clamp-2 leading-tight mb-1"
-                          title={item.title}
-                        >
-                          {item.title}
-                        </h4>
-                        <Text type="secondary" className="text-sm line-clamp-1">
-                          {item.descriptionShort || "Không có mô tả ngắn"}
-                        </Text>
-                      </div>
-
-                      {/* Phần Giá và Tag luôn được ghim sát đáy */}
-                      <div className="mt-auto pt-3 flex items-end justify-between">
-                        <Tag
-                          color="processing"
-                          className="m-0 text-xs px-2 py-0.5 rounded"
-                        >
-                          Đã sở hữu
-                        </Tag>
-                        <div className="text-right">{renderPrice()}</div>
-                      </div>
+                    <div className="mt-auto pt-3 flex items-end justify-between">
+                      <Tag
+                        color="processing"
+                        className="m-0 text-xs px-2 py-0.5 rounded"
+                      >
+                        Đã sở hữu
+                      </Tag>
+                      <Tag color={item.status === "ACTIVE" ? "green" : "red"}>
+                        {item.status}
+                      </Tag>
                     </div>
                   </div>
-                </Card>
-              </List.Item>
-            );
-          }}
+                </div>
+              </Card>
+            </List.Item>
+          )}
         />
       ) : (
         <Empty
           description="Bạn chưa đăng ký khóa học nào."
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         >
-          <Button type="primary" onClick={() => navigate("/student/courses")}>
+          <Button
+            type="primary"
+            onClick={() => navigate("/student/courses/search")}
+          >
             Khám phá ngay
           </Button>
         </Empty>

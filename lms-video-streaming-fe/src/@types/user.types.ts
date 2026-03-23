@@ -1,6 +1,7 @@
 export interface UserProfileResponse {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   email: string;
   role: "STUDENT" | "INSTRUCTOR";
@@ -9,7 +10,8 @@ export interface UserProfileResponse {
 }
 
 export interface ProfileUpdatingRequest {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   phone: string;
 }
 
@@ -18,6 +20,6 @@ export interface UserCourseResponse {
   title: string;
   slug: string;
   descriptionShort: string;
-  price: number;
   thumbnail?: string;
+  status: "ACTIVE" | "BANNED";
 }

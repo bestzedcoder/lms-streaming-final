@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
   LoginUserInfoResponse login(HttpServletResponse response,String email, String password);
+  LoginUserInfoResponse getMe();
   void register(SignUpRequest signUpRequest);
   void verifyAccount(VerifyAccountRequest request);
   void forgotPassword(ForgotPasswordRequest request);
@@ -19,7 +20,4 @@ public interface AuthService {
   void refresh(HttpServletRequest request, HttpServletResponse response);
   void logout(HttpServletResponse response);
   void changePassword(ChangePasswordRequest request);
-
-  AdminResponse checkAdmin();
-  LoginUserInfoResponse getMe();
 }

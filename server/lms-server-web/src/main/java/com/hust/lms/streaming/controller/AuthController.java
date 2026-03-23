@@ -126,18 +126,6 @@ public class AuthController {
         .build());
   }
 
-  @GetMapping("check-admin")
-  public ResponseEntity<BaseResponse<?>> checkAdmin() {
-    AdminResponse res = this.authService.checkAdmin();
-    return ResponseEntity.ok(BaseResponse.builder()
-            .code(200)
-            .success(true)
-            .data(res)
-            .message("Success")
-            .timestamp(LocalDateTime.now())
-        .build());
-  }
-
   @GetMapping("check-auth")
   public ResponseEntity<BaseResponse<?>> checkAuth() {
     LoginUserInfoResponse res = this.authService.getMe();

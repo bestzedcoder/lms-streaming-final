@@ -28,7 +28,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         .timestamp(LocalDateTime.now())
         .code(401)
         .success(false)
-        .message("Bạn chưa đăng nhập hoặc Token không hợp lệ.")
+        .message("Bạn chưa đăng nhập hoặc Token không hợp lệ")
         .path(request.getRequestURI())
         .build();
 

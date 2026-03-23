@@ -1,6 +1,7 @@
 export interface UserResponse {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   email: string;
   role: "ADMIN" | "INSTRUCTOR" | "STUDENT";
@@ -23,13 +24,15 @@ export interface AdminSearchUser {
 
 export interface AdminUserCreate {
   email: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   role: "STUDENT" | "INSTRUCTOR";
 }
 
 export interface AdminUserUpdate {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   role: "STUDENT" | "INSTRUCTOR";
 }

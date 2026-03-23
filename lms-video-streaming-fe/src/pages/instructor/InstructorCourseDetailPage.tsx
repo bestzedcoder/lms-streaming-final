@@ -38,7 +38,6 @@ import type {
   InstructorCourseInfoResponse,
   ReviewCourseResponse,
 } from "../../@types/instructor.types";
-import { formatCurrency } from "../../utils/format.utils";
 
 const { Title, Text } = Typography;
 

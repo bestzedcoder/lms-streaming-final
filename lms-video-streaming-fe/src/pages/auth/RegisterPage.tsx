@@ -8,13 +8,15 @@ import AuthLayout from "../../components/layout/AuthLayout";
 
 const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
+  const [form] = Form.useForm();
   const navigate = useNavigate();
 
   const onFinish = async (values: any) => {
     setLoading(true);
     try {
       await authService.register({
-        fullName: values.fullName,
+        firstName: values.firstName,
+        lastName: values.lastName,
         email: values.email,
         password: values.password,
       });
@@ -26,7 +28,7 @@ const RegisterPage = () => {
 
       navigate("/verify-account", { state: { email: values.email } });
     } catch (error) {
-      console.log("error: ", error);
+      console.error("Registration error: ", error);
     } finally {
       setLoading(false);
     }
@@ -38,17 +40,32 @@ const RegisterPage = () => {
       subtitle="Bắt đầu hành trình học tập của bạn ngay hôm nay."
       quote='"Giáo dục là vũ khí mạnh nhất để thay đổi thế giới."'
     >
-      <Form name="register" onFinish={onFinish} layout="vertical" size="large">
-        <Form.Item
-          name="fullName"
-          rules={[{ required: true, message: "Vui lòng nhập Họ và tên!" }]}
-        >
-          <Input
-            prefix={<UserOutlined className="text-gray-400" />}
-            placeholder="Họ và tên"
-            className="rounded-lg py-2"
-          />
-        </Form.Item>
+      <Form
+        form={form}
+        name="register"
+        onFinish={onFinish}
+        layout="vertical"
+        size="large"
+      >
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item
+            name="firstName"
+            rules={[{ required: true, message: "Nhập Tên!" }]}
+          >
+            <Input
+              prefix={<UserOutlined className="text-gray-400" />}
+              placeholder="Tên"
+              className="rounded-lg py-2"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="lastName"
+            rules={[{ required: true, message: "Nhập Họ!" }]}
+          >
+            <Input placeholder="Họ" className="rounded-lg py-2" />
+          </Form.Item>
+        </div>
 
         <Form.Item
           name="email"

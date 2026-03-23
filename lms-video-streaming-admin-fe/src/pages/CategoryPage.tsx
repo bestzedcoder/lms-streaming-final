@@ -11,12 +11,12 @@ import {
   Input,
   Space,
   Tag,
-  Avatar,
 } from "antd";
 import {
   AppstoreAddOutlined,
   DeleteOutlined,
-  PictureOutlined,
+  UserOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import { categoryService } from "../services/category.service";
 import type { AdminCategoryResponse } from "../@types/category.type";
@@ -74,16 +74,16 @@ const CategoryPage: React.FC = () => {
   };
 
   const handleDelete = (category: AdminCategoryResponse) => {
-    if (category.countCourses > 0) {
+    if (category.totalCourses > 0) {
       message.warning(
-        `Không thể xóa danh mục đang chứa ${category.countCourses} khóa học!`,
+        `Không thể xóa danh mục đang chứa ${category.totalCourses} khóa học!`,
       );
       return;
     }
 
     Modal.confirm({
       title: "Xác nhận xóa danh mục",
-      content: `Bạn có chắc chắn muốn xóa danh mục "${category.name}" không? Hành động này không thể hoàn tác.`,
+      content: `Bạn có chắc chắn muốn xóa danh mục "${category.name}" không?`,
       okText: "Xóa",
       okType: "danger",
       cancelText: "Hủy",
@@ -107,42 +107,27 @@ const CategoryPage: React.FC = () => {
 
   const columns = [
     {
-      title: "Icon",
-      dataIndex: "icon",
-      key: "icon",
-      width: 80,
-      align: "center" as const,
-      render: (iconUrl: string) => (
-        <Avatar
-          shape="square"
-          src={iconUrl}
-          icon={<PictureOutlined />}
-          className="bg-blue-50 border border-blue-100 text-blue-400"
-        />
-      ),
-    },
-    {
       title: "Tên danh mục",
       dataIndex: "name",
       key: "name",
       render: (text: string) => (
-        <span className="font-semibold text-gray-800">{text}</span>
+        <span className="font-bold text-gray-800">{text}</span>
       ),
     },
     {
-      title: "Đường dẫn (Slug)",
+      title: "Slug",
       dataIndex: "slug",
       key: "slug",
       render: (slug: string) => (
-        <Tag color="default" className="font-mono text-xs">
+        <code className="bg-gray-100 px-2 py-0.5 rounded text-xs text-blue-600 font-mono">
           {slug}
-        </Tag>
+        </code>
       ),
     },
     {
       title: "Số khóa học",
-      dataIndex: "countCourses",
-      key: "countCourses",
+      dataIndex: "totalCourses",
+      key: "totalCourses",
       align: "center" as const,
       render: (count: number) => (
         <Tag
@@ -157,15 +142,12 @@ const CategoryPage: React.FC = () => {
       title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (dateStr: string) => {
-        if (!dateStr) return "-";
-        const date = new Date(dateStr);
-        return (
-          <span className="text-gray-500 text-sm">
-            {date.toLocaleDateString("vi-VN")}
-          </span>
-        );
-      },
+      render: (dateStr: string) => (
+        <Space size={4} className="text-gray-500 text-sm">
+          <CalendarOutlined className="text-xs" />
+          {dateStr ? new Date(dateStr).toLocaleDateString("vi-VN") : "-"}
+        </Space>
+      ),
     },
     {
       title: "Thao tác",
@@ -173,19 +155,13 @@ const CategoryPage: React.FC = () => {
       align: "right" as const,
       render: (_: any, record: AdminCategoryResponse) => (
         <Space size="middle">
-          <Tooltip
-            title={
-              record.countCourses > 0
-                ? "Danh mục đang có khóa học"
-                : "Xóa danh mục"
-            }
-          >
+          <Tooltip title={record.totalCourses > 0 ? "Đang có khóa học" : "Xóa"}>
             <Button
               type="text"
               danger
               icon={<DeleteOutlined />}
               onClick={() => handleDelete(record)}
-              disabled={record.countCourses > 0}
+              disabled={record.totalCourses > 0}
             />
           </Tooltip>
         </Space>
@@ -195,7 +171,7 @@ const CategoryPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex justify-between items-center">
         <Title level={3} className="!mb-0 text-gray-800">
           Quản lý danh mục
         </Title>
@@ -203,7 +179,7 @@ const CategoryPage: React.FC = () => {
           type="primary"
           icon={<AppstoreAddOutlined />}
           size="large"
-          className="shadow-md"
+          className="shadow-md bg-primary"
           onClick={() => {
             form.resetFields();
             setIsModalOpen(true);
@@ -213,7 +189,7 @@ const CategoryPage: React.FC = () => {
         </Button>
       </div>
 
-      <Card className="shadow-sm border-0 rounded-xl">
+      <Card className="shadow-sm border-0 rounded-xl overflow-hidden">
         <Table
           columns={columns}
           dataSource={categories}
@@ -224,7 +200,6 @@ const CategoryPage: React.FC = () => {
             showSizeChanger: true,
             showTotal: (total) => `Tổng cộng ${total} danh mục`,
           }}
-          className="overflow-x-auto"
         />
       </Card>
 
@@ -246,7 +221,7 @@ const CategoryPage: React.FC = () => {
             label="Tên danh mục"
             rules={[
               { required: true, message: "Vui lòng nhập tên danh mục!" },
-              { min: 3, message: "Tên danh mục phải có ít nhất 3 ký tự!" },
+              { min: 3, message: "Tên danh mục ít nhất 3 ký tự!" },
             ]}
           >
             <Input
@@ -257,24 +232,10 @@ const CategoryPage: React.FC = () => {
 
           <Form.Item
             name="slug"
-            label="Đường dẫn"
-            rules={[
-              { required: true, message: "Vui lòng nhập slug!" },
-              {
-                pattern: /^[a-z0-9-]+$/,
-                message: "Slug chỉ chứa chữ thường, số và dấu gạch ngang!",
-              },
-            ]}
+            label="Đường dẫn (Slug)"
+            rules={[{ required: true, message: "Vui lòng nhập slug!" }]}
           >
             <Input placeholder="Ví dụ: lap-trinh-web" />
-          </Form.Item>
-
-          <Form.Item
-            name="icon"
-            label="Đường dẫn Icon (URL)"
-            rules={[{ type: "url", message: "Đường dẫn không hợp lệ!" }]}
-          >
-            <Input placeholder="https://example.com/icon.png" />
           </Form.Item>
 
           <div className="flex justify-end gap-2 mt-6">

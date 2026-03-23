@@ -81,7 +81,7 @@ const UserPage: React.FC = () => {
 
   const handleLockUser = (user: UserResponse) => {
     Modal.confirm({
-      title: `Khóa người dùng: ${user.fullName}`,
+      title: `Khóa người dùng: ${user.lastName} ${user.firstName}`,
       content: (
         <Input.TextArea
           placeholder="Nhập lý do khóa..."
@@ -131,7 +131,8 @@ const UserPage: React.FC = () => {
     setEditingUserId(user.id);
     form.setFieldsValue({
       email: user.email,
-      fullName: user.fullName,
+      firstName: user.firstName, // Cập nhật field mới
+      lastName: user.lastName, // Cập nhật field mới
       phone: user.phone,
       role: user.role,
     });
@@ -153,7 +154,7 @@ const UserPage: React.FC = () => {
       fetchUsers(queryParams);
     } catch (error: any) {
       message.error(
-        "Có lỗi xảy ra xem email hoặc số điện thoại có thể bị trùng lặp!",
+        "Có lỗi xảy ra, email hoặc số điện thoại có thể bị trùng lặp!",
       );
     } finally {
       setSubmitLoading(false);
@@ -163,14 +164,11 @@ const UserPage: React.FC = () => {
   const columns = [
     {
       title: "Họ và tên",
-      dataIndex: "fullName",
       key: "fullName",
-      render: (text: string, record: UserResponse) => (
-        <div>
-          <div className="font-semibold text-gray-800">{text}</div>
-          <div className="text-xs text-gray-400 font-mono mt-0.5">
-            {record.id}
-          </div>
+      fixed: "left" as const,
+      render: (_: any, record: UserResponse) => (
+        <div className="font-semibold text-gray-800">
+          {`${record.lastName} ${record.firstName}`}
         </div>
       ),
     },
@@ -207,8 +205,33 @@ const UserPage: React.FC = () => {
       ),
     },
     {
+      title: "Ngày tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date: string) => (
+        <span className="text-gray-600">
+          {new Date(date).toLocaleDateString("vi-VN")}
+        </span>
+      ),
+    },
+    {
+      title: "Người tạo",
+      dataIndex: "createdBy",
+      key: "createdBy",
+      render: (createdBy: string) => (
+        <Tag
+          icon={<SearchOutlined />}
+          color="default"
+          className="rounded-full px-3"
+        >
+          {createdBy || "Hệ thống"}
+        </Tag>
+      ),
+    },
+    {
       title: "Thao tác",
       key: "action",
+      fixed: "right" as const,
       render: (_: any, record: UserResponse) => (
         <Space size="middle">
           <Tooltip title="Chỉnh sửa">
@@ -319,13 +342,24 @@ const UserPage: React.FC = () => {
             />
           </Form.Item>
 
-          <Form.Item
-            name="fullName"
-            label="Họ và tên"
-            rules={[{ required: true, message: "Vui lòng nhập họ và tên!" }]}
-          >
-            <Input placeholder="Nhập họ và tên đầy đủ" />
-          </Form.Item>
+          {/* Grid để chia đôi Họ và Tên */}
+          <div className="grid grid-cols-2 gap-4">
+            <Form.Item
+              name="lastName"
+              label="Họ"
+              rules={[{ required: true, message: "Nhập họ!" }]}
+            >
+              <Input placeholder="Ví dụ: Nguyễn" />
+            </Form.Item>
+
+            <Form.Item
+              name="firstName"
+              label="Tên"
+              rules={[{ required: true, message: "Nhập tên!" }]}
+            >
+              <Input placeholder="Ví dụ: Văn A" />
+            </Form.Item>
+          </div>
 
           <Form.Item
             name="phone"

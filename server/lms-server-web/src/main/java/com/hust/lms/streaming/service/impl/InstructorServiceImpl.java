@@ -20,10 +20,10 @@ public class InstructorServiceImpl implements InstructorService {
   private final UserRepository userRepository;
 
   @Override
-  public Instructor update(InstructorUpdatingRequest request) {
+  public void update(InstructorUpdatingRequest request) {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
     User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
-    Instructor instructor = this.instructorRepository.findById(currentUser.getId()).orElse(
+    Instructor instructor = this.instructorRepository.findById(UUID.fromString(authId)).orElse(
         Instructor.builder()
             .user(currentUser)
             .build()
@@ -32,7 +32,7 @@ public class InstructorServiceImpl implements InstructorService {
     instructor.setNickname(request.getNickname());
     instructor.setJobTitle(request.getJobTitle());
     instructor.setBio(request.getBio());
-    return this.instructorRepository.save(instructor);
+    this.instructorRepository.save(instructor);
   }
 
   @Override

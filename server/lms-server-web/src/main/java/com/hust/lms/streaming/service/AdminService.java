@@ -20,10 +20,6 @@ public interface AdminService {
 
   void approve(UUID courseId);
 
-  AdminResponse login(LoginRequest data, HttpServletResponse response);
-
-  void logout(HttpServletResponse response);
-
   List<CoursePendingResponse> getCoursesPending();
 
   Integer getCoursesPendingCount();
@@ -39,4 +35,13 @@ public interface AdminService {
   // Summary
 
   SummaryDashboardResponse getSummaryDashboard();
+
+  // Auth Admin
+
+  AdminResponse login(LoginRequest data, HttpServletResponse response);
+
+  void logout(HttpServletResponse response);
+
+  AdminResponse checkAdmin();
+
 }

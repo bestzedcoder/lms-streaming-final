@@ -8,13 +8,11 @@ import {
   Badge,
   Input,
   type MenuProps,
-  Tooltip,
   Spin,
 } from "antd";
 import {
   SearchOutlined,
   BellOutlined,
-  ShoppingCartOutlined,
   UserOutlined,
   LogoutOutlined,
   BookOutlined,
@@ -22,7 +20,6 @@ import {
   RocketOutlined,
   PlayCircleOutlined,
   AppstoreOutlined,
-  ContainerOutlined,
 } from "@ant-design/icons";
 import { useAuthStore } from "../../store/useAuthStore.store";
 import { notify } from "../../utils/notification.utils";
@@ -30,7 +27,6 @@ import { authService } from "../../services/auth.service";
 import { useInstructorStore } from "../../store/useInstructorStore.store";
 import { publicService } from "../../services/public.service";
 import type { CategoryPublicResponse } from "../../@types/public.types";
-import { useCartStore } from "../../store/useCartStore.store";
 
 const { Header } = Layout;
 
@@ -39,7 +35,6 @@ const StudentHeader = () => {
   const { user, isAuthenticated, logout } = useAuthStore();
   const { reset } = useInstructorStore();
 
-  const { cartCount, fetchCartCount, clearCart } = useCartStore();
   const [searchParams] = useSearchParams();
   const [isScrolled, setIsScrolled] = useState(false);
   const [categories, setCategories] = useState<CategoryPublicResponse[]>([]);
@@ -51,17 +46,9 @@ const StudentHeader = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchCartCount();
-    }
-  }, [isAuthenticated, user, fetchCartCount]);
-
-  useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 0);
     window.addEventListener("scroll", handleScroll);
-
     fetchCategories();
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -84,7 +71,6 @@ const StudentHeader = () => {
       await authService.logout();
       logout();
       reset();
-      clearCart();
       notify.info("Đăng xuất", "Đăng xuất thành công!");
       navigate("/login");
     } catch (error) {
@@ -187,18 +173,6 @@ const StudentHeader = () => {
       label: "Danh sách yêu thích",
       icon: <HeartOutlined />,
     },
-    {
-      key: "cart",
-      label: "Giỏ hàng của tôi",
-      icon: <ShoppingCartOutlined />,
-      onClick: () => navigate("/student/my-cart"),
-    },
-    {
-      key: "orders",
-      label: "Lịch sử đơn hàng",
-      icon: <ContainerOutlined />,
-      onClick: () => navigate("/student/orders/my-orders"),
-    },
     { type: "divider" },
     {
       key: "logout",
@@ -296,22 +270,6 @@ const StudentHeader = () => {
 
         {isAuthenticated && user ? (
           <>
-            <Tooltip title="Giỏ hàng">
-              <Link
-                to="/student/my-cart"
-                className="text-gray-600 hover:text-primary transition-colors relative"
-              >
-                <Badge
-                  count={cartCount}
-                  size="small"
-                  offset={[0, 0]}
-                  color="#0056D2"
-                >
-                  <ShoppingCartOutlined className="text-2xl" />
-                </Badge>
-              </Link>
-            </Tooltip>
-
             <Dropdown
               menu={{
                 items: [{ key: "1", label: "Thông báo mới từ hệ thống" }],

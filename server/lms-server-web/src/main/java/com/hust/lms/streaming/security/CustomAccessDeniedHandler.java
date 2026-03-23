@@ -28,7 +28,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         .timestamp(LocalDateTime.now())
         .code(403)
         .success(false)
-        .message("Bạn không có quyền truy cập vào tài nguyên này.")
+        .message("Bạn không có quyền truy cập vào tài nguyên này")
         .path(request.getRequestURI())
         .build();
 

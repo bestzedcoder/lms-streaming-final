@@ -64,11 +64,10 @@ public class InstructorController {
 
   @PostMapping
   public ResponseEntity<BaseResponse<?>> updateInfo(@RequestBody @Valid InstructorUpdatingRequest req) {
-    Instructor res = this.instructorService.update(req);
+    this.instructorService.update(req);
     return ResponseEntity.ok(BaseResponse.builder()
         .code(200)
         .message("Cập thông tin giảng viên thành công!")
-        .data(res)
         .success(true)
         .timestamp(LocalDateTime.now())
         .build());

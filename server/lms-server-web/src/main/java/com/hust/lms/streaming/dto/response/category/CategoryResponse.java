@@ -17,6 +17,4 @@ public class CategoryResponse {
   private String slug;
   private int totalCourses;
   private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
-  private String updatedBy;
 }

@@ -1,6 +1,5 @@
 import { Form, Input, Button, Typography, Alert } from "antd";
 import {
-  UserOutlined,
   PhoneOutlined,
   SaveOutlined,
   InfoCircleOutlined,
@@ -23,7 +22,8 @@ const EditProfilePage = () => {
         const res = await profileService.getMe();
         if (res.data) {
           form.setFieldsValue({
-            fullName: res.data.fullName,
+            firstName: res.data.firstName,
+            lastName: res.data.lastName,
             phone: res.data.phone,
             email: res.data.email,
           });
@@ -37,13 +37,17 @@ const EditProfilePage = () => {
     setLoading(true);
     try {
       await profileService.updateProfile({
-        fullName: values.fullName,
+        firstName: values.firstName,
+        lastName: values.lastName,
         phone: values.phone,
       });
 
       notify.success("Thành công", "Hồ sơ của bạn đã được cập nhật.");
 
-      updateUser({ fullName: values.fullName, updateProfile: true });
+      updateUser({
+        fullName: values.lastName + " " + values.firstName,
+        updateProfile: true,
+      });
     } catch (e) {
       console.error("error: ", e);
     } finally {
@@ -94,25 +98,23 @@ const EditProfilePage = () => {
           />
         </Form.Item>
 
-        <Form.Item
-          label={<span className="font-semibold text-gray-700">Họ và tên</span>}
-          name="fullName"
-          rules={[
-            { required: true, message: "Vui lòng nhập họ tên đầy đủ" },
-            { min: 4, message: "Tên quá ngắn (tối thiểu 4 ký tự)" },
-          ]}
-          tooltip="Tên này sẽ hiển thị trên chứng chỉ hoàn thành khóa học của bạn."
-        >
-          <Input
-            prefix={<UserOutlined className="text-gray-400" />}
-            placeholder="Ví dụ: Nguyễn Văn A"
-            className={
-              !user?.updateProfile
-                ? "border-orange-300 focus:border-orange-500 focus:shadow-orange-100"
-                : ""
-            }
-          />
-        </Form.Item>
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item
+            label={<span className="font-semibold text-gray-700">Họ</span>}
+            name="lastName"
+            rules={[{ required: true, message: "Vui lòng nhập Họ" }]}
+          >
+            <Input placeholder="Ví dụ: Nguyễn" />
+          </Form.Item>
+
+          <Form.Item
+            label={<span className="font-semibold text-gray-700">Tên</span>}
+            name="firstName"
+            rules={[{ required: true, message: "Vui lòng nhập Tên" }]}
+          >
+            <Input placeholder="Ví dụ: Văn A" />
+          </Form.Item>
+        </div>
 
         <Form.Item
           label={

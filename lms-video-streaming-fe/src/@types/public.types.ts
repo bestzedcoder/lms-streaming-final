@@ -1,5 +1,4 @@
 export interface CategoryPublicResponse {
-  id: string;
   name: string;
   slug: string;
 }
@@ -8,6 +7,7 @@ export interface UserPublicResponse {
   id: string;
   fullName: string;
   email: string;
+  phone: string;
   avatarUrl: string;
 }
 
@@ -15,14 +15,12 @@ export interface CoursePublicResponse {
   id: string;
   title: string;
   slug: string;
-  price: number;
-  salePrice?: number;
   descriptionShort?: string;
   thumbnail?: string;
-  instructorName: string;
+  nickname: string;
   categorySlug: string;
   averageRating: number;
-  countLesson: number;
+  totalLessons: number;
 }
 
 export interface CourseSearchParams {
@@ -41,12 +39,10 @@ export interface CoursePublicDetailsResponse {
   description: string;
   requirements?: string;
   thumbnail?: string;
-  price: number;
-  salePrice: number;
   level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
   averageRating: number;
   countRating: number;
-  countStudents: number;
+  totalStudents: number;
   totalSections: number;
   totalLessons: number;
   reviews: ReviewPublicResponse[];
@@ -56,11 +52,12 @@ export interface CoursePublicDetailsResponse {
 }
 
 export interface InstructorPublicResponse {
-  fullName: string;
+  nickname: string;
   title: string;
   bio: string;
-  totalCourses: number;
   avatarUrl?: string;
+  totalCourses: number;
+  totalStudents: number;
 }
 
 export interface SectionPublicResponse {
@@ -77,5 +74,5 @@ export interface LessonPublicResponse {
 export interface ReviewPublicResponse {
   content: string;
   rating: "ONE" | "TWO" | "THREE" | "FOUR" | "FIVE";
-  user: string;
+  fullName: string;
 }

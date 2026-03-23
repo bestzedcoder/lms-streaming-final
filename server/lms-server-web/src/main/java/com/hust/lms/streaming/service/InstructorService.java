@@ -21,6 +21,6 @@ import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface InstructorService {
-  Instructor update(InstructorUpdatingRequest request);
+  void update(InstructorUpdatingRequest request);
   InstructorInfoResponse getInfo();
 }

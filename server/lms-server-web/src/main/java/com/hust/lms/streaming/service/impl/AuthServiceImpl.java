@@ -8,7 +8,6 @@ import com.hust.lms.streaming.dto.request.auth.ForgotPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.ResetPasswordRequest;
 import com.hust.lms.streaming.dto.request.auth.SignUpRequest;
 import com.hust.lms.streaming.dto.request.auth.VerifyAccountRequest;
-import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.dto.response.auth.LoginUserInfoResponse;
 import com.hust.lms.streaming.enums.Role;
 import com.hust.lms.streaming.event.custom.AuthEvent;
@@ -48,6 +47,7 @@ public class AuthServiceImpl implements AuthService {
 
   @Value("${app.security.jwt.accessExpiration}")
   private long accessTokenExpireTime;
+
   @Value("${app.security.jwt.refreshExpiration}")
   private long refreshTokenExpireTime;
 
@@ -195,14 +195,6 @@ public class AuthServiceImpl implements AuthService {
     }
     currentUser.setPassword(this.passwordEncoder.encode(request.getNewPassword()));
     this.userRepository.save(currentUser);
-  }
-
-  @Override
-  public AdminResponse checkAdmin() {
-    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
-    if (!currentUser.getRole().equals(Role.ADMIN)) throw new AdminException("Truy cập trái phép vui lòng login lại!");
-    return AuthMapper.toAdminResponse(currentUser);
   }
 
   @Override

@@ -18,8 +18,8 @@ public class InstructorUpdatingRequest {
   @NoHtml(message = "Chức danh chứa ký tự không hợp lệ")
   private String jobTitle;
 
-  @Size(max = 5000, message = "Tiểu sử không được vượt quá 5000 ký tự")
-  @JsonDeserialize(using = XssSanitizerDeserializer.class)
+  @Size(max = 2000, message = "Tiểu sử không được vượt quá 5000 ký tự")
+  @NoHtml(message = "Chức danh chứa ký tự không hợp lệ")
   private String bio;
 
 }

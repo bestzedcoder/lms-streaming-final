@@ -104,6 +104,14 @@ public class AdminServiceImpl implements AdminService {
   }
 
   @Override
+  public AdminResponse checkAdmin() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
+    if (!currentUser.getRole().equals(Role.ADMIN)) throw new AdminException("Truy cập trái phép vui lòng login lại!");
+    return AuthMapper.toAdminResponse(currentUser);
+  }
+
+  @Override
   public List<CoursePendingResponse> getCoursesPending() {
     List<Course> courses = this.courseRepository.findCoursesByStatus(CourseStatus.PENDING);
     return courses.stream().map(AdminMapper::mapCourseToCoursePendingResponse).toList();

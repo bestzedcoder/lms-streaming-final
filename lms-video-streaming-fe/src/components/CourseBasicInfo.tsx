@@ -21,7 +21,6 @@ import {
 import { useState } from "react";
 import { instructorService } from "../services/instructor.service";
 import { notify } from "../utils/notification.utils";
-import { formatNumber } from "../utils/format.utils";
 import type { InstructorCourseResponse } from "../@types/instructor.types";
 
 interface Props {

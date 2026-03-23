@@ -110,6 +110,18 @@ public class AdminController {
         .build());
   }
 
+  @GetMapping("check-admin")
+  public ResponseEntity<BaseResponse<?>> checkAdmin() {
+    AdminResponse res = this.adminService.checkAdmin();
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .success(true)
+        .data(res)
+        .message("Success")
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
   // Course
   @GetMapping("course/count-pending")
   public ResponseEntity<BaseResponse<?>> getCourseCountPending() {
@@ -258,7 +270,6 @@ public class AdminController {
         .build());
   }
 
-
   @PostMapping("users/{uuid}")
   public ResponseEntity<BaseResponse<?>> update(@PathVariable("uuid") UUID uuid ,@RequestBody @Valid UserUpdatingRequest req) {
     this.userService.update(uuid ,req);
@@ -269,8 +280,6 @@ public class AdminController {
         .timestamp(LocalDateTime.now())
         .build());
   }
-
-
 
   @DeleteMapping("users/{uuid}")
   public ResponseEntity<BaseResponse<?>> deleteUser(@PathVariable("uuid") UUID uuid) {
@@ -296,7 +305,6 @@ public class AdminController {
         .timestamp(LocalDateTime.now())
         .build());
   }
-
 
   @PostMapping("categories")
   public ResponseEntity<BaseResponse<?>> create(@RequestBody @Valid CategoryCreatingRequest req) {

@@ -26,11 +26,8 @@ import {
 import { useAuthStore } from "../../store/useAuthStore.store";
 import { publicService } from "../../services/public.service";
 import { studentService } from "../../services/student.service";
-import { formatCurrency } from "../../utils/format.utils";
 import { notify } from "../../utils/notification.utils";
 import type { CoursePublicDetailsResponse } from "../../@types/public.types";
-import type { AddItemRequest } from "../../@types/student.types";
-import { useCartStore } from "../../store/useCartStore.store";
 
 const { Title } = Typography;
 const { Panel } = Collapse;
@@ -70,8 +67,6 @@ const CourseDetailsPage = () => {
   );
   const [hasAccess, setHasAccess] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-
-  const { addItem } = useCartStore();
 
   useEffect(() => {
     if (slug) fetchCourseData();

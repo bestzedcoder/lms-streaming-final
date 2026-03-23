@@ -16,6 +16,4 @@ public class InstructorInfoResponse {
   private String bio;
   private int totalStudents;
   private int totalCourses;
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
 }
