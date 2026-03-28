@@ -11,6 +11,8 @@ import type {
   LessonCancelRequest,
   LessonCreatingRequest,
   LessonUpdatingRequest,
+  RegistrationProcessingRequest,
+  RegistrationResponse,
   SectionCancelRequest,
   SectionCreatingRequest,
   SectionUpdatingRequest,
@@ -117,5 +119,31 @@ export const instructorService = {
 
   deleteLesson: async (data: LessonCancelRequest): Promise<ResponseData> => {
     return axiosClient.delete("/instructor/delete-lesson", { data });
+  },
+
+  // Registration
+
+  countPendingRegistrationsByInstructor: async (): Promise<
+    ResponseData<number>
+  > => {
+    return axiosClient.get("/instructor/registrations/count");
+  },
+
+  getPendingRegistrations: async (): Promise<
+    ResponseData<RegistrationResponse[]>
+  > => {
+    return axiosClient.get("/instructor/registrations");
+  },
+
+  approveRegistration: async (
+    data: RegistrationProcessingRequest,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("/instructor/registrations/approve", data);
+  },
+
+  rejectRegistration: async (
+    data: RegistrationProcessingRequest,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("/instructor/registrations/reject", data);
   },
 };

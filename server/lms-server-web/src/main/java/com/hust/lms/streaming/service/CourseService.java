@@ -13,7 +13,6 @@ import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsRes
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
-import com.hust.lms.streaming.model.Course;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,8 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 public interface CourseService {
   CourseAuthDetailsResponse getCourseDetails(String slug);
 
-  Course createCourse(CourseCreatingRequest request, MultipartFile image);
-  Course updateCourse(CourseUpdatingRequest request, MultipartFile image);
+  void createCourse(CourseCreatingRequest request, MultipartFile image);
+  void updateCourse(CourseUpdatingRequest request, MultipartFile image);
   InstructorCourseInfoResponse getCourse(UUID id);
   void addSection(SectionCreatingRequest request);
   void updateSection(SectionUpdatingRequest request);

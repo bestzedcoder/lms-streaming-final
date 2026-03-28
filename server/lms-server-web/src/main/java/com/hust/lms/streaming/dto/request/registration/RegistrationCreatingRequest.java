@@ -8,9 +8,8 @@ import org.hibernate.validator.constraints.UUID;
 
 @Getter
 public class RegistrationCreatingRequest {
-  @NotBlank(message = "ID không được để trống")
-  @UUID(message = "ID không đúng định dạng")
-  private String courseId;
+  @NotBlank(message = "slug không được để trống")
+  private String slug;
 
   @NoHtml
   @Size(max = 500, message = "Message tối đa 500 ký tự")

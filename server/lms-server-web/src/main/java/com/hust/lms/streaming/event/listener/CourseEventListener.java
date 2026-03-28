@@ -28,7 +28,7 @@ public class CourseEventListener {
   @Async
   @EventListener
   public void handle(CourseEvent event) {
-    log.info("Auth Event received: type={}, id={}", event.getType(), event.getCourseId());
+    log.info("Course Event received: type={}, id={}", event.getType(), event.getCourseId());
 
     switch (event.getType()) {
       case INFO_UPDATED:

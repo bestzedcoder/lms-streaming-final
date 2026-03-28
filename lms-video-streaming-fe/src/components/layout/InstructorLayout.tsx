@@ -13,8 +13,6 @@ import {
   DashboardOutlined,
   VideoCameraOutlined,
   TeamOutlined,
-  BarChartOutlined,
-  WalletOutlined,
   BellOutlined,
   SettingOutlined,
   LogoutOutlined,
@@ -36,6 +34,7 @@ const InstructorLayout = () => {
 
   const {
     instructorInfo,
+    pendingApprovals,
     isLoading,
     isInitialized,
     fetchInstructorInfo,
@@ -79,16 +78,22 @@ const InstructorLayout = () => {
       icon: <VideoCameraOutlined />,
       label: "Quản lý khóa học",
     },
-    { key: "/instructor/students", icon: <TeamOutlined />, label: "Học viên" },
     {
-      key: "/instructor/analytics",
-      icon: <BarChartOutlined />,
-      label: "Phân tích",
-    },
-    {
-      key: "/instructor/earnings",
-      icon: <WalletOutlined />,
-      label: "Doanh thu",
+      key: "/instructor/students",
+      icon: <TeamOutlined />,
+      label: (
+        <div className="flex items-center justify-between w-full">
+          <span>Học viên</span>
+          {/* Chỉ hiện số lượng khi menu đang mở rộng */}
+          {!collapsed && pendingApprovals > 0 && (
+            <Badge
+              count={pendingApprovals}
+              size="small"
+              style={{ backgroundColor: "#ff4d4f" }}
+            />
+          )}
+        </div>
+      ),
     },
     {
       key: "/instructor/settings",
@@ -97,24 +102,20 @@ const InstructorLayout = () => {
     },
   ];
 
-  const userDropdownItems = [
-    {
-      key: "profile",
-      icon: <UserOutlined />,
-      label: "Hồ sơ cá nhân",
-      onClick: () => navigate("/user/info"),
-    },
-    {
-      type: "divider" as const,
-    },
-    {
-      key: "logout",
-      icon: <LogoutOutlined />,
-      label: "Đăng xuất",
-      danger: true,
-      onClick: handleLogout,
-    },
-  ];
+  const processedMenuItems = menuItems.map((item) => ({
+    ...item,
+    icon:
+      collapsed &&
+      item.key === "/instructor/students" &&
+      pendingApprovals > 0 ? (
+        <Badge dot offset={[5, 0]}>
+          {item.icon}
+        </Badge>
+      ) : (
+        item.icon
+      ),
+    onClick: () => navigate(item.key),
+  }));
 
   if (isLoading && !isInitialized) {
     return (
@@ -146,11 +147,8 @@ const InstructorLayout = () => {
         <Menu
           theme="light"
           mode="inline"
-          defaultSelectedKeys={[location.pathname]}
-          items={menuItems.map((item) => ({
-            ...item,
-            onClick: () => navigate(item.key),
-          }))}
+          selectedKeys={[location.pathname]}
+          items={processedMenuItems}
           className="border-none mt-4 text-base font-medium"
         />
       </Sider>
@@ -183,7 +181,7 @@ const InstructorLayout = () => {
               Tạo khóa học
             </Button>
 
-            <Badge count={3} size="small" offset={[-4, 4]}>
+            <Badge count={pendingApprovals} size="small" offset={[-4, 4]}>
               <Button
                 type="text"
                 icon={<BellOutlined className="text-xl text-gray-600" />}
@@ -193,7 +191,24 @@ const InstructorLayout = () => {
             </Badge>
 
             <Dropdown
-              menu={{ items: userDropdownItems }}
+              menu={{
+                items: [
+                  {
+                    key: "profile",
+                    icon: <UserOutlined />,
+                    label: "Hồ sơ cá nhân",
+                    onClick: () => navigate("/user/info"),
+                  },
+                  { type: "divider" },
+                  {
+                    key: "logout",
+                    icon: <LogoutOutlined />,
+                    label: "Đăng xuất",
+                    danger: true,
+                    onClick: handleLogout,
+                  },
+                ],
+              }}
               trigger={["click"]}
               placement="bottomRight"
               arrow

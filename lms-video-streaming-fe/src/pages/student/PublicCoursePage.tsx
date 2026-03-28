@@ -166,7 +166,7 @@ const PublicCoursesPage = () => {
                   <div className="flex flex-col gap-1.5">
                     {categories.map((cat) => (
                       <div
-                        key={cat.id}
+                        key={cat.slug}
                         className={`cursor-pointer text-sm py-2 px-3 rounded-lg transition-all flex justify-between items-center group
                           ${
                             categorySlug === cat.slug

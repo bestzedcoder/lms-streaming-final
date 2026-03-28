@@ -1,59 +1,347 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Typography,
   Button,
   Rate,
   Collapse,
   Avatar,
+  Tag,
+  Empty,
+  Row,
+  Col,
   Skeleton,
   Divider,
-  Tag,
 } from "antd";
 import {
   PlayCircleOutlined,
   CheckOutlined,
   FileTextOutlined,
-  QuestionCircleOutlined,
   GlobalOutlined,
   SafetyCertificateOutlined,
   VideoCameraOutlined,
   MobileOutlined,
   UserOutlined,
   StarFilled,
+  CalendarOutlined,
+  BarChartOutlined,
+  LockFilled,
 } from "@ant-design/icons";
-
-import { useAuthStore } from "../../store/useAuthStore.store";
-import { publicService } from "../../services/public.service";
-import { studentService } from "../../services/student.service";
 import { notify } from "../../utils/notification.utils";
+import { studentService } from "../../services/student.service";
+import { publicService } from "../../services/public.service";
+import { useEffect, useState } from "react";
 import type { CoursePublicDetailsResponse } from "../../@types/public.types";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useAuthStore } from "../../store/useAuthStore.store";
+import type { RegistrationCreatingRequest } from "../../@types/student.types";
 
-const { Title } = Typography;
+const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
 
-const getRatingNumber = (rateEnum: string) => {
-  const map: Record<string, number> = {
-    ONE: 1,
-    TWO: 2,
-    THREE: 3,
-    FOUR: 4,
-    FIVE: 5,
-  };
-  return map[rateEnum] || 0;
+// --- 1. PHẦN HERO (BANNER ĐẦU TRANG) ---
+const CourseHero = ({ course }: { course: any }) => (
+  <div className="bg-[#1c1d1f] text-white py-12 px-4 md:px-8">
+    <div className="max-w-7xl mx-auto lg:pr-[400px]">
+      <Title
+        level={1}
+        className="!text-white !text-3xl md:!text-4xl !font-bold mb-4"
+      >
+        {course.title}
+      </Title>
+      <Paragraph className="text-gray-200 text-lg mb-6 max-w-3xl">
+        {course.descriptionShort}
+      </Paragraph>
+      <div className="flex flex-wrap items-center gap-4 text-sm mb-4">
+        <Tag color="#fbc115" className="font-bold text-black border-none">
+          Bán chạy
+        </Tag>
+        <span className="text-[#fbc115] font-bold flex items-center gap-1">
+          {course.averageRating.toFixed(1)} <StarFilled />
+        </span>
+        <span className="text-indigo-300 underline cursor-pointer">
+          ({course.countRating} đánh giá)
+        </span>
+        <span>{course.totalStudents.toLocaleString()} học viên</span>
+      </div>
+      <div className="flex flex-wrap gap-6 text-sm">
+        <span>
+          Được tạo bởi{" "}
+          <Text className="text-indigo-300 underline cursor-pointer">
+            {course.instructor.nickname}
+          </Text>
+        </span>
+        <span>
+          <GlobalOutlined className="mr-1" /> Tiếng Việt
+        </span>
+        <span>
+          <CalendarOutlined className="mr-1" /> Cập nhật:{" "}
+          {new Date(course.updatedAt).toLocaleDateString("vi-VN")}
+        </span>
+      </div>
+    </div>
+  </div>
+);
+
+// --- 2. PHẦN YÊU CẦU (REQUIREMENTS) ---
+const CourseRequirements = ({ requirements }: { requirements?: string }) => {
+  if (!requirements) return null;
+  const items = requirements
+    .split(";")
+    .map((i) => i.trim())
+    .filter((i) => i !== "");
+  return (
+    <div className="mb-10">
+      <Title level={3} className="!text-2xl !font-bold mb-4">
+        Yêu cầu
+      </Title>
+      <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+        {items.map((item, idx) => (
+          <li key={idx} className="flex items-start gap-3 text-gray-700">
+            <CheckOutlined className="mt-1 text-gray-400 text-xs" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 };
 
-const getLessonIcon = (type: string) => {
-  switch (type) {
-    case "VIDEO":
-      return <PlayCircleOutlined className="text-gray-500" />;
-    case "QUIZ":
-      return <QuestionCircleOutlined className="text-indigo-500" />;
-    case "TEXT":
-      return <FileTextOutlined className="text-blue-500" />;
-    default:
-      return <PlayCircleOutlined />;
-  }
+// --- 3. PHẦN NỘI DUNG KHÓA HỌC (CURRICULUM) ---
+const CourseContent = ({
+  sections,
+  totalLessons,
+  totalSections,
+  level,
+}: any) => (
+  <div className="mb-12">
+    <Title level={3} className="!text-2xl !font-bold mb-2">
+      Nội dung khóa học
+    </Title>
+    <div className="flex items-center justify-between mb-4 text-gray-600 text-sm">
+      <div className="flex gap-2">
+        <span>
+          {totalSections} chương • {totalLessons} bài học
+        </span>
+      </div>
+      <Tag color="blue" icon={<BarChartOutlined />}>
+        {level}
+      </Tag>
+    </div>
+    <Collapse
+      expandIconPosition="end"
+      className="bg-white border-gray-200 rounded-lg overflow-hidden"
+    >
+      {sections.map((sec: any, idx: number) => (
+        <Panel
+          header={<span className="font-bold text-gray-800">{sec.title}</span>}
+          key={idx}
+          extra={
+            <span className="text-gray-500 text-xs">
+              {sec.lessons.length} bài học
+            </span>
+          }
+        >
+          {sec.lessons.map((lesson: any, lIdx: number) => (
+            <div
+              key={lIdx}
+              className="flex items-center justify-between py-3 hover:bg-gray-50 px-2 rounded transition-colors cursor-default"
+            >
+              <div className="flex items-center gap-3">
+                {lesson.lessonType === "VIDEO" ? (
+                  <PlayCircleOutlined />
+                ) : (
+                  <FileTextOutlined />
+                )}
+                <span className="text-sm">{lesson.title}</span>
+              </div>
+              <span className="text-xs text-gray-400">{lesson.lessonType}</span>
+            </div>
+          ))}
+        </Panel>
+      ))}
+    </Collapse>
+  </div>
+);
+
+// --- 4. PHẦN GIỚI THIỆU GIẢNG VIÊN ---
+const InstructorSection = ({ instructor }: { instructor: any }) => (
+  <div className="mb-12 pt-8 border-t">
+    <Title level={3} className="!text-2xl !font-bold mb-6">
+      Giảng viên
+    </Title>
+    <div className="flex flex-col md:flex-row gap-6">
+      <div className="flex flex-col items-center gap-4">
+        <Avatar
+          src={instructor.avatarUrl}
+          size={120}
+          icon={<UserOutlined />}
+          className="shadow-lg border-4 border-white"
+        />
+        <div className="text-center">
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+            <StarFilled className="text-orange-400" /> {instructor.totalCourses}{" "}
+            Khóa học
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <UserOutlined className="text-orange-400" />{" "}
+            {instructor.totalStudents} Học viên
+          </div>
+        </div>
+      </div>
+      <div className="flex-1">
+        <Title
+          level={4}
+          className="!text-indigo-600 !mb-1 underline cursor-pointer"
+        >
+          {instructor.nickname}
+        </Title>
+        <Text strong className="text-gray-500 block mb-4">
+          {instructor.title}
+        </Text>
+        <div
+          className="text-gray-700 leading-relaxed custom-html-content"
+          dangerouslySetInnerHTML={{ __html: instructor.bio }}
+        />
+      </div>
+    </div>
+  </div>
+);
+
+// --- 5. PHẦN ĐÁNH GIÁ (REVIEWS) ---
+const ReviewSection = ({ reviews }: { reviews: any[] }) => (
+  <div className="mb-12 pt-8 border-t">
+    <Title level={3} className="!text-2xl !font-bold mb-6">
+      Đánh giá từ học viên
+    </Title>
+    {reviews.length === 0 ? (
+      <Empty description="Chưa có đánh giá nào" />
+    ) : (
+      <Row gutter={[24, 24]}>
+        {reviews.map((rv, idx) => (
+          <Col span={24} md={12} key={idx}>
+            <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/30 h-full">
+              <div className="flex items-center gap-3 mb-3">
+                <Avatar className="bg-indigo-600 font-bold">
+                  {rv.fullName.charAt(0)}
+                </Avatar>
+                <div>
+                  <div className="font-bold text-sm">{rv.fullName}</div>
+                  <Rate disabled defaultValue={5} className="text-[10px]" />
+                </div>
+              </div>
+              <Paragraph className="text-gray-700 italic text-sm">
+                "{rv.content}"
+              </Paragraph>
+            </div>
+          </Col>
+        ))}
+      </Row>
+    )}
+  </div>
+);
+
+// --- 6. FLOATING CARD (BÊN PHẢI) ---
+const CourseSidebar = ({
+  course,
+  hasAccess,
+  userStatus,
+  onEnroll,
+  onStudy,
+  loading,
+  isAuthenticated,
+}: any) => {
+  const renderActionButton = () => {
+    if (!isAuthenticated || !hasAccess) {
+      return (
+        <Button
+          type="primary"
+          size="large"
+          block
+          className="h-12 font-bold bg-black hover:bg-gray-800 border-none transition-all"
+          onClick={onEnroll}
+          loading={loading}
+        >
+          Đăng ký tham gia
+        </Button>
+      );
+    }
+
+    if (hasAccess && userStatus === "BANNED") {
+      return (
+        <div className="space-y-3">
+          <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-lg flex items-center gap-2 text-sm font-medium">
+            <LockFilled /> Quyền truy cập của bạn đã bị khóa
+          </div>
+          <Button
+            disabled
+            size="large"
+            block
+            className="h-12 font-bold bg-gray-200 border-none text-gray-400"
+          >
+            Không thể vào học
+          </Button>
+          <p className="text-[11px] text-gray-400 text-center italic">
+            Vui lòng liên hệ bộ phận hỗ trợ để biết thêm chi tiết.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <Button
+        type="primary"
+        size="large"
+        block
+        className="h-12 font-bold bg-[#a435f0] hover:bg-[#8710d8] border-none shadow-lg shadow-purple-200 transition-all"
+        onClick={onStudy}
+      >
+        Vào học ngay
+      </Button>
+    );
+  };
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden sticky top-8">
+      <div className="aspect-video relative group cursor-pointer border-b border-gray-100">
+        <img
+          src={course.thumbnail || "https://placehold.co/600x400?text=No+Image"}
+          alt="thumbnail"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <PlayCircleOutlined className="text-6xl text-white" />
+        </div>
+      </div>
+
+      <div className="p-6">
+        <div className="mb-4">{renderActionButton()}</div>
+
+        <Divider className="my-6" />
+
+        <div className="space-y-3">
+          <Text strong className="block mb-3 text-gray-800">
+            Khóa học này bao gồm:
+          </Text>
+          <ul className="space-y-3 text-sm text-gray-600 p-0 list-none">
+            <li className="flex items-center gap-3">
+              <VideoCameraOutlined className="text-gray-400" />{" "}
+              {course.totalLessons} bài giảng Video
+            </li>
+            <li className="flex items-center gap-3">
+              <FileTextOutlined className="text-gray-400" /> Tài liệu học tập đi
+              kèm
+            </li>
+            <li className="flex items-center gap-3">
+              <MobileOutlined className="text-gray-400" /> Xem trên đa thiết bị
+            </li>
+            <li className="flex items-center gap-3">
+              <SafetyCertificateOutlined className="text-gray-400" /> Chứng chỉ
+              hoàn thành
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const CourseDetailsPage = () => {
@@ -67,11 +355,14 @@ const CourseDetailsPage = () => {
   );
   const [hasAccess, setHasAccess] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [enrolling, setEnrolling] = useState<boolean>(false);
 
   useEffect(() => {
     if (slug) fetchCourseData();
     window.scrollTo(0, 0);
   }, [slug, isAuthenticated]);
+
+  const [userStatus, setUserStatus] = useState<"ACTIVE" | "BANNED">("ACTIVE");
 
   const fetchCourseData = async () => {
     setLoading(true);
@@ -81,6 +372,7 @@ const CourseDetailsPage = () => {
         if (res.data) {
           setCourse(res.data.course);
           setHasAccess(res.data.hasAccess);
+          setUserStatus(res.data.status);
         }
       } else {
         const res = await publicService.getCourseDetails(slug!);
@@ -90,44 +382,36 @@ const CourseDetailsPage = () => {
         }
       }
     } catch (error) {
-      console.error(error);
-      notify.error("Lỗi", "Không thể tải thông tin khóa học.");
+      notify.error("Lỗi", "Không thể tải dữ liệu");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRequireLogin = () => {
-    notify.info(
-      "Yêu cầu đăng nhập",
-      "Vui lòng đăng nhập để thực hiện chức năng này.",
-    );
-    navigate(`/login?returnUrl=${encodeURIComponent(location.pathname)}`);
-  };
-
-  const handleAddToCart = async () => {
-    if (!isAuthenticated) return handleRequireLogin();
-    try {
-      const data: AddItemRequest = {
-        courseSlug: course?.slug || "",
-      };
-      await studentService.addCartItem(data);
-      addItem();
-      notify.success("Thành công", "Đã thêm vào giỏ hàng!");
-    } catch (error) {
-      console.error(error);
+  const handleEnroll = async () => {
+    if (!isAuthenticated) {
+      notify.info(
+        "Yêu cầu đăng nhập",
+        "Vui lòng đăng nhập để đăng ký khóa học.",
+      );
+      return navigate(
+        `/login?returnUrl=${encodeURIComponent(location.pathname)}`,
+      );
     }
-  };
 
-  const handleBuyNow = async () => {
-    if (!isAuthenticated) return handleRequireLogin();
+    setEnrolling(true);
     try {
-      const res = await studentService.payNow(course?.slug || "");
-      const orderCode: string = res.data;
-      notify.success("Thành công", "Đã tạo đơn hàng!");
-      navigate(`/student/orders/details/${orderCode}`, { replace: true });
+      const request: RegistrationCreatingRequest = {
+        slug: course?.slug || "",
+        message: "Tôi muốn tham gia khóa học này",
+      };
+
+      await studentService.registration(request);
+      notify.success("Thành công", "Bạn đã đăng ký khóa học thành công!");
     } catch (error) {
-      console.error(error);
+      console.log(error);
+    } finally {
+      setEnrolling(false);
     }
   };
 
@@ -135,353 +419,54 @@ const CourseDetailsPage = () => {
     navigate(`/student/learning/${course?.slug}`);
   };
 
-  if (loading)
-    return (
-      <div className="max-w-7xl mx-auto p-8">
-        <Skeleton active paragraph={{ rows: 15 }} />
-      </div>
-    );
-
-  if (!course)
-    return (
-      <div className="text-center p-20 text-xl font-bold">
-        Khóa học không tồn tại.
-      </div>
-    );
+  if (loading) return <Skeleton active className="p-20" />;
+  if (!course) return <Empty className="p-20" />;
 
   return (
-    <div className="relative min-h-screen bg-white">
-      <div className="bg-[#1c1d1f] text-white pt-8 pb-12 px-4 md:px-8 lg:pb-16 relative">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
-          <div className="lg:col-span-8 flex flex-col justify-center">
-            <div className="text-indigo-300 font-bold mb-4 text-sm flex items-center gap-2">
-              <span className="cursor-pointer hover:text-white transition-colors">
-                Trang chủ
-              </span>
-              <span>›</span>
-              <span className="cursor-pointer hover:text-white transition-colors">
-                Khóa học
-              </span>
-            </div>
+    <div className="min-h-screen bg-white">
+      <CourseHero course={course} />
 
-            <Title
-              level={1}
-              className="!text-white !font-bold !text-3xl md:!text-4xl !mb-4 leading-tight"
-            >
-              {course.title}
-            </Title>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 relative">
+        <Row gutter={[48, 48]}>
+          <Col span={24} lg={16} className="py-10">
+            <CourseRequirements requirements={course.requirements} />
 
-            <p className="text-lg text-gray-200 mb-6 leading-relaxed max-w-3xl">
-              {course.descriptionShort}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 text-sm md:text-base">
-              <span className="flex items-center gap-1 font-bold text-[#fbc115]">
-                {course.averageRating.toFixed(1)} <StarFilled />
-              </span>
-              <span className="text-indigo-300 underline cursor-pointer hover:text-white">
-                ({course.countRating} đánh giá)
-              </span>
-              <span>{course.countStudents.toLocaleString()} học viên</span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-y-2 gap-x-6 text-sm text-gray-300">
-              <span>
-                Được tạo bởi{" "}
-                <a className="text-indigo-300 underline hover:text-white">
-                  {course.instructor.fullName}
-                </a>
-              </span>
-              <span className="flex items-center gap-1">
-                <GlobalOutlined /> Tiếng Việt
-              </span>
-              <span>
-                Cập nhật gần nhất:{" "}
-                {new Date(course.updatedAt).toLocaleDateString("vi-VN")}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 relative">
-        <div className="lg:col-span-8 py-10">
-          {course.requirements && (
             <div className="mb-10">
-              <Title level={3} className="!font-bold !text-2xl !mb-6">
-                Yêu cầu
+              <Title level={3} className="!text-2xl !font-bold mb-4">
+                Mô tả
               </Title>
               <div
-                className="text-gray-700 text-base ml-4 format-html-list custom-html-content"
-                dangerouslySetInnerHTML={{ __html: course.requirements }}
+                className="prose max-w-none text-gray-700 custom-html-content"
+                dangerouslySetInnerHTML={{ __html: course.description }}
               />
             </div>
-          )}
 
-          <div className="mb-12">
-            <Title level={3} className="!font-bold !text-2xl !mb-6">
-              Mô tả khóa học
-            </Title>
-            <div
-              className="prose max-w-none text-gray-700 leading-normal custom-html-content"
-              dangerouslySetInnerHTML={{ __html: course.description }}
+            <CourseContent
+              sections={course.sections}
+              totalLessons={course.totalLessons}
+              totalSections={course.totalSections}
+              level={course.level}
             />
-          </div>
 
-          <div className="mb-12">
-            <Title level={3} className="!font-bold !text-2xl !mb-2">
-              Nội dung khóa học
-            </Title>
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
-              <span>{course.totalSections} chương</span>
-              <span>•</span>
-              <span>{course.totalLessons} bài học</span>
-              <span>•</span>
-              <span>
-                Trình độ:{" "}
-                <Tag color="blue" className="ml-1">
-                  {course.level}
-                </Tag>
-              </span>
-            </div>
+            <InstructorSection instructor={course.instructor} />
 
-            <Collapse
-              className="bg-white border-gray-200"
-              expandIconPosition="end"
-              defaultActiveKey={["0"]}
-            >
-              {course.sections.map((sec, secIdx) => (
-                <Panel
-                  header={
-                    <span className="font-bold text-gray-800 text-base">
-                      {sec.title}
-                    </span>
-                  }
-                  key={secIdx.toString()}
-                  extra={
-                    <span className="text-gray-500 text-sm">
-                      {sec.lessons.length} bài học
-                    </span>
-                  }
-                  className="bg-gray-50/50"
-                >
-                  <div className="px-2">
-                    {sec.descriptionShort && (
-                      <div className="text-gray-600 text-sm mb-4 italic pb-3 border-b border-gray-100">
-                        {sec.descriptionShort}
-                      </div>
-                    )}
+            <ReviewSection reviews={course.reviews} />
+          </Col>
 
-                    <div className="flex flex-col gap-0">
-                      {sec.lessons.length > 0 ? (
-                        sec.lessons.map((lesson, lesIdx) => (
-                          <div
-                            key={lesIdx}
-                            className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors"
-                          >
-                            <div className="flex items-center gap-3">
-                              {getLessonIcon(lesson.lessonType)}
-                              <span
-                                className={`text-sm ${lesson.lessonType === "VIDEO" ? "text-indigo-600 cursor-pointer underline-offset-2 hover:underline" : "text-gray-700"}`}
-                              >
-                                {lesson.title}
-                              </span>
-                            </div>
-                            <span className="text-xs text-gray-400">
-                              {lesson.lessonType === "VIDEO"
-                                ? "05:30"
-                                : "Bài tập"}
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-gray-400 text-sm py-2">
-                          Chưa có bài học nào trong chương này.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Panel>
-              ))}
-            </Collapse>
-          </div>
-
-          <div className="mb-12">
-            <Title level={3} className="!font-bold !text-2xl !mb-6">
-              Giảng viên
-            </Title>
-            <div className="flex flex-col sm:flex-row gap-6">
-              <Avatar
-                src={course.instructor.avatarUrl}
-                size={110}
-                icon={<UserOutlined />}
-                className="shrink-0 font-bold text-3xl bg-indigo-100 text-indigo-600"
+          <Col span={24} lg={8} className="relative">
+            <div className="lg:-mt-64 z-30 relative">
+              <CourseSidebar
+                course={course}
+                hasAccess={hasAccess}
+                userStatus={userStatus}
+                isAuthenticated={isAuthenticated}
+                onEnroll={handleEnroll}
+                onStudy={handleStudyNow}
+                loading={enrolling}
               />
-              <div>
-                <h4 className="text-xl font-bold text-indigo-600 underline cursor-pointer mb-1">
-                  {course.instructor.fullName}
-                </h4>
-                <p className="text-gray-500 mb-3">{course.instructor.title}</p>
-                <div className="flex items-center gap-4 text-sm font-bold text-gray-700 mb-4">
-                  <span className="flex items-center gap-1">
-                    <PlayCircleOutlined /> {course.instructor.totalCourses} Khóa
-                    học
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <UserOutlined /> Học viên
-                  </span>
-                </div>
-
-                <div
-                  className="text-gray-700 leading-relaxed text-sm prose max-w-none custom-html-content"
-                  dangerouslySetInnerHTML={{ __html: course.instructor.bio }}
-                />
-              </div>
             </div>
-          </div>
-
-          <div className="mb-12">
-            <Title level={3} className="!font-bold !text-2xl !mb-6">
-              Học viên đánh giá
-            </Title>
-            {course.reviews.length === 0 ? (
-              <div className="text-gray-500 italic">
-                Chưa có đánh giá nào cho khóa học này.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {course.reviews.map((rv, idx) => (
-                  <div
-                    key={idx}
-                    className="border border-gray-200 p-5 rounded-lg bg-white shadow-sm"
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <Avatar
-                        size="large"
-                        className="bg-gray-800 text-white font-bold"
-                      >
-                        {rv.user.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <div>
-                        <div className="font-bold text-gray-800">{rv.user}</div>
-                        <Rate
-                          disabled
-                          defaultValue={getRatingNumber(rv.rating)}
-                          className="text-xs text-[#fbc115]"
-                        />
-                      </div>
-                    </div>
-                    <p className="text-gray-700 text-sm leading-relaxed">
-                      "{rv.content}"
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="lg:col-span-4 relative -mt-6 lg:-mt-72 mb-10 lg:mb-0 z-10">
-          <div className="bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden sticky top-24">
-            {course.thumbnail && (
-              <div className="relative aspect-video bg-gray-900 flex items-center justify-center overflow-hidden border-b border-gray-100">
-                <img
-                  src={course.thumbnail}
-                  alt={course.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
-                  <PlayCircleOutlined className="text-6xl text-white shadow-lg rounded-full" />
-                </div>
-              </div>
-            )}
-
-            <div className="p-6">
-              <div className="mb-6">
-                {!course.salePrice || course.salePrice === 0 ? (
-                  <div className="text-3xl font-extrabold text-gray-900">
-                    {course.price === 0 ? (
-                      <span className="text-green-600">Miễn phí</span>
-                    ) : (
-                      formatCurrency(course.price)
-                    )}
-                  </div>
-                ) : course.salePrice < course.price ? (
-                  <div className="flex items-end gap-3 flex-wrap">
-                    <span className="text-3xl font-extrabold text-gray-900">
-                      {formatCurrency(course.price - course.salePrice)}
-                    </span>
-                    <span className="text-lg text-gray-500 line-through mb-1">
-                      {formatCurrency(course.price)}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="text-3xl font-extrabold text-green-600">
-                    Miễn phí
-                  </div>
-                )}
-              </div>
-
-              {hasAccess ? (
-                <div className="flex flex-col gap-3">
-                  <div className="bg-green-50 text-green-700 p-3 rounded-lg text-center font-bold border border-green-200 text-sm flex items-center justify-center gap-2">
-                    <CheckOutlined /> Bạn đã sở hữu khóa học này
-                  </div>
-                  <Button
-                    type="primary"
-                    size="large"
-                    icon={<PlayCircleOutlined />}
-                    className="w-full bg-[#a435f0] hover:bg-[#8710d8] font-bold h-12 text-lg rounded-none"
-                    onClick={handleStudyNow}
-                  >
-                    Vào học ngay
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  <Button
-                    type="primary"
-                    size="large"
-                    className="w-full bg-[#a435f0] hover:bg-[#8710d8] font-bold h-12 text-base rounded-none"
-                    onClick={handleAddToCart}
-                  >
-                    Thêm vào giỏ hàng
-                  </Button>
-                  <Button
-                    size="large"
-                    className="w-full h-12 text-base font-bold rounded-none border-black text-black hover:bg-gray-100"
-                    onClick={handleBuyNow}
-                  >
-                    Mua ngay
-                  </Button>
-                </div>
-              )}
-
-              <Divider className="my-6" />
-
-              <div>
-                <h4 className="font-bold text-gray-800 mb-3 text-base">
-                  Khóa học này bao gồm:
-                </h4>
-                <ul className="space-y-3 text-sm text-gray-600">
-                  <li className="flex items-center gap-3">
-                    <VideoCameraOutlined /> Theo yêu cầu video
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <FileTextOutlined /> {course.totalLessons} bài học & tài
-                    liệu
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <MobileOutlined /> Truy cập trên thiết bị di động và TV
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <SafetyCertificateOutlined /> Giấy chứng nhận hoàn thành
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
+          </Col>
+        </Row>
       </div>
     </div>
   );

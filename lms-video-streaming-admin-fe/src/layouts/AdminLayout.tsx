@@ -36,22 +36,31 @@ const AdminLayout: React.FC = () => {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const location = useLocation();
   const { logout, user } = useAuth();
-  const { pendingCoursesCount } = useNotification();
+
+  // Lấy thêm pendingInstructorCount từ Context
+  const { pendingCoursesCount, pendingInstructorCount } = useNotification();
 
   const {
     token: { colorBgContainer, borderRadiusLG, colorPrimary },
   } = theme.useToken();
 
+  // Tự động mở submenu tương ứng dựa trên URL hiện tại
   useEffect(() => {
+    const keys = [];
     if (
       location.pathname.includes("/pending-courses") ||
       location.pathname.includes("/courses-search") ||
       location.pathname.includes("/instructor-stats")
     ) {
-      setOpenKeys(["sub-courses"]);
-    } else {
-      setOpenKeys([]);
+      keys.push("sub-courses");
     }
+    if (
+      location.pathname.includes("/users") ||
+      location.pathname.includes("/instructor-requests")
+    ) {
+      keys.push("sub-users");
+    }
+    setOpenKeys(keys);
   }, [location.pathname]);
 
   const handleOpenChange = (keys: string[]) => {
@@ -95,9 +104,33 @@ const AdminLayout: React.FC = () => {
       label: <Link to="/">Tổng quan</Link>,
     },
     {
-      key: "/users",
+      key: "sub-users",
       icon: <UserOutlined />,
-      label: <Link to="/users">Quản lý người dùng</Link>,
+      label: "Quản lý người dùng",
+      children: [
+        {
+          key: "/users",
+          label: <Link to="/users">Danh sách người dùng</Link>,
+        },
+        {
+          key: "/instructor-requests",
+          label: (
+            <Link
+              to="/instructor-requests"
+              className="flex justify-between items-center w-full pr-4"
+            >
+              <span>Phê duyệt giảng viên</span>
+              {pendingInstructorCount > 0 && (
+                <Badge
+                  count={pendingInstructorCount}
+                  style={{ backgroundColor: "#ff4d4f", boxShadow: "none" }}
+                  offset={[0, 0]}
+                />
+              )}
+            </Link>
+          ),
+        },
+      ],
     },
     {
       key: "/categories",

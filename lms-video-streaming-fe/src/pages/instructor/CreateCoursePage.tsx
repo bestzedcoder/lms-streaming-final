@@ -57,12 +57,12 @@ const CreateCoursePage = () => {
     const slug = title
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Bỏ dấu tiếng Việt
+      .replace(/[\u0300-\u036f]/g, "")
       .replace(/[đĐ]/g, "d")
-      .replace(/([^0-9a-z-\s])/g, "") // Bỏ ký tự đặc biệt
-      .replace(/(\s+)/g, "-") // Thay khoảng trắng bằng gạch ngang
-      .replace(/-+/g, "-") // Xóa gạch ngang trùng
-      .replace(/^-+|-+$/g, ""); // Xóa gạch ngang đầu cuối
+      .replace(/([^0-9a-z-\s])/g, "")
+      .replace(/(\s+)/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "");
 
     form.setFieldsValue({ slug });
   };
@@ -80,7 +80,7 @@ const CreateCoursePage = () => {
   const convertArrayToHtml = (arr: string[]) => {
     const validItems = arr.filter((item) => item && item.trim() !== "");
     if (validItems.length === 0) return "";
-    return `<ul>${validItems.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+    return `${validItems.join(";")}`;
   };
 
   const onFinish = async (values: any) => {
@@ -275,7 +275,7 @@ const CreateCoursePage = () => {
                     optionFilterProp="children"
                   >
                     {categories.map((cat) => (
-                      <Option key={cat.id} value={cat.slug}>
+                      <Option key={cat.slug} value={cat.slug}>
                         {cat.name}
                       </Option>
                     ))}
@@ -288,18 +288,14 @@ const CreateCoursePage = () => {
                   rules={[{ required: true }]}
                 >
                   <Select>
-                    <Option value="BEGINNER">Cơ bản (Beginner)</Option>
-                    <Option value="INTERMEDIATE">
-                      Trung cấp (Intermediate)
-                    </Option>
-                    <Option value="ADVANCED">Nâng cao (Advanced)</Option>
+                    <Option value="BEGINNER">Cơ bản</Option>
+                    <Option value="INTERMEDIATE">Trung cấp</Option>
+                    <Option value="ADVANCED">Nâng cao</Option>
                   </Select>
                 </Form.Item>
 
                 <div className="mt-6">
-                  <h4 className="font-bold text-gray-700 mb-2">
-                    Ảnh bìa (Thumbnail)
-                  </h4>
+                  <h4 className="font-bold text-gray-700 mb-2">Ảnh bìa</h4>
                   <Form.Item name="image">
                     <Upload
                       listType="picture-card"

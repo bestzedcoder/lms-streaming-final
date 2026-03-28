@@ -20,11 +20,11 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
   @Query(value = """
     SELECT EXISTS (
         SELECT 1
-        FROM enrollments e
-        WHERE e.user_id = :userId AND e.course_id = :courseId
+        FROM enrollments e INNER JOIN courses c ON e.course_id = c.id
+        WHERE e.user_id = :userId AND c.slug = :slug
     )
 """,nativeQuery = true)
-  boolean existsByUserIdAndCourseId(UUID userId, UUID courseId);
+  boolean existsByUserIdAndCourseSlug(UUID userId, String slug);
 
   Optional<Enrollment> findByUserIdAndCourseId(UUID userId, UUID courseId);
 }

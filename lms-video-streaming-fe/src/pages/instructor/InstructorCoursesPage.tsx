@@ -8,6 +8,7 @@ import {
   Typography,
   Tooltip,
   Image,
+  Badge,
 } from "antd";
 import {
   EditOutlined,
@@ -20,7 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { instructorService } from "../../services/instructor.service";
 import type { InstructorCourseResponse } from "../../@types/instructor.types";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const InstructorCoursesPage = () => {
   const [courses, setCourses] = useState<InstructorCourseResponse[]>([]);
@@ -47,115 +48,77 @@ const InstructorCoursesPage = () => {
       title: "Thông tin khóa học",
       dataIndex: "title",
       key: "title",
-      width: 320,
+      width: "45%",
       render: (text: string, record: InstructorCourseResponse) => (
-        <div className="flex gap-4 items-start">
-          <Image
-            src={
-              record.thumbnail || "https://placehold.co/100x60?text=No+Image"
-            }
-            width={100}
-            className="rounded-md border border-gray-200 object-cover"
-            preview={false}
-          />
-          <div>
+        <div className="flex gap-4 items-center group">
+          <div className="shrink-0 overflow-hidden rounded-lg shadow-sm border border-gray-100">
+            <Image
+              src={
+                record.thumbnail || "https://placehold.co/120x68?text=No+Image"
+              }
+              width={120}
+              height={68}
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              preview={false}
+            />
+          </div>
+          <div className="flex flex-col justify-center">
             <div
-              className="font-bold text-gray-800 line-clamp-2 text-base leading-snug mb-1"
+              className="font-bold text-gray-800 line-clamp-2 text-base leading-snug mb-1.5 cursor-pointer hover:text-blue-600 transition-colors"
               title={text}
+              onClick={() =>
+                navigate(`/instructor/courses/${record.id}/manage`)
+              }
             >
               {text}
             </div>
-            <Tag
-              color="cyan"
-              className="text-[11px] border-0 bg-cyan-50 text-cyan-700 m-0"
-            >
-              {record.category?.name || "Chưa phân loại"}
-            </Tag>
+            <div>
+              <Tag
+                color="blue"
+                className="text-xs border-0 bg-blue-50 text-blue-600 m-0 px-2 py-0.5 rounded-md font-medium"
+              >
+                {record.category?.name || "Chưa phân loại"}
+              </Tag>
+            </div>
           </div>
         </div>
       ),
     },
     {
-      title: "Giá bán",
-      dataIndex: "price",
-      key: "price",
-      width: 160,
-      render: (originalPrice: number, record: InstructorCourseResponse) => {
-        const hasDiscount =
-          record.salePrice !== undefined &&
-          record.salePrice !== null &&
-          record.salePrice !== 0 &&
-          record.salePrice <= originalPrice;
-
-        // Tính % giảm giá
-        const discountPercent = hasDiscount
-          ? Math.round((record.salePrice! / originalPrice) * 100)
-          : 0;
-
-        const finalPrice = hasDiscount
-          ? originalPrice - record.salePrice!
-          : originalPrice;
-
-        return (
-          <div className="flex flex-col items-start">
-            <div className="font-bold text-base">
-              {finalPrice === 0 ? (
-                <Tag color="green" className="font-bold">
-                  Miễn phí
-                </Tag>
-              ) : (
-                <span
-                  className={hasDiscount ? "text-red-600" : "text-gray-700"}
-                >
-                  {formatCurrency(finalPrice)}
-                </span>
-              )}
-            </div>
-
-            {hasDiscount && (
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-xs text-gray-400 line-through">
-                  {formatCurrency(originalPrice)}
-                </span>
-                <Tag
-                  color="error"
-                  bordered={false}
-                  className="m-0 text-[10px] px-1 rounded-sm font-bold"
-                >
-                  -{discountPercent}%
-                </Tag>
-              </div>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      title: "Hiệu quả",
+      title: "Hiệu quả tương tác",
       key: "metrics",
-      width: 220,
+      width: "25%",
       render: (_: any, record: InstructorCourseResponse) => (
-        <div className="text-sm text-gray-500 space-y-1">
-          <div className="flex items-center gap-2">
-            <ReadOutlined className="text-blue-500" />
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="w-6 h-6 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500">
+              <ReadOutlined />
+            </div>
             <span>
-              {record.totalLessons} bài học • {record.totalSections} chương
+              <strong>{record.totalLessons || 0}</strong> bài học •{" "}
+              <strong>{record.totalSections || 0}</strong> chương
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <UserOutlined className="text-purple-500" />
-            <span className="font-medium text-gray-700">
-              {record.totalStudents} học viên
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="w-6 h-6 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+              <UserOutlined />
+            </div>
+            <span>
+              <strong>{record.totalStudents || 0}</strong> học viên tham gia
             </span>
           </div>
-          <div className="flex items-center gap-1">
-            <StarFilled className="text-yellow-400" />
-            <span className="font-bold text-gray-700">
-              {record.averageRating?.toFixed(1) || "0.0"}
-            </span>
-            <span className="text-xs">
-              ({record.countRating || 0} đánh giá)
-            </span>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+              <StarFilled />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <strong className="text-gray-800">
+                {record.averageRating?.toFixed(1) || "0.0"}
+              </strong>
+              <span className="text-gray-400 text-xs">
+                ({record.countRating || 0} đánh giá)
+              </span>
+            </div>
           </div>
         </div>
       ),
@@ -164,48 +127,56 @@ const InstructorCoursesPage = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      width: 120,
-      align: "center" as const,
+      width: "15%",
       render: (status: string) => {
-        const map: Record<string, { color: string; label: string }> = {
-          PUBLISHED: { color: "success", label: "Đang bán" },
-          PRIVATE: { color: "default", label: "Nháp" },
-          PENDING: { color: "warning", label: "Chờ duyệt" },
-          LOCKED: { color: "error", label: "Đã khóa" },
+        const map: Record<
+          string,
+          {
+            status: "success" | "processing" | "default" | "warning" | "error";
+            label: string;
+          }
+        > = {
+          PUBLISHED: { status: "success", label: "Đã xuất bản" },
+          PRIVATE: { status: "default", label: "Bản nháp" },
+          PENDING: { status: "warning", label: "Chờ phê duyệt" },
+          LOCKED: { status: "error", label: "Đã khóa" },
         };
-        const s = map[status] || { color: "default", label: status };
+        const s = map[status] || { status: "default", label: status };
+
         return (
-          <Tag
-            color={s.color}
-            className="font-medium min-w-[80px] text-center border-0"
-          >
-            {s.label}
-          </Tag>
+          <div className="bg-gray-50 px-3 py-1.5 rounded-full inline-block border border-gray-100">
+            <Badge
+              status={s.status}
+              text={
+                <span className="font-medium text-gray-700">{s.label}</span>
+              }
+            />
+          </div>
         );
       },
     },
     {
-      title: "Hành động",
+      title: "Thao tác",
       key: "action",
-      width: 100,
-      align: "right" as const,
+      width: "15%",
+      align: "center" as const,
       render: (_: any, record: InstructorCourseResponse) => (
-        <Space size="small">
-          <Tooltip title="Quản lý & Chỉnh sửa">
+        <Space size="middle">
+          <Tooltip title="Chỉnh sửa nội dung" color="blue">
             <Button
-              type="primary"
-              ghost
-              size="small"
-              icon={<EditOutlined />}
+              type="text"
+              className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 w-10 h-10 rounded-full flex items-center justify-center"
+              icon={<EditOutlined className="text-lg" />}
               onClick={() =>
                 navigate(`/instructor/courses/${record.id}/manage`)
               }
             />
           </Tooltip>
-          <Tooltip title="Xem chi tiết & Thống kê">
+          <Tooltip title="Xem thống kê chi tiết" color="purple">
             <Button
-              size="small"
-              icon={<EyeOutlined />}
+              type="text"
+              className="text-purple-500 hover:text-purple-600 hover:bg-purple-50 w-10 h-10 rounded-full flex items-center justify-center"
+              icon={<EyeOutlined className="text-lg" />}
               onClick={() => navigate(`/instructor/courses/${record.id}`)}
             />
           </Tooltip>
@@ -215,17 +186,35 @@ const InstructorCoursesPage = () => {
   ];
 
   return (
-    <div className="animate-fade-in">
-      <Title level={3} className="mb-6">
-        Danh sách khóa học
-      </Title>
-      <Card bordered={false} className="shadow-sm rounded-xl">
+    <div className="animate-fade-in max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+          <Title level={3} className="m-0 text-gray-800">
+            Khóa học của tôi
+          </Title>
+          <Text type="secondary" className="mt-1 block">
+            Quản lý nội dung, theo dõi tiến độ và tương tác của học viên.
+          </Text>
+        </div>
+      </div>
+
+      {/* Table Area */}
+      <Card
+        bordered={false}
+        className="shadow-sm rounded-2xl overflow-hidden border border-gray-100"
+        bodyStyle={{ padding: 0 }}
+      >
         <Table
           columns={columns}
           dataSource={courses}
           rowKey="id"
           loading={loading}
-          pagination={{ pageSize: 8, showSizeChanger: true }}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            className: "px-6 pb-4",
+          }}
+          className="custom-instructor-table"
         />
       </Card>
     </div>

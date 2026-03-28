@@ -11,6 +11,10 @@ interface NotificationContextType {
   pendingCoursesCount: number;
   fetchPendingCount: () => Promise<void>;
   decreaseCount: (amount?: number) => void;
+
+  pendingInstructorCount: number;
+  fetchPendingInstructorCount: () => Promise<void>;
+  decreaseInstructorCount: (amount?: number) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -21,6 +25,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [pendingCoursesCount, setPendingCoursesCount] = useState<number>(0);
+  const [pendingInstructorCount, setPendingInstructorCount] =
+    useState<number>(0);
 
   const fetchPendingCount = useCallback(async () => {
     try {
@@ -31,22 +37,45 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
+  const fetchPendingInstructorCount = useCallback(async () => {
+    try {
+      const res = await axiosClient.get("/admin/requests/count-instructor");
+      setPendingInstructorCount(res.data);
+    } catch (error: any) {
+      console.error("Lỗi khi fetch số lượng yêu cầu GV:", error?.message);
+    }
+  }, []);
+
   const decreaseCount = (amount: number = 1) => {
     setPendingCoursesCount((prev) => Math.max(0, prev - amount));
   };
 
+  const decreaseInstructorCount = (amount: number = 1) => {
+    setPendingInstructorCount((prev) => Math.max(0, prev - amount));
+  };
+
   useEffect(() => {
     fetchPendingCount();
+    fetchPendingInstructorCount();
+
     const interval = setInterval(() => {
       fetchPendingCount();
+      fetchPendingInstructorCount();
     }, 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [fetchPendingCount]);
+  }, [fetchPendingCount, fetchPendingInstructorCount]);
 
   return (
     <NotificationContext.Provider
-      value={{ pendingCoursesCount, fetchPendingCount, decreaseCount }}
+      value={{
+        pendingCoursesCount,
+        fetchPendingCount,
+        decreaseCount,
+        pendingInstructorCount,
+        fetchPendingInstructorCount,
+        decreaseInstructorCount,
+      }}
     >
       {children}
     </NotificationContext.Provider>

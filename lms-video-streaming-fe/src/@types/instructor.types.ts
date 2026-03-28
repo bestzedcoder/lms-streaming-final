@@ -88,8 +88,6 @@ export interface InstructorCourseResponse {
   description: string;
   descriptionShort?: string;
   requirements?: string;
-  price?: number;
-  salePrice?: number;
   thumbnail?: string;
   level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
   status: "PUBLISHED" | "PRIVATE" | "LOCKED" | "PENDING";
@@ -112,9 +110,16 @@ export interface InstructorCourseDetailsResponse {
 
 export interface InstructorCourseInfoResponse {
   course: InstructorCourseResponse;
-  students: UserPublicResponse[];
+  students: InstructorCourseParticipantResponse[];
   reviews: ReviewCourseResponse[];
-  revenue: number;
+}
+
+export interface InstructorCourseParticipantResponse {
+  id: string;
+  fullName: string;
+  email: string;
+  avatarUrl?: string;
+  status: "ACTIVE" | "BANNED";
 }
 
 export interface ReviewCourseResponse {
@@ -133,7 +138,7 @@ export interface InstructorSectionResponse {
   id: string;
   title: string;
   descriptionShort: string;
-  countLessons: number;
+  totalLessons: number;
   lessons: InstructorLessonResponse[];
 }
 
@@ -142,4 +147,24 @@ export interface InstructorLessonResponse {
   title: string;
   lessonType: "QUIZ" | "VIDEO" | "TEXT";
   preview: boolean;
+}
+
+// registration
+
+export interface RegistrationResponse {
+  id: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  student: UserPublicResponse;
+  course: CoursePublicRegistrationResponse;
+}
+
+export interface CoursePublicRegistrationResponse {
+  title: string;
+  status: "PUBLISHED" | "PENDING" | "PRIVATE" | "LOCKED";
+  thumbnail?: string;
+}
+
+export interface RegistrationProcessingRequest {
+  registrationId: string;
+  message?: string;
 }

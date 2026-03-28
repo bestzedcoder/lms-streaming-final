@@ -18,6 +18,29 @@ interface Props {
   onRefresh: () => void;
 }
 
+const STATUS_MAP = {
+  PUBLISHED: {
+    label: "CÔNG KHAI",
+    color: "green",
+    className: "animate-pulse border-green-500",
+  },
+  PENDING: {
+    label: "CHỜ PHÊ DUYỆT",
+    color: "gold",
+    className: "",
+  },
+  PRIVATE: {
+    label: "RIÊNG TƯ",
+    color: "default",
+    className: "",
+  },
+  LOCKED: {
+    label: "ĐANG BỊ KHÓA",
+    color: "red",
+    className: "border-red-500",
+  },
+};
+
 const CourseSettings = ({ course, onRefresh }: Props) => {
   const handleStatusChange = (newStatus: "PUBLISHED" | "PRIVATE") => {
     confirm({
@@ -47,7 +70,7 @@ const CourseSettings = ({ course, onRefresh }: Props) => {
     if (course.status === "LOCKED") {
       return (
         <Alert
-          message="Khóa học đã bị khóa (LOCKED)"
+          message="Khóa học đã bị khóa"
           description="Khóa học này đã bị quản trị viên khóa do vi phạm điều khoản. Vui lòng liên hệ Admin để được hỗ trợ."
           type="error"
           showIcon
@@ -56,10 +79,11 @@ const CourseSettings = ({ course, onRefresh }: Props) => {
         />
       );
     }
+
     if (course.status === "PENDING") {
       return (
         <Alert
-          message="Đang chờ duyệt (PENDING)"
+          message="Đang chờ duyệt"
           description="Khóa học đang trong quá trình kiểm duyệt. Bạn không thể thay đổi trạng thái lúc này."
           type="warning"
           showIcon
@@ -69,8 +93,9 @@ const CourseSettings = ({ course, onRefresh }: Props) => {
       );
     }
 
+    const currentStatus = STATUS_MAP[course.status as keyof typeof STATUS_MAP];
     const isPublished = course.status === "PUBLISHED";
-    const canPublish = course.totalLessons > 0 && course.price !== undefined;
+    const canPublish = course.totalLessons > 0;
 
     return (
       <div className="flex flex-col md:flex-row justify-between items-start gap-6">
@@ -80,10 +105,10 @@ const CourseSettings = ({ course, onRefresh }: Props) => {
               Trạng thái hiện tại:
             </span>
             <Tag
-              color={isPublished ? "green" : "default"}
-              className="text-sm font-bold px-2 py-0.5"
+              color={currentStatus.color}
+              className={`text-sm font-bold px-2 py-0.5 ${currentStatus.className}`}
             >
-              {isPublished ? "ĐANG BÁN (PUBLISHED)" : "BẢN NHÁP (PRIVATE)"}
+              {currentStatus.label}
             </Tag>
           </div>
           <Paragraph type="secondary" className="max-w-xl">
@@ -101,14 +126,14 @@ const CourseSettings = ({ course, onRefresh }: Props) => {
               icon={<CloudDownloadOutlined />}
               onClick={() => handleStatusChange("PRIVATE")}
             >
-              Gỡ xuống (Unpublish)
+              Gỡ xuống
             </Button>
           ) : (
             <div className="flex flex-col items-end gap-2">
               <Button
                 type="primary"
                 size="large"
-                className="bg-green-600 hover:bg-green-500 shadow-md"
+                className="bg-green-600 hover:bg-green-500 shadow-md border-none"
                 icon={<CloudUploadOutlined />}
                 onClick={() => handleStatusChange("PUBLISHED")}
                 disabled={!canPublish}
@@ -116,8 +141,8 @@ const CourseSettings = ({ course, onRefresh }: Props) => {
                 Xuất bản khóa học
               </Button>
               {!canPublish && (
-                <span className="text-xs text-red-500">
-                  Cần có ít nhất 1 bài học và giá bán.
+                <span className="text-xs text-red-500 italic">
+                  * Cần có ít nhất 1 bài học để xuất bản
                 </span>
               )}
             </div>
@@ -131,7 +156,7 @@ const CourseSettings = ({ course, onRefresh }: Props) => {
     <div className="max-w-4xl mx-auto space-y-8">
       <Card
         title={<span className="font-bold text-lg">Trạng thái & Hiển thị</span>}
-        className="shadow-sm rounded-xl"
+        className="shadow-sm rounded-xl overflow-hidden"
       >
         {renderStatusSection()}
       </Card>
@@ -159,4 +184,5 @@ const CourseSettings = ({ course, onRefresh }: Props) => {
     </div>
   );
 };
+
 export default CourseSettings;

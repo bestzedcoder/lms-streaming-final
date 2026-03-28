@@ -16,6 +16,29 @@ const ManageCoursePage = () => {
     null,
   );
 
+  const STATUS_CONFIG = {
+    PUBLISHED: {
+      label: "Công khai",
+      color: "green",
+      className: "animate-pulse", // Hiệu ứng nháy nhẹ nếu muốn
+    },
+    PENDING: {
+      label: "Chờ phê duyệt",
+      color: "gold", // Màu vàng cam
+      className: "",
+    },
+    PRIVATE: {
+      label: "Riêng tư",
+      color: "default", // Màu xám
+      className: "",
+    },
+    LOCKED: {
+      label: "Đang bị khóa",
+      color: "red",
+      className: "opacity-70", // Làm mờ đi một chút
+    },
+  };
+
   const fetchDetails = async () => {
     try {
       const res = await instructorService.getCourseDetails(courseId!);
@@ -58,7 +81,6 @@ const ManageCoursePage = () => {
 
   return (
     <div className="animate-fade-in pb-10">
-      {/* --- HEADER --- */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
         <div className="flex gap-4 items-center">
           <Button
@@ -69,12 +91,14 @@ const ManageCoursePage = () => {
           <div>
             <h1 className="text-2xl font-bold m-0 text-gray-800 flex items-center gap-3">
               {course.title}
-              <Tag
-                className="m-0 text-sm font-normal"
-                color={course.status === "PUBLISHED" ? "green" : "default"}
-              >
-                {course.status}
-              </Tag>
+              {course.status && STATUS_CONFIG[course.status] && (
+                <Tag
+                  className={`m-0 text-sm font-normal ${STATUS_CONFIG[course.status].className}`}
+                  color={STATUS_CONFIG[course.status].color}
+                >
+                  {STATUS_CONFIG[course.status].label}
+                </Tag>
+              )}
             </h1>
             <span className="text-gray-500 text-sm">
               Cập nhật lần cuối:{" "}
@@ -94,11 +118,9 @@ const ManageCoursePage = () => {
           </Button>
         )}
       </div>
-
-      {/* --- CONTENT TABS --- */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <Tabs
-          defaultActiveKey="2" // Mặc định vào Curriculum
+          defaultActiveKey="2"
           size="large"
           items={[
             {

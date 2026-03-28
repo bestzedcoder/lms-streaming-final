@@ -20,23 +20,28 @@ import {
   Rate,
   Input,
   Tooltip,
+  Space,
+  Popconfirm,
+  message,
 } from "antd";
 import {
   UserOutlined,
   ReadOutlined,
   StarFilled,
-  DollarCircleOutlined,
   EditOutlined,
   CalendarOutlined,
   SearchOutlined,
   MailOutlined,
   BarChartOutlined,
   CheckCircleOutlined,
+  LockOutlined,
+  UnlockOutlined,
 } from "@ant-design/icons";
 import { instructorService } from "../../services/instructor.service";
 import type {
   InstructorCourseInfoResponse,
   ReviewCourseResponse,
+  InstructorCourseParticipantResponse,
 } from "../../@types/instructor.types";
 
 const { Title, Text } = Typography;
@@ -59,25 +64,61 @@ const InstructorCourseDetailPage = () => {
       if (res.data) setData(res.data);
     } catch (error) {
       console.error(error);
+      message.error("Không thể tải thông tin khóa học.");
     } finally {
       setLoading(false);
     }
   };
 
+  // Logic xử lý Ban/Active học viên
+  const handleToggleStudentStatus = async (
+    studentId: string,
+    currentStatus: "ACTIVE" | "BANNED",
+  ) => {
+    const newStatus = currentStatus === "ACTIVE" ? "BANNED" : "ACTIVE";
+    try {
+      // TODO: Gọi API cập nhật trạng thái học viên tại đây
+      // await instructorService.updateStudentStatus(id!, studentId, newStatus);
+
+      // Cập nhật giao diện (Optimistic update)
+      setData((prevData) => {
+        if (!prevData) return prevData;
+        return {
+          ...prevData,
+          students: prevData.students.map((student) =>
+            student.id === studentId
+              ? { ...student, status: newStatus }
+              : student,
+          ),
+        };
+      });
+
+      message.success(
+        newStatus === "ACTIVE"
+          ? "Đã mở khóa học viên thành công!"
+          : "Đã cấm (ban) học viên thành công!",
+      );
+    } catch (error) {
+      console.error(error);
+      message.error("Có lỗi xảy ra khi cập nhật trạng thái học viên.");
+    }
+  };
+
   if (loading)
     return (
-      <div className="p-8">
+      <div className="p-8 max-w-7xl mx-auto">
         <Skeleton active paragraph={{ rows: 10 }} />
       </div>
     );
+
   if (!data)
     return (
-      <div className="p-8">
+      <div className="p-8 max-w-7xl mx-auto">
         <Empty description="Không tìm thấy dữ liệu khóa học" />
       </div>
     );
 
-  const { course, students, reviews, revenue } = data;
+  const { course, students, reviews } = data;
 
   const getStarValue = (rateEnum: string): number => {
     const map: Record<string, number> = {
@@ -118,26 +159,14 @@ const InstructorCourseDetailPage = () => {
           <Tag color="cyan">{course.category?.name}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Trình độ">{course.level}</Descriptions.Item>
-        <Descriptions.Item label="Giá gốc">
-          {formatCurrency(course.price)}
-        </Descriptions.Item>
-        <Descriptions.Item label="Giá khuyến mãi">
-          {course.salePrice ? (
-            <span className="text-red-500 font-semibold">
-              {formatCurrency(course.salePrice)}
-            </span>
-          ) : (
-            "Không có"
-          )}
+        <Descriptions.Item label="Người tạo">
+          {course.createdBy}
         </Descriptions.Item>
         <Descriptions.Item label="Ngày tạo">
           {new Date(course.createdAt).toLocaleDateString("vi-VN")}
         </Descriptions.Item>
         <Descriptions.Item label="Cập nhật cuối">
           {new Date(course.updatedAt).toLocaleDateString("vi-VN")}
-        </Descriptions.Item>
-        <Descriptions.Item label="Người tạo">
-          {course.createdBy}
         </Descriptions.Item>
       </Descriptions>
 
@@ -216,7 +245,7 @@ const InstructorCourseDetailPage = () => {
       <Table
         dataSource={filteredStudents}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        pagination={{ pageSize: 8 }}
         locale={{
           emptyText: (
             <Empty
@@ -235,9 +264,17 @@ const InstructorCourseDetailPage = () => {
                 <Avatar
                   src={record.avatarUrl}
                   icon={<UserOutlined />}
-                  className="bg-indigo-100 text-indigo-600"
+                  className={
+                    record.status === "BANNED"
+                      ? "bg-gray-200 text-gray-400"
+                      : "bg-indigo-100 text-indigo-600"
+                  }
                 />
-                <span className="font-medium text-gray-700">{text}</span>
+                <span
+                  className={`font-medium ${record.status === "BANNED" ? "text-gray-400 line-through" : "text-gray-700"}`}
+                >
+                  {text}
+                </span>
               </div>
             ),
           },
@@ -253,13 +290,63 @@ const InstructorCourseDetailPage = () => {
             ),
           },
           {
+            title: "Trạng thái",
+            dataIndex: "status",
+            key: "status",
+            render: (status: "ACTIVE" | "BANNED") => (
+              <Tag
+                color={status === "ACTIVE" ? "success" : "error"}
+                className="border-0"
+              >
+                {status === "ACTIVE" ? "Đang học" : "Bị cấm (Banned)"}
+              </Tag>
+            ),
+          },
+          {
             title: "Hành động",
             key: "action",
             align: "right",
-            render: () => (
-              <Button type="text" size="small" className="text-blue-600">
-                Chi tiết
-              </Button>
+            render: (_: any, record: InstructorCourseParticipantResponse) => (
+              <Space>
+                <Popconfirm
+                  title={
+                    record.status === "ACTIVE"
+                      ? "Cấm học viên này?"
+                      : "Mở khóa cho học viên này?"
+                  }
+                  description={
+                    record.status === "ACTIVE"
+                      ? "Học viên sẽ không thể xem nội dung khóa học nữa."
+                      : "Học viên sẽ có thể tiếp tục học."
+                  }
+                  onConfirm={() =>
+                    handleToggleStudentStatus(record.id, record.status)
+                  }
+                  okText="Đồng ý"
+                  cancelText="Hủy"
+                  placement="left"
+                >
+                  <Button
+                    type="text"
+                    size="small"
+                    danger={record.status === "ACTIVE"}
+                    className={
+                      record.status === "BANNED"
+                        ? "text-green-600 hover:text-green-500 hover:bg-green-50"
+                        : ""
+                    }
+                    icon={
+                      record.status === "ACTIVE" ? (
+                        <LockOutlined />
+                      ) : (
+                        <UnlockOutlined />
+                      )
+                    }
+                  >
+                    {record.status === "ACTIVE" ? "Khóa" : "Mở khóa"}
+                  </Button>
+                </Popconfirm>
+              </Space>
             ),
           },
         ]}
@@ -411,7 +498,7 @@ const InstructorCourseDetailPage = () => {
                 gutter={16}
                 className="bg-gray-50 p-4 rounded-xl border border-gray-100"
               >
-                <Col span={6}>
+                <Col span={8}>
                   <Statistic
                     title={
                       <span className="text-gray-500 text-xs uppercase font-bold">
@@ -423,7 +510,7 @@ const InstructorCourseDetailPage = () => {
                     valueStyle={{ fontWeight: 600 }}
                   />
                 </Col>
-                <Col span={6}>
+                <Col span={8}>
                   <Statistic
                     title={
                       <span className="text-gray-500 text-xs uppercase font-bold">
@@ -435,7 +522,7 @@ const InstructorCourseDetailPage = () => {
                     valueStyle={{ fontWeight: 600 }}
                   />
                 </Col>
-                <Col span={6}>
+                <Col span={8}>
                   <Statistic
                     title={
                       <span className="text-gray-500 text-xs uppercase font-bold">
@@ -451,25 +538,6 @@ const InstructorCourseDetailPage = () => {
                       </span>
                     }
                     valueStyle={{ fontWeight: 600 }}
-                  />
-                </Col>
-                <Col span={6}>
-                  <Statistic
-                    title={
-                      <span className="text-gray-500 text-xs uppercase font-bold">
-                        Doanh thu
-                      </span>
-                    }
-                    value={revenue}
-                    prefix={
-                      <DollarCircleOutlined className="text-green-500 mr-1" />
-                    }
-                    formatter={(value) => formatCurrency(value)}
-                    valueStyle={{
-                      fontSize: "18px",
-                      fontWeight: "bold",
-                      color: "#16a34a",
-                    }}
                   />
                 </Col>
               </Row>

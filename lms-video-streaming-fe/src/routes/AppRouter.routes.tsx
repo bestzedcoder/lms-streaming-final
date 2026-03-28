@@ -25,6 +25,7 @@ import CreateCoursePage from "../pages/instructor/CreateCoursePage";
 import InstructorCourseDetailPage from "../pages/instructor/InstructorCourseDetailPage";
 import PublicCoursesPage from "../pages/student/PublicCoursePage";
 import CourseDetailsPage from "../pages/student/CourseDetailsPage";
+import PendingRegistrationsPage from "../pages/instructor/PendingRegistrationsPage";
 
 const AppRouter = () => {
   return (
@@ -87,9 +88,7 @@ const AppRouter = () => {
               path="courses/:courseId/manage"
               element={<ManageCoursePage />}
             />
-            <Route path="students" element={<div>Quản lý học viên</div>} />
-            <Route path="analytics" element={<div>Phân tích chi tiết</div>} />
-            <Route path="earnings" element={<div>Ví & Doanh thu</div>} />
+            <Route path="students" element={<PendingRegistrationsPage />} />
             <Route path="settings" element={<InstructorSettingsPage />} />
           </Route>
         </Route>

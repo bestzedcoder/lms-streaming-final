@@ -2,7 +2,6 @@ import {
   Form,
   Input,
   Button,
-  InputNumber,
   Upload,
   Image,
   Row,
@@ -33,34 +32,42 @@ const CourseBasicInfo = ({ course, onRefresh }: Props) => {
   const [fileList, setFileList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const parseRequirementsToArray = (htmlString?: string) => {
-    if (!htmlString) return [""];
-    const matches = htmlString.match(/<li[^>]*>(.*?)<\/li>/g);
-    if (matches) {
-      return matches.map((item) => item.replace(/<\/?li>/g, ""));
-    }
-    return htmlString.split("\n");
+  const parseRequirementsToArray = (input?: string): string[] => {
+    if (!input || !input.trim()) return [];
+
+    return input
+      .split(";")
+      .map((item) => item.trim())
+      .filter((item) => item !== "");
   };
 
-  const convertArrayToHtml = (arr: string[]) => {
-    const validItems = arr.filter((item) => item && item.trim() !== "");
-    if (validItems.length === 0) return "";
-    return `<ul>${validItems.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+  const convertArrayToString = (arr: string[]): string => {
+    if (!arr || arr.length === 0) return "";
+
+    return arr
+      .map((item) => item.trim())
+      .filter((item) => item !== "")
+      .join("; ");
   };
 
   const onFinish = async (values: any) => {
     setLoading(true);
     try {
       const image = fileList.length > 0 ? fileList[0].originFileObj : null;
-      const requirementsHtml = convertArrayToHtml(values.requirementsList);
+      // Sửa lại gọi đúng hàm đã được định nghĩa bên trên
+      const requirementsString = convertArrayToString(values.requirementsList);
+
       const payload = { ...values };
       delete payload.requirementsList;
+
+      // Xóa title khỏi payload để đảm bảo API không cập nhật trường này
+      delete payload.title;
 
       await instructorService.updateCourse(
         {
           ...payload,
           id: course.id,
-          requirements: requirementsHtml,
+          requirements: requirementsString,
         },
         image,
       );
@@ -88,9 +95,14 @@ const CourseBasicInfo = ({ course, onRefresh }: Props) => {
       <Form.Item
         name="title"
         label="Tên khóa học"
+        // Vẫn giữ UI Required nhưng thêm disabled
         rules={[{ required: true, min: 10 }]}
       >
-        <Input size="large" placeholder="Nhập tên khóa học hấp dẫn..." />
+        <Input
+          size="large"
+          disabled
+          className="bg-gray-50 text-gray-500 cursor-not-allowed"
+        />
       </Form.Item>
 
       <Form.Item
@@ -115,44 +127,11 @@ const CourseBasicInfo = ({ course, onRefresh }: Props) => {
 
       <Row gutter={24}>
         <Col span={12}>
-          <Form.Item
-            name="price"
-            label="Giá gốc (VNĐ)"
-            rules={[{ required: true }]}
-          >
-            <InputNumber
-              className="w-full"
-              min={0}
-              size="large"
-              formatter={(value) => formatNumber(value)}
-              parser={(value) => value?.replace(/\./g, "") as unknown as number}
-            />
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item name="salePrice" label="Giá khuyến mãi (VNĐ)">
-            <InputNumber
-              className="w-full"
-              min={0}
-              size="large"
-              formatter={(value) => formatNumber(value)}
-              parser={(value) => value?.replace(/\./g, "") as unknown as number}
-            />
-          </Form.Item>
-        </Col>
-      </Row>
-
-      <Row gutter={24}>
-        <Col span={12}>
           <Form.Item name="level" label="Trình độ" rules={[{ required: true }]}>
             <Select size="large">
-              <Select.Option value="BEGINNER">Cơ bản (Beginner)</Select.Option>
-              <Select.Option value="INTERMEDIATE">
-                Trung cấp (Intermediate)
-              </Select.Option>
-              <Select.Option value="ADVANCED">
-                Nâng cao (Advanced)
-              </Select.Option>
+              <Select.Option value="BEGINNER">Cơ bản</Select.Option>
+              <Select.Option value="INTERMEDIATE">Trung cấp</Select.Option>
+              <Select.Option value="ADVANCED">Nâng cao</Select.Option>
             </Select>
           </Form.Item>
         </Col>

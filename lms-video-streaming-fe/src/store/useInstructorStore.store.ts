@@ -4,16 +4,20 @@ import type { InstructorInfoResponse } from "../@types/instructor.types";
 
 interface InstructorState {
   instructorInfo: InstructorInfoResponse | null;
+  pendingApprovals: number;
   isLoading: boolean;
   isInitialized: boolean;
 
   fetchInstructorInfo: () => Promise<void>;
   setInstructorInfo: (info: InstructorInfoResponse | null) => void;
+  setPendingApprovals: (count: number) => void;
+  decrementPending: () => void;
   reset: () => void;
 }
 
 export const useInstructorStore = create<InstructorState>((set, get) => ({
   instructorInfo: null,
+  pendingApprovals: 0,
   isLoading: false,
   isInitialized: false,
 
@@ -22,15 +26,19 @@ export const useInstructorStore = create<InstructorState>((set, get) => ({
 
     set({ isLoading: true });
     try {
-      const res = await instructorService.getInfo();
-      if (res.data) {
-        set({ instructorInfo: res.data, isInitialized: true });
-      } else {
-        set({ instructorInfo: null, isInitialized: true });
-      }
+      const [infoRes, pendingRes] = await Promise.all([
+        instructorService.getInfo(),
+        instructorService.countPendingRegistrationsByInstructor(),
+      ]);
+
+      set({
+        instructorInfo: infoRes.data || null,
+        pendingApprovals: pendingRes.data,
+        isInitialized: true,
+      });
     } catch (error) {
-      console.error("Failed to fetch instructor info", error);
-      set({ instructorInfo: null, isInitialized: true });
+      console.error("Failed to fetch instructor data", error);
+      set({ instructorInfo: null, pendingApprovals: 0, isInitialized: true });
     } finally {
       set({ isLoading: false });
     }
@@ -39,6 +47,18 @@ export const useInstructorStore = create<InstructorState>((set, get) => ({
   setInstructorInfo: (info) =>
     set({ instructorInfo: info, isInitialized: true }),
 
+  setPendingApprovals: (count) => set({ pendingApprovals: count }),
+
+  decrementPending: () =>
+    set((state) => ({
+      pendingApprovals: Math.max(0, state.pendingApprovals - 1),
+    })),
+
   reset: () =>
-    set({ instructorInfo: null, isLoading: false, isInitialized: false }),
+    set({
+      instructorInfo: null,
+      pendingApprovals: 0,
+      isLoading: false,
+      isInitialized: false,
+    }),
 }));

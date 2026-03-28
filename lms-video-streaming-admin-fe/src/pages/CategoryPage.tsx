@@ -15,7 +15,6 @@ import {
 import {
   AppstoreAddOutlined,
   DeleteOutlined,
-  UserOutlined,
   CalendarOutlined,
 } from "@ant-design/icons";
 import { categoryService } from "../services/category.service";

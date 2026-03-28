@@ -15,6 +15,7 @@ import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
 import com.hust.lms.streaming.dto.response.admin.SummaryDashboardResponse;
 import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.dto.response.category.CategoryResponse;
+import com.hust.lms.streaming.dto.response.report.InstructorRequestResponse;
 import com.hust.lms.streaming.dto.response.user.UserResponse;
 import com.hust.lms.streaming.service.AdminService;
 import com.hust.lms.streaming.service.CategoryService;
@@ -48,6 +49,31 @@ public class AdminController {
   private final RequestService requestService;
 
   // Handle request
+
+  @GetMapping("requests/instructor")
+  public ResponseEntity<BaseListResponse<?>> getInstructorRequests() {
+    List<InstructorRequestResponse> res = this.requestService.getInstructorRequests();
+    return ResponseEntity.ok(BaseListResponse.<InstructorRequestResponse>builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("requests/count-instructor")
+  public ResponseEntity<BaseResponse<?>> getCountInstructorRequests() {
+    int res = this.requestService.countInstructorRequests();
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
   @PostMapping("requests/instructor/{uuid}")
   public ResponseEntity<BaseResponse<?>> handleInstructorRequest(@PathVariable("uuid") UUID requestId) {
     this.requestService.handleInstructorRequest(requestId);

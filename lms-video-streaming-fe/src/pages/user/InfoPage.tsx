@@ -8,16 +8,24 @@ import {
   Button,
   Skeleton,
   Empty,
+  Form,
+  message,
+  Modal,
+  Checkbox,
 } from "antd";
 import {
   EditOutlined,
   CheckCircleFilled,
   BookOutlined,
+  IdcardOutlined,
+  WarningOutlined,
 } from "@ant-design/icons";
 import { useAuthStore } from "../../store/useAuthStore.store";
 import { useNavigate } from "react-router-dom";
 import { profileService } from "../../services/profile.service";
 import type { UserCourseResponse } from "../../@types/user.types";
+import { studentService } from "../../services/student.service";
+import TextArea from "antd/es/input/TextArea";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -27,6 +35,10 @@ const InfoPage = () => {
 
   const [courses, setCourses] = useState<UserCourseResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     const fetchMyCourses = async () => {
@@ -45,6 +57,29 @@ const InfoPage = () => {
 
     fetchMyCourses();
   }, []);
+
+  // Xử lý submit form xin quyền
+  const handleRequestInstructor = async (values: { message?: string }) => {
+    try {
+      setSubmitting(true);
+      await studentService.instructorRequest({ message: values.message });
+      message.success("Đã gửi yêu cầu cấp quyền giảng viên thành công!");
+      setIsModalOpen(false);
+      form.resetFields();
+    } catch (error: any) {
+      console.error("Failed to request instructor:", error);
+      message.error(
+        error.message || "Gửi yêu cầu thất bại. Vui lòng thử lại sau.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCancelModal = () => {
+    setIsModalOpen(false);
+    form.resetFields();
+  };
 
   return (
     <div className="animate-fade-in">
@@ -89,6 +124,16 @@ const InfoPage = () => {
           "Học tập không bao giờ là quá muộn. Hãy đam mê và theo đuổi sự nghiệp
           lập trình."
         </p>
+
+        {user?.role === "STUDENT" && ( // Thay đổi điều kiện role này cho phù hợp với logic của bạn
+          <Button
+            type="dashed"
+            icon={<IdcardOutlined />}
+            onClick={() => setIsModalOpen(true)}
+          >
+            Đăng ký trở thành Giảng viên
+          </Button>
+        )}
       </div>
 
       <Title level={4}>
@@ -178,6 +223,95 @@ const InfoPage = () => {
           </Button>
         </Empty>
       )}
+
+      <Modal
+        title="Đăng ký trở thành Giảng viên"
+        open={isModalOpen}
+        onCancel={handleCancelModal}
+        footer={null}
+        destroyOnClose
+        width={600} // Mở rộng Modal một chút để chứa phần điều khoản cho đẹp
+      >
+        <div className="mb-4 text-gray-600">
+          Hãy cho chúng tôi biết lý do bạn muốn trở thành giảng viên. Đội ngũ
+          quản trị sẽ xem xét hồ sơ và liên hệ lại với bạn.
+        </div>
+
+        <Form form={form} layout="vertical" onFinish={handleRequestInstructor}>
+          <Form.Item
+            name="message"
+            label="Lời nhắn giới thiệu (Tùy chọn)"
+            rules={[
+              {
+                max: 500,
+                message: "Lời nhắn không được vượt quá 500 ký tự",
+              },
+            ]}
+          >
+            <TextArea
+              rows={3}
+              placeholder="Nhập thông tin giới thiệu bản thân, chuyên môn, kinh nghiệm giảng dạy của bạn..."
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
+
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-5 text-sm text-gray-700">
+            <div className="font-bold text-orange-600 mb-2 flex items-center gap-2">
+              <WarningOutlined />
+              Quy định dành cho Giảng viên
+            </div>
+            <ul className="list-disc pl-5 space-y-1 mb-0">
+              <li>
+                Cam kết chỉ cung cấp nội dung học tập chất lượng, hữu ích và có
+                bản quyền hợp lệ.
+              </li>
+              <li>
+                <strong>Tuyệt đối nghiêm cấm</strong> việc đăng tải nội dung đồi
+                trụy, bạo lực, phản động hoặc vi phạm pháp luật Việt Nam.
+              </li>
+              <li>
+                Nền tảng có quyền khóa tài khoản vĩnh viễn và gỡ bỏ khóa học
+                ngay lập tức nếu phát hiện vi phạm mà không cần báo trước.
+              </li>
+              <li>
+                Tuân thủ mọi Quy tắc cộng đồng và Điều khoản dịch vụ của hệ
+                thống.
+              </li>
+            </ul>
+          </div>
+
+          <Form.Item
+            name="agreement"
+            valuePropName="checked"
+            rules={[
+              {
+                validator: (_, value) =>
+                  value
+                    ? Promise.resolve()
+                    : Promise.reject(
+                        new Error(
+                          "Bạn phải đồng ý với các điều khoản để tiếp tục!",
+                        ),
+                      ),
+              },
+            ]}
+          >
+            <Checkbox className="font-medium text-gray-800">
+              Tôi đã đọc, hiểu và cam kết tuân thủ các quy định trên.
+            </Checkbox>
+          </Form.Item>
+
+          <Form.Item className="mb-0 mt-6 text-right">
+            <Button onClick={handleCancelModal} className="mr-2">
+              Hủy
+            </Button>
+            <Button type="primary" htmlType="submit" loading={submitting}>
+              Gửi yêu cầu
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

@@ -13,6 +13,7 @@ public class InstructorMapper {
     if (instructor == null) return null;
 
     InstructorInfoResponse response = new InstructorInfoResponse();
+    response.setNickname(instructor.getNickname());
     response.setJobTitle(instructor.getJobTitle());
     response.setBio(instructor.getBio());
     response.setTotalCourses(instructor.getCourses().size());

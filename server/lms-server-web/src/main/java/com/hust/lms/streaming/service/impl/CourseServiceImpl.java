@@ -39,6 +39,7 @@ import com.hust.lms.streaming.repository.jpa.UserRepository;
 import com.hust.lms.streaming.service.CourseService;
 import com.hust.lms.streaming.upload.CloudinaryService;
 import com.hust.lms.streaming.upload.CloudinaryUploadResult;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -85,7 +86,8 @@ public class CourseServiceImpl implements CourseService {
   }
 
   @Override
-  public Course createCourse(CourseCreatingRequest request, MultipartFile image) {
+  @Transactional
+  public void createCourse(CourseCreatingRequest request, MultipartFile image) {
     User currentUser = this.getCurrentUser();
 
     Instructor instructor = this.instructorRepository.findById(currentUser.getId()).orElseThrow(() -> new BadRequestException("Chưa cập nhật thông tin giảng viên!"));
@@ -114,13 +116,12 @@ public class CourseServiceImpl implements CourseService {
     }
 
     instructor.getCourses().add(course);
-    this.instructorRepository.save(instructor);
     this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.CREATED , currentUser.getId(), null , null, null));
-    return course;
   }
 
   @Override
-  public Course updateCourse(CourseUpdatingRequest request, MultipartFile image) {
+  @Transactional
+  public void updateCourse(CourseUpdatingRequest request, MultipartFile image) {
     UUID id = UUID.fromString(request.getId());
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
     Course course = this.courseRepository.findByIdAndInstructorId(id, UUID.fromString(authId)).orElseThrow(
@@ -137,7 +138,6 @@ public class CourseServiceImpl implements CourseService {
       course.setPublicId(res.getPublicId());
     }
     this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.INFO_UPDATED, UUID.fromString(authId), id , CourseElasticsearchMapper.updatingInfoCourseDocument(course), null));
-    return this.courseRepository.save(course);
   }
 
   @Override

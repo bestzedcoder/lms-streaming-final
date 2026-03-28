@@ -34,17 +34,15 @@ public class RegistrationServiceImpl implements RegistrationService {
   private final EnrollmentRepository enrollmentRepository;
 
   @Override
-  public void enrollCourse(UUID courseId, String message) {
+  public void enrollCourse(String slug, String message) {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    if (this.enrollmentRepository.existsByUserIdAndCourseId(UUID.fromString(authId), courseId)) {
+    if (this.enrollmentRepository.existsByUserIdAndCourseSlug(UUID.fromString(authId), slug) ||
+        this.registrationRepository.existsByUser(UUID.fromString(authId), slug, RegistrationStatus.PENDING.toString())) {
       throw new BadRequestException("Khóa học này bạn đã đăng ký");
     }
 
     User user = this.userRepository.getReferenceById(UUID.fromString(authId));
-    Course course = this.courseRepository.findById(courseId).orElse(null);
-    if (course == null || !course.getStatus().equals(CourseStatus.PUBLISHED)) {
-      throw new BadRequestException("Không thể đăng ký khóa học này");
-    }
+    Course course = this.courseRepository.findBySlugAndStatus(slug, CourseStatus.PUBLISHED).orElse(null);
 
     Registration registration = Registration.builder()
         .course(course)
@@ -58,7 +56,7 @@ public class RegistrationServiceImpl implements RegistrationService {
   @Transactional
   public void approveRegistration(UUID registrationId, String message) {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    Registration registration = this.registrationRepository.findRegistrationByInstructor(UUID.fromString(authId), registrationId, RegistrationStatus.PENDING).orElse(null);
+    Registration registration = this.registrationRepository.findRegistrationByInstructor(UUID.fromString(authId), registrationId, RegistrationStatus.PENDING.toString()).orElse(null);
     if (registration == null) return;
     registration.setStatus(RegistrationStatus.APPROVED);
     registration.setResolvedAt(LocalDateTime.now());
@@ -79,7 +77,7 @@ public class RegistrationServiceImpl implements RegistrationService {
   @Override
   public void rejectRegistration(UUID registrationId, String message) {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    Registration registration = this.registrationRepository.findRegistrationByInstructor(UUID.fromString(authId), registrationId, RegistrationStatus.PENDING).orElse(null);
+    Registration registration = this.registrationRepository.findRegistrationByInstructor(UUID.fromString(authId), registrationId, RegistrationStatus.PENDING.toString()).orElse(null);
     if (registration == null) return;
     registration.setStatus(RegistrationStatus.REJECTED);
     registration.setResolvedAt(LocalDateTime.now());
@@ -88,15 +86,15 @@ public class RegistrationServiceImpl implements RegistrationService {
   }
 
   @Override
-  public List<RegistrationResponse> getPendingRegistrationsByUser(String email) {
+  public List<RegistrationResponse> getPendingRegistrationsByUser() {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    return this.registrationRepository.findRegistrationsByInstructorAndStudent(UUID.fromString(authId), email, RegistrationStatus.PENDING)
+    return this.registrationRepository.findRegistrationsByInstructor(UUID.fromString(authId), RegistrationStatus.PENDING.toString())
         .stream().map(RegistrationMapper::toRegistrationResponse).toList();
   }
 
   @Override
   public int countPendingRegistrationsByInstructor() {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    return this.registrationRepository.countByInstructor(UUID.fromString(authId), RegistrationStatus.PENDING);
+    return this.registrationRepository.countByInstructor(UUID.fromString(authId), RegistrationStatus.PENDING.toString());
   }
 }
