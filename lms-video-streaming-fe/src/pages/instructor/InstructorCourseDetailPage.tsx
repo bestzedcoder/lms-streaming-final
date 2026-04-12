@@ -23,6 +23,7 @@ import {
   Space,
   Popconfirm,
   message,
+  Modal, // Thêm Modal từ antd
 } from "antd";
 import {
   UserOutlined,
@@ -45,6 +46,7 @@ import type {
 } from "../../@types/instructor.types";
 
 const { Title, Text } = Typography;
+const { TextArea } = Input; // Sử dụng TextArea cho phần nhập lý do
 
 const InstructorCourseDetailPage = () => {
   const { id } = useParams();
@@ -52,6 +54,13 @@ const InstructorCourseDetailPage = () => {
   const [data, setData] = useState<InstructorCourseInfoResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [studentSearch, setStudentSearch] = useState("");
+
+  // --- THÊM STATE ĐỂ QUẢN LÝ MODAL BAN HỌC VIÊN ---
+  const [isBanModalVisible, setIsBanModalVisible] = useState(false);
+  const [selectedStudentForBan, setSelectedStudentForBan] = useState<
+    string | null
+  >(null);
+  const [banReason, setBanReason] = useState("");
 
   useEffect(() => {
     if (id) fetchCourse();
@@ -70,37 +79,65 @@ const InstructorCourseDetailPage = () => {
     }
   };
 
-  // Logic xử lý Ban/Active học viên
+  // Hàm helper để cập nhật UI tránh lặp code
+  const updateStudentUI = (
+    studentId: string,
+    newStatus: "ACTIVE" | "BANNED",
+  ) => {
+    setData((prevData) => {
+      if (!prevData) return prevData;
+      return {
+        ...prevData,
+        students: prevData.students.map((student) =>
+          student.id === studentId
+            ? { ...student, status: newStatus }
+            : student,
+        ),
+      };
+    });
+  };
+
   const handleToggleStudentStatus = async (
     studentId: string,
     currentStatus: "ACTIVE" | "BANNED",
   ) => {
-    const newStatus = currentStatus === "ACTIVE" ? "BANNED" : "ACTIVE";
-    try {
-      // TODO: Gọi API cập nhật trạng thái học viên tại đây
-      // await instructorService.updateStudentStatus(id!, studentId, newStatus);
+    if (currentStatus === "ACTIVE") {
+      setSelectedStudentForBan(studentId);
+      setBanReason("");
+      setIsBanModalVisible(true);
+    } else {
+      try {
+        await instructorService.active({
+          userId: studentId,
+          courseId: id!,
+        });
+        updateStudentUI(studentId, "ACTIVE");
+        message.success("Đã mở khóa học viên thành công!");
+      } catch (error) {
+        console.error(error);
+        message.error("Có lỗi xảy ra khi mở khóa học viên.");
+      }
+    }
+  };
 
-      // Cập nhật giao diện (Optimistic update)
-      setData((prevData) => {
-        if (!prevData) return prevData;
-        return {
-          ...prevData,
-          students: prevData.students.map((student) =>
-            student.id === studentId
-              ? { ...student, status: newStatus }
-              : student,
-          ),
-        };
+  const handleConfirmBan = async () => {
+    if (!selectedStudentForBan) return;
+
+    try {
+      await instructorService.banned({
+        userId: selectedStudentForBan,
+        courseId: id!,
+        reason: banReason,
       });
 
-      message.success(
-        newStatus === "ACTIVE"
-          ? "Đã mở khóa học viên thành công!"
-          : "Đã cấm (ban) học viên thành công!",
-      );
+      updateStudentUI(selectedStudentForBan, "BANNED");
+      message.success("Đã cấm học viên thành công!");
+
+      setIsBanModalVisible(false);
+      setSelectedStudentForBan(null);
     } catch (error) {
       console.error(error);
-      message.error("Có lỗi xảy ra khi cập nhật trạng thái học viên.");
+      message.error("Có lỗi xảy ra khi cấm học viên.");
     }
   };
 
@@ -185,7 +222,7 @@ const InstructorCourseDetailPage = () => {
           {course.requirements ? (
             <ul className="list-none pl-0 m-0 space-y-2">
               {!course.requirements.includes("<") ? (
-                course.requirements.split("\n").map(
+                course.requirements.split("; ").map(
                   (req, idx) =>
                     req.trim() && (
                       <li
@@ -298,7 +335,7 @@ const InstructorCourseDetailPage = () => {
                 color={status === "ACTIVE" ? "success" : "error"}
                 className="border-0"
               >
-                {status === "ACTIVE" ? "Đang học" : "Bị cấm (Banned)"}
+                {status === "ACTIVE" ? "Đang học" : "Bị cấm"}
               </Tag>
             ),
           },
@@ -308,44 +345,41 @@ const InstructorCourseDetailPage = () => {
             align: "right",
             render: (_: any, record: InstructorCourseParticipantResponse) => (
               <Space>
-                <Popconfirm
-                  title={
-                    record.status === "ACTIVE"
-                      ? "Cấm học viên này?"
-                      : "Mở khóa cho học viên này?"
-                  }
-                  description={
-                    record.status === "ACTIVE"
-                      ? "Học viên sẽ không thể xem nội dung khóa học nữa."
-                      : "Học viên sẽ có thể tiếp tục học."
-                  }
-                  onConfirm={() =>
-                    handleToggleStudentStatus(record.id, record.status)
-                  }
-                  okText="Đồng ý"
-                  cancelText="Hủy"
-                  placement="left"
-                >
+                {record.status === "ACTIVE" ? (
+                  // Bấm khóa -> Mở Modal (không cần Popconfirm)
                   <Button
                     type="text"
                     size="small"
-                    danger={record.status === "ACTIVE"}
-                    className={
-                      record.status === "BANNED"
-                        ? "text-green-600 hover:text-green-500 hover:bg-green-50"
-                        : ""
-                    }
-                    icon={
-                      record.status === "ACTIVE" ? (
-                        <LockOutlined />
-                      ) : (
-                        <UnlockOutlined />
-                      )
+                    danger
+                    icon={<LockOutlined />}
+                    onClick={() =>
+                      handleToggleStudentStatus(record.id, record.status)
                     }
                   >
-                    {record.status === "ACTIVE" ? "Khóa" : "Mở khóa"}
+                    Khóa
                   </Button>
-                </Popconfirm>
+                ) : (
+                  // Bấm mở khóa -> Hiện Popconfirm xác nhận nhanh
+                  <Popconfirm
+                    title="Mở khóa cho học viên này?"
+                    description="Học viên sẽ có thể tiếp tục học."
+                    onConfirm={() =>
+                      handleToggleStudentStatus(record.id, record.status)
+                    }
+                    okText="Đồng ý"
+                    cancelText="Hủy"
+                    placement="left"
+                  >
+                    <Button
+                      type="text"
+                      size="small"
+                      className="text-green-600 hover:text-green-500 hover:bg-green-50"
+                      icon={<UnlockOutlined />}
+                    >
+                      Mở khóa
+                    </Button>
+                  </Popconfirm>
+                )}
               </Space>
             ),
           },
@@ -549,6 +583,36 @@ const InstructorCourseDetailPage = () => {
       <Card bordered={false} className="shadow-sm rounded-xl min-h-[400px]">
         <Tabs defaultActiveKey="1" items={tabItems} size="large" />
       </Card>
+
+      {/* --- MODAL BAN HỌC VIÊN --- */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <LockOutlined className="text-red-500" />
+            <span>Xác nhận cấm học viên</span>
+          </div>
+        }
+        open={isBanModalVisible}
+        onOk={handleConfirmBan}
+        onCancel={() => {
+          setIsBanModalVisible(false);
+          setSelectedStudentForBan(null);
+        }}
+        okText="Khóa học viên"
+        cancelText="Hủy bỏ"
+        okButtonProps={{ danger: true }}
+      >
+        <div className="mb-4 text-gray-600">
+          Vui lòng nhập lý do cấm học viên này (tùy chọn). Học viên sẽ không thể
+          xem nội dung khóa học nữa.
+        </div>
+        <TextArea
+          rows={4}
+          placeholder="Nhập lý do cấm (ví dụ: Vi phạm chính sách, Spam...)"
+          value={banReason}
+          onChange={(e) => setBanReason(e.target.value)}
+        />
+      </Modal>
     </div>
   );
 };

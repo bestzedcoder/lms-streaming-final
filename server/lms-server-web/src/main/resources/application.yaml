@@ -63,6 +63,14 @@ spring:
       enabled: ALWAYS
 
 app:
+  storage:
+    s3:
+      endpoint: ${STORAGE_ENDPOINT:http://localhost:9000}
+      access-key: ${STORAGE_ACCESS_KEY}
+      secret-key: ${STORAGE_SECRET_KEY}
+      bucket-staging: ${STORAGE_BUCKET_STAGING}
+      bucket-production: ${STORAGE_BUCKET_PRODUCTION}
+      region: ${STORAGE_REGION:us-east-1}
   admin:
     account:
       email: ${ADMIN_USERNAME}

@@ -1,6 +1,8 @@
 import axiosClient from "../config/axiosClient.config";
 import type { ResponseData } from "../@types/common.types";
 import type {
+  ActiveEnrollment,
+  BannedEnrollment,
   CourseCreatingRequest,
   CourseUpdatingRequest,
   InstructorCourseDetailsResponse,
@@ -11,11 +13,30 @@ import type {
   LessonCancelRequest,
   LessonCreatingRequest,
   LessonUpdatingRequest,
+  UploadFileRequest,
+  QuestionCategoryCreatingRequest,
+  QuestionCategoryResponse,
+  QuestionCategoryUpdatingRequest,
+  QuestionCreatingRequest,
+  QuestionQuery,
+  QuestionResponse,
+  QuestionUpdatingResponse,
   RegistrationProcessingRequest,
   RegistrationResponse,
   SectionCancelRequest,
   SectionCreatingRequest,
   SectionUpdatingRequest,
+  MultipartInitRequest,
+  MultipartInitResponse,
+  MultipartCompleteRequest,
+  VideoCreatingRequest,
+  ResourceCreatingRequest,
+  VideoUpdatingRequest,
+  ResourceUpdatingRequest,
+  UploadFileResponse,
+  InstructorVideoResponse,
+  InstructorLectureResponse,
+  ResourcePreviewResponse,
 } from "../@types/instructor.types";
 
 const createFormData = (data: any, file?: File | null) => {
@@ -145,5 +166,137 @@ export const instructorService = {
     data: RegistrationProcessingRequest,
   ): Promise<ResponseData> => {
     return axiosClient.post("/instructor/registrations/reject", data);
+  },
+
+  // enrollment
+
+  banned: async (data: BannedEnrollment): Promise<ResponseData> => {
+    return axiosClient.post("/instructor/enrollments/user-banned", data);
+  },
+
+  active: async (data: ActiveEnrollment): Promise<ResponseData> => {
+    return axiosClient.post("/instructor/enrollments/user-active", data);
+  },
+
+  // question
+
+  getQuestionCategories: async (): Promise<
+    ResponseData<QuestionCategoryResponse[]>
+  > => {
+    return axiosClient.get("/instructor/questions/get-categories");
+  },
+
+  createQuestionCategory: async (
+    data: QuestionCategoryCreatingRequest,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("instructor/questions/create-category", data);
+  },
+
+  updateQuestionCategory: async (
+    data: QuestionCategoryUpdatingRequest,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("instructor/questions/update-category", data);
+  },
+
+  deleteQuestionCategory: async (categoryId: string): Promise<ResponseData> => {
+    return axiosClient.delete(
+      `instructor/questions/delete-category/${categoryId}`,
+    );
+  },
+
+  getQuestions: async (
+    params: QuestionQuery,
+  ): Promise<ResponseData<QuestionResponse[]>> => {
+    return axiosClient.get("instructor/questions", { params });
+  },
+
+  createQuestion: async (
+    data: QuestionCreatingRequest,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("instructor/questions/create", data);
+  },
+
+  updateQuestion: async (
+    data: QuestionUpdatingResponse,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("instructor/questions/update", data);
+  },
+
+  deleteQuestion: async (id: string): Promise<ResponseData> => {
+    return axiosClient.delete(`instructor/questions/delete/${id}`);
+  },
+
+  // upload file
+
+  getPresignedUrl: async (
+    data: UploadFileRequest,
+  ): Promise<ResponseData<UploadFileResponse>> => {
+    return axiosClient.post("instructor/storage/presigned-url", data);
+  },
+
+  initMultipartVideo: async (
+    data: MultipartInitRequest,
+  ): Promise<ResponseData<MultipartInitResponse>> => {
+    return axiosClient.post("instructor/storage/init-multipart", data);
+  },
+
+  completeMultipartVideo: async (
+    data: MultipartCompleteRequest,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("instructor/storage/complete-multipart", data);
+  },
+
+  createVideo: async (data: VideoCreatingRequest): Promise<ResponseData> => {
+    return axiosClient.post("instructor/storage/create-video", data);
+  },
+
+  createResource: async (
+    data: ResourceCreatingRequest,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("instructor/storage/create-resource", data);
+  },
+
+  updateVideo: async (
+    data: VideoUpdatingRequest,
+    image?: File | null,
+  ): Promise<ResponseData> => {
+    const formData = new FormData();
+    formData.append(
+      "data",
+      new Blob([JSON.stringify(data)], { type: "application/json" }),
+    );
+    if (image) {
+      formData.append("image", image);
+    }
+    return axiosClient.post("instructor/storage/update-video", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
+  updateLecture: async (
+    data: ResourceUpdatingRequest,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("instructor/storage/update-resource", data);
+  },
+
+  getVideos: async (): Promise<ResponseData<InstructorVideoResponse[]>> => {
+    return axiosClient.get("instructor/resources/get-videos");
+  },
+
+  getLectures: async (): Promise<ResponseData<InstructorLectureResponse[]>> => {
+    return axiosClient.get("instructor/resources/get-lectures");
+  },
+
+  generateVideoPreview: async (
+    id: string,
+  ): Promise<ResponseData<ResourcePreviewResponse>> => {
+    return axiosClient.get(`instructor/resources/preview-video/${id}`);
+  },
+
+  generateLecturePreview: async (
+    id: string,
+  ): Promise<ResponseData<ResourcePreviewResponse>> => {
+    return axiosClient.get(`instructor/resources/preview-lecture/${id}`);
   },
 };

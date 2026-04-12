@@ -5,11 +5,9 @@ import com.hust.lms.streaming.dto.validation.XssSanitizerDeserializer;
 import com.hust.lms.streaming.enums.LevelCourse;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.validator.constraints.UUID;
 
 @Getter
-@Setter
 public class CourseUpdatingRequest {
   @NotBlank(message = "ID không được để trống")
   @UUID(message = "ID không đúng định dạng")

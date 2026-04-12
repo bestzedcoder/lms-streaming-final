@@ -26,13 +26,11 @@ import type {
 const { Title, Text } = Typography;
 
 const InstructorCoursesPage: React.FC = () => {
-  // State Instructor
   const [instructors, setInstructors] = useState<InstructorResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebounce(searchText, 500);
 
-  // State Drawer & Course
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedInstructor, setSelectedInstructor] =
     useState<InstructorResponse | null>(null);
@@ -84,7 +82,6 @@ const InstructorCoursesPage: React.FC = () => {
         await courseService.lockCourse(courseId);
         message.success("Đã khóa khóa học!");
       }
-      // Reload danh sách khóa học của instructor này
       if (selectedInstructor) {
         const res = await courseService.getCourses(
           selectedInstructor.instructorId,
@@ -98,9 +95,9 @@ const InstructorCoursesPage: React.FC = () => {
 
   const instructorColumns = [
     {
-      title: "Họ và tên",
-      dataIndex: "fullName",
-      key: "fullName",
+      title: "Giảng viên",
+      dataIndex: "nickname",
+      key: "nickname",
       render: (t: string) => <strong className="text-slate-700">{t}</strong>,
     },
     {
@@ -109,12 +106,24 @@ const InstructorCoursesPage: React.FC = () => {
       key: "email",
       render: (t: string) => <Text className="font-mono text-sm">{t}</Text>,
     },
-    { title: "SĐT", dataIndex: "phoneNumber", key: "phoneNumber" },
+    {
+      title: "SĐT",
+      dataIndex: "phoneNumber",
+      key: "phoneNumber",
+    },
     {
       title: "Khóa học",
-      dataIndex: "countCourses",
-      key: "countCourses",
+      dataIndex: "totalCourses",
+      key: "totalCourses",
       render: (val: number) => <Tag color="blue">{val} khóa</Tag>,
+    },
+    {
+      title: "Tổng học viên",
+      dataIndex: "totalStudents",
+      key: "totalStudents",
+      render: (val: number) => (
+        <span className="text-emerald-600 font-medium">{val}</span>
+      ),
     },
     {
       title: "Thao tác",
@@ -153,7 +162,7 @@ const InstructorCoursesPage: React.FC = () => {
       dataIndex: "status",
       key: "status",
       render: (s: string) => {
-        const colors: any = {
+        const colors: Record<string, string> = {
           PUBLISHED: "success",
           PENDING: "warning",
           PRIVATE: "default",
@@ -164,8 +173,8 @@ const InstructorCoursesPage: React.FC = () => {
     },
     {
       title: "Học viên",
-      dataIndex: "countStudents",
-      key: "countStudents",
+      dataIndex: "totalStudents",
+      key: "totalStudents",
       render: (v: number) => (
         <span className="text-emerald-600 font-medium">{v}</span>
       ),
@@ -227,7 +236,7 @@ const InstructorCoursesPage: React.FC = () => {
       </Card>
 
       <Drawer
-        title={`Khóa học của: ${selectedInstructor?.fullName || ""}`}
+        title={`Khóa học của: ${selectedInstructor?.nickname || ""}`}
         placement="right"
         width={800}
         onClose={() => setDrawerVisible(false)}

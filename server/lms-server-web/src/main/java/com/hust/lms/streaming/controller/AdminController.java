@@ -9,6 +9,8 @@ import com.hust.lms.streaming.dto.request.user.LockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UnlockAccountRequest;
 import com.hust.lms.streaming.dto.request.user.UserCreatingRequest;
 import com.hust.lms.streaming.dto.request.user.UserUpdatingRequest;
+import com.hust.lms.streaming.dto.response.admin.AdminLecturePreview;
+import com.hust.lms.streaming.dto.response.admin.AdminVideoPreview;
 import com.hust.lms.streaming.dto.response.admin.CourseOfInstructorResponse;
 import com.hust.lms.streaming.dto.response.admin.CoursePendingResponse;
 import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
@@ -234,6 +236,102 @@ public class AdminController {
             .timestamp(LocalDateTime.now())
         .build());
   }
+
+
+  @GetMapping("resource/preview/get-videos")
+  public ResponseEntity<BaseListResponse<?>> getVideos() {
+    List<AdminVideoPreview> res = this.adminService.getVideoPreviews();
+    return ResponseEntity.ok(BaseListResponse.<AdminVideoPreview>builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("resource/preview/get-lectures")
+  public ResponseEntity<BaseListResponse<?>> getLectures() {
+    List<AdminLecturePreview> res = this.adminService.getLecturePreviews();
+    return ResponseEntity.ok(BaseListResponse.<AdminLecturePreview>builder()
+        .code(200)
+        .message("Success")
+        .data(res)
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("resource/approval/video/{id}")
+  public ResponseEntity<BaseResponse<?>> approveVideo(@PathVariable("id") UUID videoId) {
+    this.adminService.approveVideo(videoId);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("resource/reject/video/{id}")
+  public ResponseEntity<BaseResponse<?>> rejectVideo(@PathVariable("id") UUID videoId) {
+    this.adminService.rejectVideo(videoId);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Success")
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("resource/approval/lecture/{id}")
+  public ResponseEntity<BaseResponse<?>> approveLecture(@PathVariable("id") UUID lectureId) {
+    this.adminService.approveLecture(lectureId);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Success")
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("resource/reject/lecture/{id}")
+  public ResponseEntity<BaseResponse<?>> rejectLecture(@PathVariable("id") UUID lectureId) {
+    this.adminService.rejectLecture(lectureId);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Success")
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+
+  @GetMapping("resource/preview/video/{id}/presigned-url")
+  public ResponseEntity<BaseResponse<?>> getVideoPresignedUrl(@PathVariable("id") UUID videoId) {
+    String res = this.adminService.getVideoPresignedUrl(videoId);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("resource/preview/lecture/{id}/presigned-url")
+  public ResponseEntity<BaseResponse<?>> getLecturePresignedUrl(@PathVariable("id") UUID lectureId) {
+    String res = this.adminService.getLecturePresignedUrl(lectureId);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Success")
+        .data(res)
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+
 
   // User
   @GetMapping("users")

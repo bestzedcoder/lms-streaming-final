@@ -90,9 +90,7 @@ const InstructorSettingsPage = () => {
           </Row>
 
           <Form.Item
-            label={
-              <span className="font-semibold">Giới thiệu bản thân (Bio)</span>
-            }
+            label={<span className="font-semibold">Giới thiệu bản thân</span>}
             name="bio"
             rules={[
               { required: true, message: "Vui lòng nhập giới thiệu" },

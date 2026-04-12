@@ -209,10 +209,10 @@ const PendingRegistrationsPage: React.FC = () => {
               shape="circle"
               icon={<CheckOutlined />}
               className="bg-green-600 hover:bg-green-500 border-none"
-              onClick={() =>
-                setCurrentAction({ id: record.id, type: "APPROVE" }) ||
-                openActionModal(record.id, "APPROVE")
-              }
+              onClick={() => {
+                setCurrentAction({ id: record.id, type: "APPROVE" });
+                openActionModal(record.id, "APPROVE");
+              }}
             />
           </Tooltip>
           <Tooltip title="Từ chối">

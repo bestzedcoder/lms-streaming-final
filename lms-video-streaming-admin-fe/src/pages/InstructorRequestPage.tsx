@@ -77,7 +77,6 @@ const InstructorRequestPage: React.FC = () => {
     }
   };
 
-  // Định nghĩa các cột cho Table
   const columns = [
     {
       title: "Thông tin người dùng",
@@ -132,7 +131,6 @@ const InstructorRequestPage: React.FC = () => {
       key: "action",
       align: "center" as const,
       render: (_: any, record: InstructorRequestResponse) => {
-        // Nếu đã duyệt rồi thì ẩn nút đi hoặc làm mờ
         if (record.status) {
           return (
             <Text type="secondary" className="text-sm">

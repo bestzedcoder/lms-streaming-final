@@ -88,7 +88,7 @@ const formatCompactCurrency = (value: number) => {
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const { pendingCoursesCount } = useNotification(); // Lấy số lượng từ Context
+  const { pendingCoursesCount } = useNotification();
 
   const [loading, setLoading] = useState(true);
   const [summaryData, setSummaryData] =

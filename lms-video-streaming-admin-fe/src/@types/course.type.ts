@@ -3,7 +3,8 @@ export interface CoursePendingResponse {
   title: string;
   description?: string;
   thumbnail?: string;
-  instructorName: string;
+  nickname: string;
+  instructorPhone: string;
   instructorEmail: string;
 }
 
@@ -11,10 +12,9 @@ export interface CourseOfInstructorResponse {
   courseId: string;
   title: string;
   slug: string;
-  price: number;
   status: "PUBLISHED" | "PENDING" | "PRIVATE" | "LOCKED";
   category: string;
-  countStudents: number;
+  totalStudents: number;
 }
 
 export interface InstructorSearch {
@@ -26,8 +26,8 @@ export interface InstructorSearch {
 export interface InstructorResponse {
   instructorId: string;
   email: string;
-  fullName: string;
+  nickname: string;
   phoneNumber: string;
-  countCourses: number;
-  countStudents: number;
+  totalCourses: number;
+  totalStudents: number;
 }

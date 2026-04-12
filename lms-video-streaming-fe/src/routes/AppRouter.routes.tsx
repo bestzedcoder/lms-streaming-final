@@ -26,6 +26,9 @@ import InstructorCourseDetailPage from "../pages/instructor/InstructorCourseDeta
 import PublicCoursesPage from "../pages/student/PublicCoursePage";
 import CourseDetailsPage from "../pages/student/CourseDetailsPage";
 import PendingRegistrationsPage from "../pages/instructor/PendingRegistrationsPage";
+import VideoResourcePage from "../pages/instructor/VideoResourcePage";
+import QuizManagementPage from "../pages/instructor/QuizManagementPage";
+import LectureResourcePage from "../pages/instructor/LectureResourcePage";
 
 const AppRouter = () => {
   return (
@@ -87,6 +90,12 @@ const AppRouter = () => {
             <Route
               path="courses/:courseId/manage"
               element={<ManageCoursePage />}
+            />
+            <Route path="resources/videos" element={<VideoResourcePage />} />
+            <Route path="resources/quizzes" element={<QuizManagementPage />} />
+            <Route
+              path="resources/documents"
+              element={<LectureResourcePage />}
             />
             <Route path="students" element={<PendingRegistrationsPage />} />
             <Route path="settings" element={<InstructorSettingsPage />} />

@@ -39,9 +39,6 @@ public class Video extends BaseEntity {
   @Column(name = "title", nullable = false)
   private String title;
 
-  @Column(name = "file_name", nullable = false)
-  private String fileName;
-
   @Column(name = "size", nullable = false)
   private Long size;
 
@@ -64,10 +61,10 @@ public class Video extends BaseEntity {
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
   @Builder.Default
-  private VideoStatus status = VideoStatus.PENDING;
+  private VideoStatus status = VideoStatus.PENDING_REVIEW;
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "owner_id", nullable = false)
-  private User owner;
+  @JoinColumn(name = "owner_id", nullable = false, updatable = false)
+  private Instructor owner;
 
 }

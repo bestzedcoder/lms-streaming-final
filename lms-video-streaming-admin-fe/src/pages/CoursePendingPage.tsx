@@ -9,7 +9,12 @@ import {
   Avatar,
   Modal,
 } from "antd";
-import { CheckCircleOutlined, PlaySquareOutlined } from "@ant-design/icons";
+import {
+  CheckCircleOutlined,
+  PlaySquareOutlined,
+  PhoneOutlined,
+  MailOutlined,
+} from "@ant-design/icons";
 import { courseService } from "../services/course.service";
 import type { CoursePendingResponse } from "../@types/course.type";
 import { useNotification } from "../context/NotificationContext";
@@ -40,7 +45,7 @@ const CoursePendingPage: React.FC = () => {
   const handleApprove = (course: CoursePendingResponse) => {
     Modal.confirm({
       title: "Xác nhận duyệt khóa học",
-      content: `Bạn có chắc chắn muốn duyệt khóa học "${course.title}" của giảng viên ${course.instructorName}?`,
+      content: `Bạn có chắc chắn muốn duyệt khóa học "${course.title}" của giảng viên ${course.nickname}?`,
       okText: "Duyệt ngay",
       cancelText: "Hủy",
       onOk: async () => {
@@ -60,19 +65,25 @@ const CoursePendingPage: React.FC = () => {
     {
       title: "Khóa học",
       key: "courseInfo",
+      width: "45%",
       render: (_: any, record: CoursePendingResponse) => (
-        <div className="flex items-center gap-4">
+        <div className="flex items-start gap-4">
           <Avatar
             shape="square"
             size={64}
             src={record.thumbnail}
             icon={<PlaySquareOutlined />}
-            className="rounded-lg bg-blue-50 text-blue-400"
+            className="rounded-lg bg-blue-50 text-blue-400 mt-1 flex-shrink-0"
           />
-          <div>
-            <div className="font-semibold text-slate-800 text-base line-clamp-1">
+          <div className="flex-1">
+            <div className="font-semibold text-slate-800 text-base line-clamp-1 mb-1">
               {record.title}
             </div>
+            {record.description && (
+              <div className="text-sm text-slate-500 line-clamp-2">
+                {record.description}
+              </div>
+            )}
           </div>
         </div>
       ),
@@ -82,11 +93,22 @@ const CoursePendingPage: React.FC = () => {
       key: "instructor",
       render: (_: any, record: CoursePendingResponse) => (
         <div>
-          <div className="font-medium text-slate-700">
-            {record.instructorName}
+          <div className="font-medium text-slate-700 mb-1">
+            {record.nickname}
           </div>
-          <div className="text-xs text-slate-400 font-mono mt-0.5">
-            {record.instructorEmail}
+          <div className="flex flex-col gap-1">
+            {record.instructorEmail && (
+              <div className="text-xs text-slate-500 font-mono flex items-center gap-2">
+                <MailOutlined className="text-slate-400" />
+                {record.instructorEmail}
+              </div>
+            )}
+            {record.instructorPhone && (
+              <div className="text-xs text-slate-500 font-mono flex items-center gap-2">
+                <PhoneOutlined className="text-slate-400" />
+                {record.instructorPhone}
+              </div>
+            )}
           </div>
         </div>
       ),
@@ -95,6 +117,7 @@ const CoursePendingPage: React.FC = () => {
       title: "Thao tác",
       key: "action",
       align: "right" as const,
+      width: "15%",
       render: (_: any, record: CoursePendingResponse) => (
         <Space>
           <Button
@@ -103,7 +126,7 @@ const CoursePendingPage: React.FC = () => {
             icon={<CheckCircleOutlined />}
             onClick={() => handleApprove(record)}
           >
-            Duyệt khóa học
+            Duyệt
           </Button>
         </Space>
       ),

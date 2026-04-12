@@ -1,0 +1,29 @@
+services:
+  # MinIO Server - S3 Storage giả lập
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio-server
+    ports:
+      - "9000:9000"    # API port (cho code kết nối)
+      - "9001:9001"    # Console UI (cho bạn xem giao diện)
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+
+  # VPS giả lập (Ubuntu)
+  vps-mock:
+    image: ubuntu:latest
+    container_name: vps-storage
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./my-videos:/app/videos
+    depends_on:
+      - minio
+
+# Đây là phần bạn còn thiếu dẫn đến lỗi "undefined volume"
+volumes:
+  minio_data:

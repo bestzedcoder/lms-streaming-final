@@ -1,5 +1,6 @@
 package com.hust.lms.streaming.dto.request.instructor;
 
+import com.hust.lms.streaming.dto.validation.NoHtml;
 import com.hust.lms.streaming.enums.LessonType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -18,6 +19,8 @@ public class LessonUpdatingRequest {
   @NotBlank(message = "ID không được để trống")
   @UUID(message = "ID không đúng định dạng")
   private String courseId;
+
+  @NoHtml
   private String title;
   private LessonType lessonType;
   private boolean preview;

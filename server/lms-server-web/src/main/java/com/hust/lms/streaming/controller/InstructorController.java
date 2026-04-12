@@ -2,25 +2,48 @@ package com.hust.lms.streaming.controller;
 
 import com.hust.lms.streaming.dto.common.BaseListResponse;
 import com.hust.lms.streaming.dto.common.BaseResponse;
+import com.hust.lms.streaming.dto.request.instructor.ActiveRequest;
+import com.hust.lms.streaming.dto.request.instructor.BannedRequest;
 import com.hust.lms.streaming.dto.request.instructor.CourseCreatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.CourseUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.InstructorUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.LessonCancelRequest;
 import com.hust.lms.streaming.dto.request.instructor.LessonCreatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.LessonUpdatingRequest;
+import com.hust.lms.streaming.dto.request.instructor.QuestionCategoryCreatingRequest;
+import com.hust.lms.streaming.dto.request.instructor.QuestionCategoryUpdatingRequest;
+import com.hust.lms.streaming.dto.request.instructor.QuestionCreatingRequest;
+import com.hust.lms.streaming.dto.request.instructor.QuestionUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionCancelRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionCreatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionUpdatingRequest;
+import com.hust.lms.streaming.dto.request.upload.MultipartCompleteRequest;
+import com.hust.lms.streaming.dto.request.upload.MultipartInitRequest;
+import com.hust.lms.streaming.dto.request.upload.MultipartInitResponse;
+import com.hust.lms.streaming.dto.request.upload.ResourceCreatingRequest;
+import com.hust.lms.streaming.dto.request.upload.ResourcePreviewResponse;
+import com.hust.lms.streaming.dto.request.upload.ResourceUpdatingRequest;
+import com.hust.lms.streaming.dto.request.upload.UploadFileRequest;
 import com.hust.lms.streaming.dto.request.registration.RegistrationProcessingRequest;
+import com.hust.lms.streaming.dto.request.upload.UploadFileResponse;
+import com.hust.lms.streaming.dto.request.upload.VideoCreatingRequest;
+import com.hust.lms.streaming.dto.request.upload.VideoUpdatingRequest;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
+import com.hust.lms.streaming.dto.response.question.QuestionCategoryResponse;
+import com.hust.lms.streaming.dto.response.question.QuestionResponse;
 import com.hust.lms.streaming.dto.response.registration.RegistrationResponse;
+import com.hust.lms.streaming.dto.response.resource.InstructorLectureResponse;
+import com.hust.lms.streaming.dto.response.resource.InstructorVideoResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
 import com.hust.lms.streaming.service.CourseService;
+import com.hust.lms.streaming.service.EnrollmentService;
 import com.hust.lms.streaming.service.InstructorService;
+import com.hust.lms.streaming.service.QuestionService;
 import com.hust.lms.streaming.service.RegistrationService;
+import com.hust.lms.streaming.service.S3StorageService;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,6 +58,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,7 +69,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class InstructorController {
   private final InstructorService instructorService;
   private final CourseService courseService;
+  private final EnrollmentService enrollmentService;
   private final RegistrationService registrationService;
+  private final QuestionService questionService;
+  private final S3StorageService s3StorageService;
 
   @GetMapping
   public ResponseEntity<BaseResponse<?>> getInfo() {
@@ -73,8 +100,7 @@ public class InstructorController {
   // Handle Registration
 
   @GetMapping("registrations")
-  public ResponseEntity<BaseListResponse<?>> getRegistrations(
-  ) {
+  public ResponseEntity<BaseListResponse<?>> getRegistrations() {
     List<RegistrationResponse> res = this.registrationService.getPendingRegistrationsByUser();
     return ResponseEntity.ok(BaseListResponse.<RegistrationResponse>builder()
             .code(200)
@@ -119,6 +145,7 @@ public class InstructorController {
         .timestamp(LocalDateTime.now())
         .build());
   }
+
 
   // Handle Course
 
@@ -270,4 +297,256 @@ public class InstructorController {
         .build());
   }
 
+
+  // enrollments
+
+  @PostMapping("enrollments/user-banned")
+  public ResponseEntity<BaseResponse<?>> banned(@RequestBody @Valid BannedRequest req) {
+    UUID userId = UUID.fromString(req.getUserId());
+    UUID courseId = UUID.fromString(req.getCourseId());
+    this.enrollmentService.banEnrollment(courseId, userId, req.getReason());
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("enrollments/user-active")
+  public ResponseEntity<BaseResponse<?>> active(@RequestBody @Valid ActiveRequest req) {
+    UUID userId = UUID.fromString(req.getUserId());
+    UUID courseId = UUID.fromString(req.getCourseId());
+    this.enrollmentService.activeEnrollment(courseId, userId);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Success")
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  // Question
+
+  @GetMapping("questions")
+  public ResponseEntity<BaseListResponse<?>> getQuestions(@RequestParam("q") UUID q) {
+    List<QuestionResponse> res =  this.questionService.getQuestions(q);
+    return ResponseEntity.ok(BaseListResponse.<QuestionResponse>builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("questions/create")
+  public ResponseEntity<BaseResponse<?>> createQuestion(@RequestBody @Valid QuestionCreatingRequest req) {
+    this.questionService.createQuestion(UUID.fromString(req.getCategoryId()), req.getType(), req.getContent(), req.getOptions());
+    return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.builder()
+            .success(true)
+            .message("Success")
+            .code(201)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("questions/update")
+  public ResponseEntity<BaseResponse<?>> updateQuestion(@RequestBody @Valid
+  QuestionUpdatingRequest req) {
+    this.questionService.updateQuestion(UUID.fromString(req.getId()), req.getType(), req.getContent(), req.getOptions());
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @DeleteMapping("questions/delete/{id}")
+  public ResponseEntity<BaseResponse<?>> deleteQuestion(@PathVariable("id") UUID questionId) {
+    this.questionService.deleteQuestion(questionId);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Success")
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("questions/get-categories")
+  public ResponseEntity<BaseListResponse<?>> getCategories() {
+    List<QuestionCategoryResponse> res = this.questionService.getQuestionCategories();
+    return ResponseEntity.ok(BaseListResponse.<QuestionCategoryResponse>builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("questions/create-category")
+  public ResponseEntity<BaseResponse<?>> createCategory(@RequestBody @Valid QuestionCategoryCreatingRequest req) {
+    this.questionService.createCategory(req.getName());
+    return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("questions/update-category")
+  public ResponseEntity<BaseResponse<?>> updateCategory(@RequestBody @Valid QuestionCategoryUpdatingRequest req) {
+    this.questionService.updateCategory(UUID.fromString(req.getCategoryId()), req.getName());
+    return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.builder()
+        .code(200)
+        .message("Success")
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @DeleteMapping("questions/delete-category/{id}")
+  public ResponseEntity<BaseResponse<?>> deleteCategory(@PathVariable("id") UUID categoryId) {
+    this.questionService.deleteCategory(categoryId);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  // upload
+
+  @PostMapping("storage/presigned-url")
+  public ResponseEntity<BaseResponse<?>> uploadFile(@RequestBody @Valid UploadFileRequest req) {
+    UploadFileResponse res = this.s3StorageService.requestUploadLecture(req.getFileName());
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("storage/init-multipart")
+  public ResponseEntity<BaseResponse<?>> initMultipartVideo(@RequestBody @Valid MultipartInitRequest req) {
+    MultipartInitResponse res = this.s3StorageService.initMultipartVideo(req);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Khởi tạo multipart upload thành công")
+        .data(res)
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("storage/complete-multipart")
+  public ResponseEntity<BaseResponse<?>> completeMultipartVideo(@RequestBody @Valid MultipartCompleteRequest req) {
+    this.s3StorageService.completeMultipartVideo(req);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Tải video lên và ghép file thành công")
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("storage/create-video")
+  public ResponseEntity<BaseResponse<?>> createVideo(@RequestBody @Valid VideoCreatingRequest req) {
+    this.s3StorageService.createVideoRecord(req);
+    return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.builder()
+            .code(HttpStatus.CREATED.value())
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("storage/create-resource")
+  public ResponseEntity<BaseResponse<?>> createResource(@RequestBody @Valid ResourceCreatingRequest req) {
+    this.s3StorageService.createResourceRecord(req);
+    return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.builder()
+        .code(HttpStatus.CREATED.value())
+        .message("Success")
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping(value = "storage/update-video" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<BaseResponse<?>> updateVideo(
+      @RequestPart("data") @Valid VideoUpdatingRequest req,
+      @RequestPart(value = "image", required = false) MultipartFile image ) {
+    this.s3StorageService.updateVideoRecord(req, image);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Success")
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @PostMapping("storage/update-resource")
+  public ResponseEntity<BaseResponse<?>> updateResource(@RequestBody @Valid ResourceUpdatingRequest req) {
+    this.s3StorageService.updateResourceRecord(req);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Success")
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("resources/get-videos")
+  public ResponseEntity<BaseListResponse<?>> getVideos() {
+    List<InstructorVideoResponse> res = this.s3StorageService.getInstructorVideoList();
+    return ResponseEntity.ok(BaseListResponse.<InstructorVideoResponse>builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("resources/get-lectures")
+  public ResponseEntity<BaseListResponse<?>> getLectures() {
+    List<InstructorLectureResponse> res = this.s3StorageService.getInstructorLectureList();
+    return ResponseEntity.ok(BaseListResponse.<InstructorLectureResponse>builder()
+        .code(200)
+        .message("Success")
+        .data(res)
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("resources/preview-video/{id}")
+  public ResponseEntity<BaseResponse<?>> previewVideo(@PathVariable("id") UUID videoId) {
+    ResourcePreviewResponse res = this.s3StorageService.generateVideoPreviewUrl(videoId);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+        .build());
+  }
+
+  @GetMapping("resources/preview-lecture/{id}")
+  public ResponseEntity<BaseResponse<?>> previewLecture(@PathVariable("id") UUID lectureId) {
+    ResourcePreviewResponse res = this.s3StorageService.generateLecturePreviewUrl(lectureId);
+    return ResponseEntity.ok(BaseResponse.builder()
+        .code(200)
+        .message("Success")
+        .data(res)
+        .success(true)
+        .timestamp(LocalDateTime.now())
+        .build());
+  }
 }

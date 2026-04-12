@@ -9,10 +9,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class CourseCreatingRequest {
 
   @NotBlank(message = "Tên khóa học không được để trống")

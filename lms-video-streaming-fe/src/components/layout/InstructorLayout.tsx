@@ -20,6 +20,10 @@ import {
   MenuFoldOutlined,
   PlusOutlined,
   UserOutlined,
+  FolderOpenOutlined,
+  PlaySquareOutlined,
+  FilePdfOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore.store";
@@ -79,6 +83,28 @@ const InstructorLayout = () => {
       label: "Quản lý khóa học",
     },
     {
+      key: "resources",
+      icon: <FolderOpenOutlined />,
+      label: "Tài nguyên khóa học",
+      children: [
+        {
+          key: "/instructor/resources/videos",
+          icon: <PlaySquareOutlined />,
+          label: "Video bài giảng",
+        },
+        {
+          key: "/instructor/resources/documents",
+          icon: <FilePdfOutlined />,
+          label: "Tài liệu",
+        },
+        {
+          key: "/instructor/resources/quizzes",
+          icon: <QuestionCircleOutlined />,
+          label: "Ngân hàng Quiz",
+        },
+      ],
+    },
+    {
       key: "/instructor/students",
       icon: <TeamOutlined />,
       label: (
@@ -102,20 +128,33 @@ const InstructorLayout = () => {
     },
   ];
 
-  const processedMenuItems = menuItems.map((item) => ({
-    ...item,
-    icon:
-      collapsed &&
-      item.key === "/instructor/students" &&
-      pendingApprovals > 0 ? (
-        <Badge dot offset={[5, 0]}>
-          {item.icon}
-        </Badge>
-      ) : (
-        item.icon
-      ),
-    onClick: () => navigate(item.key),
-  }));
+  const processMenuItems = (items: any[]) => {
+    return items.map((item) => {
+      const processedItem = { ...item };
+
+      if (
+        collapsed &&
+        item.key === "/instructor/students" &&
+        pendingApprovals > 0
+      ) {
+        processedItem.icon = (
+          <Badge dot offset={[5, 0]}>
+            {item.icon}
+          </Badge>
+        );
+      }
+
+      if (item.children) {
+        processedItem.children = processMenuItems(item.children);
+      } else {
+        processedItem.onClick = () => navigate(item.key);
+      }
+
+      return processedItem;
+    });
+  };
+
+  const processedMenuItems = processMenuItems(menuItems);
 
   if (isLoading && !isInitialized) {
     return (

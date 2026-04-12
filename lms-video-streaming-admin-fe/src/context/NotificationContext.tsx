@@ -31,6 +31,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const fetchPendingCount = useCallback(async () => {
     try {
       const res = await axiosClient.get("/admin/course/count-pending");
+      console.log(res);
       setPendingCoursesCount(res.data);
     } catch (error: any) {
       console.error("Lỗi khi fetch số lượng khóa học:", error?.message);

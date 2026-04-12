@@ -17,11 +17,12 @@ import {
   UserOutlined,
   AppstoreOutlined,
   LogoutOutlined,
-  BarChartOutlined,
   CheckCircleOutlined,
   BookOutlined,
   FileSearchOutlined,
-  SolutionOutlined,
+  DatabaseOutlined,
+  VideoCameraOutlined,
+  FileTextOutlined,
 } from "@ant-design/icons";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
@@ -37,20 +38,17 @@ const AdminLayout: React.FC = () => {
   const location = useLocation();
   const { logout, user } = useAuth();
 
-  // Lấy thêm pendingInstructorCount từ Context
   const { pendingCoursesCount, pendingInstructorCount } = useNotification();
 
   const {
     token: { colorBgContainer, borderRadiusLG, colorPrimary },
   } = theme.useToken();
 
-  // Tự động mở submenu tương ứng dựa trên URL hiện tại
   useEffect(() => {
     const keys = [];
     if (
       location.pathname.includes("/pending-courses") ||
-      location.pathname.includes("/courses-search") ||
-      location.pathname.includes("/instructor-stats")
+      location.pathname.includes("/courses-search")
     ) {
       keys.push("sub-courses");
     }
@@ -59,6 +57,13 @@ const AdminLayout: React.FC = () => {
       location.pathname.includes("/instructor-requests")
     ) {
       keys.push("sub-users");
+    }
+
+    if (
+      location.pathname.includes("/pending-video") ||
+      location.pathname.includes("/pending-lecture")
+    ) {
+      keys.push("sub-resources");
     }
     setOpenKeys(keys);
   }, [location.pathname]);
@@ -166,17 +171,24 @@ const AdminLayout: React.FC = () => {
           icon: <FileSearchOutlined />,
           label: <Link to="/courses-search">Tra cứu theo giáo viên</Link>,
         },
-        {
-          key: "/instructor-stats",
-          icon: <SolutionOutlined />,
-          label: <Link to="/instructor-stats">Thống kê giáo viên</Link>,
-        },
       ],
     },
     {
-      key: "/revenue",
-      icon: <BarChartOutlined />,
-      label: <Link to="/revenue">Tổng doanh thu hệ thống</Link>,
+      key: "sub-resources",
+      icon: <DatabaseOutlined />,
+      label: "Quản lý tài nguyên",
+      children: [
+        {
+          key: "/pending-video",
+          icon: <VideoCameraOutlined />,
+          label: <Link to="/pending-video">Kiểm duyệt video</Link>,
+        },
+        {
+          key: "/pending-lecture",
+          icon: <FileTextOutlined />,
+          label: <Link to="/pending-lecture">Kiểm duyệt text</Link>,
+        },
+      ],
     },
   ];
 

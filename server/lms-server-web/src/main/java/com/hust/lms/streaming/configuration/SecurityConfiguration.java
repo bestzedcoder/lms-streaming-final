@@ -54,8 +54,9 @@ public class SecurityConfiguration {
                 "/api/public/**",
                 "/overview/**",
                 "/api/admin/login").permitAll()
-            .requestMatchers("/api/instructor/**").hasRole(Role.INSTRUCTOR.name())
             .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
+            .requestMatchers("/api/employee/**").hasRole(Role.EMPLOYEE.name())
+            .requestMatchers("/api/instructor/**").hasRole(Role.INSTRUCTOR.name())
             .anyRequest().authenticated()
         )
         .addFilterBefore(jwtFilter , UsernamePasswordAuthenticationFilter.class);

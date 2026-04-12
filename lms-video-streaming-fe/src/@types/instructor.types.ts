@@ -168,3 +168,146 @@ export interface RegistrationProcessingRequest {
   registrationId: string;
   message?: string;
 }
+
+// enrollments
+
+export interface BannedEnrollment {
+  userId: string;
+  courseId: string;
+  reason?: string;
+}
+
+export interface ActiveEnrollment {
+  userId: string;
+  courseId: string;
+}
+
+// questions
+
+export interface QuestionCategoryResponse {
+  id: string;
+  name: string;
+  totalQuestions: number;
+}
+
+export interface QuestionCategoryCreatingRequest {
+  name: string;
+}
+
+export interface QuestionCategoryUpdatingRequest {
+  categoryId: string;
+  name: string;
+}
+
+export interface QuestionResponse {
+  id: string;
+  content: string;
+  type: "MULTIPLE_CHOICE" | "SINGLE_CHOICE";
+  options: OptionResponse[];
+}
+
+export interface OptionResponse {
+  id: string;
+  answer: string;
+  correct: boolean;
+}
+
+export interface QuestionCreatingRequest {
+  categoryId: string;
+  content: string;
+  type: "MULTIPLE_CHOICE" | "SINGLE_CHOICE";
+  options: OptionCreatingRequest[];
+}
+
+export interface OptionCreatingRequest {
+  answer: string;
+  correct: boolean;
+}
+
+export interface QuestionUpdatingResponse {
+  id: string;
+  content: string;
+  type: "MULTIPLE_CHOICE" | "SINGLE_CHOICE";
+  options: OptionCreatingRequest[];
+}
+
+export interface QuestionQuery {
+  q: string;
+}
+
+// upload file
+
+export interface UploadFileRequest {
+  fileName: string;
+}
+
+export interface UploadFileResponse {
+  presignedUrl: string;
+  fileKey: string;
+}
+
+export interface MultipartCompleteRequest {
+  uploadId: string;
+  fileKey: string;
+  parts: PartETagDTO[];
+}
+
+export interface PartETagDTO {
+  partNumber: number;
+  eTag: string;
+}
+
+export interface MultipartInitRequest {
+  fileName: string;
+  totalParts: number;
+}
+
+export interface MultipartInitResponse {
+  uploadId: string;
+  fileKey: string;
+  presignedUrls: string[];
+}
+
+export interface VideoCreatingRequest {
+  fileKey: string;
+  title: string;
+  duration: number;
+  size: number;
+}
+
+export interface ResourceCreatingRequest {
+  fileKey: string;
+  title: string;
+  size: number;
+}
+
+export interface VideoUpdatingRequest {
+  videoId: string;
+  title: string;
+}
+
+export interface ResourceUpdatingRequest {
+  resourceId: string;
+  title: string;
+}
+
+export interface InstructorVideoResponse {
+  id: string;
+  title: string;
+  thumbnail?: string;
+  status: "PENDING" | "READY" | "FAILURE" | "PENDING_REVIEW" | "DELETED";
+  duration: number;
+  size: number;
+}
+
+export interface InstructorLectureResponse {
+  id: string;
+  title: string;
+  status: "APPROVED" | "PENDING_REVIEW" | "DELETED";
+  size: number;
+}
+
+export interface ResourcePreviewResponse {
+  url: string;
+  title: string;
+}

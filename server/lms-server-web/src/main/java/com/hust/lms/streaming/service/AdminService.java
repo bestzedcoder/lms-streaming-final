@@ -2,6 +2,8 @@ package com.hust.lms.streaming.service;
 
 import com.hust.lms.streaming.dto.common.PageResponse;
 import com.hust.lms.streaming.dto.request.auth.LoginRequest;
+import com.hust.lms.streaming.dto.response.admin.AdminLecturePreview;
+import com.hust.lms.streaming.dto.response.admin.AdminVideoPreview;
 import com.hust.lms.streaming.dto.response.admin.CourseOfInstructorResponse;
 import com.hust.lms.streaming.dto.response.admin.CoursePendingResponse;
 import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
@@ -31,6 +33,18 @@ public interface AdminService {
   void unlockCourse(UUID courseId);
 
   List<CourseOfInstructorResponse> getCoursesOfInstructor(UUID instructorId);
+
+  List<AdminVideoPreview> getVideoPreviews();
+  List<AdminLecturePreview> getLecturePreviews();
+
+  void approveVideo(UUID videoId);
+  void rejectVideo(UUID videoId);
+
+  void approveLecture(UUID lectureId);
+  void rejectLecture(UUID lectureId);
+
+  String getVideoPresignedUrl(UUID videoId);
+  String getLecturePresignedUrl(UUID lectureId);
 
   // Summary
 

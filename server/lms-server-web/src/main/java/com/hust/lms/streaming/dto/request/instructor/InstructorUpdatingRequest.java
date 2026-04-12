@@ -1,9 +1,7 @@
 package com.hust.lms.streaming.dto.request.instructor;
 
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hust.lms.streaming.dto.validation.NoHtml;
-import com.hust.lms.streaming.dto.validation.XssSanitizerDeserializer;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 

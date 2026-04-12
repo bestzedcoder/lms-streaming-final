@@ -4,29 +4,41 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.hust.lms.streaming.common.CookieUtils;
 import com.hust.lms.streaming.dto.common.PageResponse;
 import com.hust.lms.streaming.dto.request.auth.LoginRequest;
+import com.hust.lms.streaming.dto.response.admin.AdminLecturePreview;
+import com.hust.lms.streaming.dto.response.admin.AdminVideoPreview;
 import com.hust.lms.streaming.dto.response.admin.CourseOfInstructorResponse;
 import com.hust.lms.streaming.dto.response.admin.CoursePendingResponse;
 import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
 import com.hust.lms.streaming.dto.response.admin.SummaryDashboardResponse;
 import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
+import com.hust.lms.streaming.enums.ResourceStatus;
 import com.hust.lms.streaming.enums.Role;
+import com.hust.lms.streaming.enums.VideoStatus;
 import com.hust.lms.streaming.event.custom.AuthEvent;
 import com.hust.lms.streaming.event.custom.CourseEvent;
 import com.hust.lms.streaming.event.enums.AuthEventType;
 import com.hust.lms.streaming.event.enums.CourseEventType;
 import com.hust.lms.streaming.exception.AdminException;
+import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.mapper.AdminMapper;
 import com.hust.lms.streaming.mapper.AuthMapper;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.Instructor;
+import com.hust.lms.streaming.model.Resource;
 import com.hust.lms.streaming.model.User;
+import com.hust.lms.streaming.model.Video;
 import com.hust.lms.streaming.redis.RedisService;
 import com.hust.lms.streaming.repository.jpa.CourseRepository;
 import com.hust.lms.streaming.repository.jpa.InstructorRepository;
+import com.hust.lms.streaming.repository.jpa.ResourceRepository;
 import com.hust.lms.streaming.repository.jpa.UserRepository;
+import com.hust.lms.streaming.repository.jpa.VideoRepository;
 import com.hust.lms.streaming.security.JwtUtils;
 import com.hust.lms.streaming.service.AdminService;
+import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.MinioClient;
+import io.minio.http.Method;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.UUID;
@@ -53,9 +65,15 @@ public class AdminServiceImpl implements AdminService {
   private final InstructorRepository instructorRepository;
   private final JwtUtils jwtUtils;
   private final RedisService redisService;
+  private final VideoRepository videoRepository;
+  private final ResourceRepository resourceRepository;
+  private final MinioClient minioClient;
 
   @Value("${app.security.jwt.accessAdminExpiration}")
   private long accessTokenAdminExpire;
+
+  @Value("${app.storage.s3.bucket-staging}")
+  private String stagingBucket;
 
 
   @Override
@@ -140,8 +158,7 @@ public class AdminServiceImpl implements AdminService {
         .totalPages(data.getTotalPages())
         .result(data.getContent().stream().map(user -> {
           Instructor instructor = this.instructorRepository.findById(user.getId()).orElse(null);
-          if (instructor == null) return null;
-          return AdminMapper.mapUserToInstructorResponse(instructor);
+          return AdminMapper.mapInstructorToInstructorResponse(instructor);
         }).toList())
         .build();
     this.redisService.saveKeyAndValue(cacheKey, res, 1, TimeUnit.MINUTES);
@@ -170,6 +187,88 @@ public class AdminServiceImpl implements AdminService {
   public List<CourseOfInstructorResponse> getCoursesOfInstructor(UUID instructorId) {
     List<Course> data = this.courseRepository.findCoursesByInstructorId(instructorId);
     return data.stream().map(AdminMapper::mapCourseToCourseOfInstructorResponse).toList();
+  }
+
+  @Override
+  public List<AdminVideoPreview> getVideoPreviews() {
+    List<Video> data = this.videoRepository.findByPreview(VideoStatus.PENDING_REVIEW.name());
+    return data.stream().map(AdminMapper::mapVideoToAdminVideoPreview).toList();
+  }
+
+  @Override
+  public List<AdminLecturePreview> getLecturePreviews() {
+    List<Resource> data = this.resourceRepository.findByPreview(ResourceStatus.PENDING_REVIEW.name());
+    return data.stream().map(AdminMapper::mapResourceToAdminLecturePreview).toList();
+  }
+
+  @Override
+  public void approveVideo(UUID videoId) {
+    Video video = this.videoRepository.findById(videoId).orElse(null);
+    if (video == null) return;
+
+    video.setStatus(VideoStatus.PENDING);
+    this.videoRepository.save(video);
+  }
+
+  @Override
+  public void rejectVideo(UUID videoId) {
+    Video video = this.videoRepository.findById(videoId).orElse(null);
+    if (video == null) return;
+
+    video.setStatus(VideoStatus.DELETED);
+    this.videoRepository.save(video);
+  }
+
+  @Override
+  public void approveLecture(UUID lectureId) {
+    Resource resource = this.resourceRepository.findById(lectureId).orElse(null);
+    if (resource == null) return;
+
+    resource.setStatus(ResourceStatus.APPROVED);
+    this.resourceRepository.save(resource);
+  }
+
+  @Override
+  public void rejectLecture(UUID lectureId) {
+    Resource resource = this.resourceRepository.findById(lectureId).orElse(null);
+    if (resource == null) return;
+
+    resource.setStatus(ResourceStatus.DELETED);
+    this.resourceRepository.save(resource);
+  }
+
+  @Override
+  public String getVideoPresignedUrl(UUID videoId) {
+    Video video = this.videoRepository.findById(videoId).orElseThrow(() -> new BadRequestException("Video không thể truy cập"));
+    try {
+      return this.minioClient.getPresignedObjectUrl(
+          GetPresignedObjectUrlArgs.builder()
+              .method(Method.GET)
+              .bucket(stagingBucket)
+              .object(video.getOriginalUrl())
+              .expiry(15, TimeUnit.MINUTES)
+              .build()
+      );
+    } catch (Exception e) {
+      throw new RuntimeException("Lỗi khi tạo link từ MinIO", e);
+    }
+  }
+
+  @Override
+  public String getLecturePresignedUrl(UUID lectureId) {
+    Resource resource = this.resourceRepository.findById(lectureId).orElseThrow(() -> new BadRequestException("Lecture không thể truy cập"));
+    try {
+      return this.minioClient.getPresignedObjectUrl(
+          GetPresignedObjectUrlArgs.builder()
+              .method(Method.GET)
+              .bucket(stagingBucket)
+              .object(resource.getUrl())
+              .expiry(15, TimeUnit.MINUTES)
+              .build()
+      );
+    } catch (Exception e) {
+      throw new RuntimeException("Lỗi khi tạo link từ MinIO", e);
+    }
   }
 
   @Override
