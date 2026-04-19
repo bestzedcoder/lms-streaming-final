@@ -30,4 +30,7 @@ public interface S3StorageService {
 
   ResourcePreviewResponse generateVideoPreviewUrl(UUID videoId);
   ResourcePreviewResponse generateLecturePreviewUrl(UUID lectureId);
+
+  void handleVideoProcessingSuccess(UUID videoId, String hlsUrl);
+  void handleVideoProcessingFailure(UUID videoId);
 }

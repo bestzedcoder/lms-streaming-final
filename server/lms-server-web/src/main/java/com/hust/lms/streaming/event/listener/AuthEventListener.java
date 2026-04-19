@@ -67,7 +67,6 @@ public class AuthEventListener {
 
   private void handleLogout(AuthEvent event) {
       long accessTokenExpire = Long.parseLong(event.getData());
-
       String blacklistKey = "lms:auth:blacklist:" + event.getEmail();
       redisService.saveKeyAndValue(blacklistKey, "LOGOUT", accessTokenExpire, TimeUnit.SECONDS);
   }

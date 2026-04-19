@@ -1,3 +1,36 @@
 spring:
   application:
     name: lms-core-streaming
+  data:
+    redis:
+      port: ${REDIS_PORT}
+      host: ${REDIS_HOST}
+      password: ${REDIS_PASSWORD}
+      timeout: 6000
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    listener:
+      simple:
+        retry:
+          max-attempts: 3 # gửi tối đa 3 lần
+          initial-interval: 20000 # mỗi lần cách 2s
+          enabled: true
+          multiplier: 2
+
+app:
+  netty:
+    port: 8088
+  playback:
+    secret: your-very-strong-shared-secret
+  ffmpeg:
+    bin: C:\ffmpeg\bin\ffmpeg.exe
+  storage:
+    s3:
+      endpoint: ${STORAGE_ENDPOINT}
+      access-key: ${STORAGE_ACCESS_KEY}
+      secret-key: ${STORAGE_SECRET_KEY}
+      bucket-staging: ${STORAGE_BUCKET_STAGING}
+      bucket-production: ${STORAGE_BUCKET_PRODUCTION}

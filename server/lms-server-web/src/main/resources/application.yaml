@@ -40,9 +40,9 @@ spring:
       simple:
         retry:
           max-attempts: 3 # gửi tối đa 3 lần
-          initial-interval: 2000 # mỗi lần cách 2s
+          initial-interval: 20000 # mỗi lần cách 20s
           enabled: true
-          multiplier: 1
+          multiplier: 2
   elasticsearch:
     uris: ${ELASTICSEARCH_URIS}
     username: ${ELASTIC_USERNAME}
@@ -65,7 +65,7 @@ spring:
 app:
   storage:
     s3:
-      endpoint: ${STORAGE_ENDPOINT:http://localhost:9000}
+      endpoint: ${STORAGE_ENDPOINT}
       access-key: ${STORAGE_ACCESS_KEY}
       secret-key: ${STORAGE_SECRET_KEY}
       bucket-staging: ${STORAGE_BUCKET_STAGING}

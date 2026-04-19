@@ -1,4 +1,8 @@
 package com.hust.lms.lms_core_streaming.service;
 
-public class RedisService {
+import com.fasterxml.jackson.core.type.TypeReference;
+
+public interface RedisService {
+  <T> T getValue(String key, TypeReference<T> typeReference);
+  void setValue(String key, Object value);
 }

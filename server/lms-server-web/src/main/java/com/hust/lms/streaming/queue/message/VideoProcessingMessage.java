@@ -1,4 +1,4 @@
-package com.hust.lms.lms_core_streaming.queue.message;
+package com.hust.lms.streaming.queue.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VideoProcessingMessage {
-  private String videoId;
   private String ownerId;
+  private String videoId;
   private String originalUrl;
 }

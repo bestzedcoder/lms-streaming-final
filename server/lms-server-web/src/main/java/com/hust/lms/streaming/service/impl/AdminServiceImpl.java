@@ -17,6 +17,7 @@ import com.hust.lms.streaming.enums.Role;
 import com.hust.lms.streaming.enums.VideoStatus;
 import com.hust.lms.streaming.event.custom.AuthEvent;
 import com.hust.lms.streaming.event.custom.CourseEvent;
+import com.hust.lms.streaming.event.custom.VideoEvent;
 import com.hust.lms.streaming.event.enums.AuthEventType;
 import com.hust.lms.streaming.event.enums.CourseEventType;
 import com.hust.lms.streaming.exception.AdminException;
@@ -208,6 +209,7 @@ public class AdminServiceImpl implements AdminService {
 
     video.setStatus(VideoStatus.PENDING);
     this.videoRepository.save(video);
+    this.eventPublisher.publishEvent(new VideoEvent(videoId, video.getOwner().getId() ,video.getOriginalUrl()));
   }
 
   @Override

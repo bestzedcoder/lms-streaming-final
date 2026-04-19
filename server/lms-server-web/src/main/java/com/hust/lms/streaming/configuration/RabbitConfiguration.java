@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfiguration {
-  public static final String SEND_VIDEO_QUEUE = "send.video.queue";
   public static final String MAIL_QUEUE = "mail.queue";
   public static final String SEND_STREAMING_QUEUE = "send.streaming.queue";
   public static final String RESULT_PROCESSING_QUEUE = "result.processing.queue";
@@ -18,17 +17,21 @@ public class RabbitConfiguration {
   public static final String EXCHANGE = "lms.exchange";
 
   public static final String ROUTING_KEY_MAIL = "mail.routing.key";
-  public static final String ROUTING_KEY_VIDEO = "video.routing.key";
+  public static final String ROUTING_KEY_STREAMING = "streaming.routing.key";
+  public static final String ROUTING_KEY_RESULT = "result.routing.key";
 
-  // cấu hình 2 hàng đợi mail và video
+  // cấu hình 2 hàng đợi mail và video và result_process
   @Bean
   public Queue videoQueue() {
-    return new Queue(SEND_VIDEO_QUEUE , true);
+    return new Queue(SEND_STREAMING_QUEUE , false);
   }
 
   @Bean
+  public Queue resultProcessingQueue() { return new Queue(RESULT_PROCESSING_QUEUE , false); }
+
+  @Bean
   public Queue mailQueue() {
-    return new Queue(MAIL_QUEUE , true);
+    return new Queue(MAIL_QUEUE , false);
   }
 
   // cấu hình điều hướng
@@ -44,11 +47,17 @@ public class RabbitConfiguration {
   }
 
   @Bean
-  public Binding bindingVideo() {
-    return BindingBuilder.bind(videoQueue()).to(exchange()).with(ROUTING_KEY_VIDEO);
+  public Binding bindingStream() {
+    return BindingBuilder.bind(videoQueue()).to(exchange()).with(ROUTING_KEY_STREAMING);
   }
 
-  // cấu hình convert DTO -> JSON
+  @Bean
+  public Binding bindingResultProcessing() {
+    return BindingBuilder.bind(resultProcessingQueue()).to(exchange()).with(ROUTING_KEY_RESULT);
+  }
+
+
+  // serialization and deserialization
   @Bean
   public MessageConverter jsonMessageConverter() {
     return new Jackson2JsonMessageConverter();

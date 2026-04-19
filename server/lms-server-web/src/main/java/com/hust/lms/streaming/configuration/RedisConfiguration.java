@@ -1,8 +1,6 @@
 package com.hust.lms.streaming.configuration;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -39,13 +37,11 @@ public class RedisConfiguration {
     RedisTemplate<String, Object> template = new RedisTemplate<>();
     template.setConnectionFactory(lettuceConnectionFactory());
 
-    // Cấu hình mapper cho redis
-
-    // Cấu hình key là String
+    // serialize cho key
     template.setKeySerializer(new StringRedisSerializer());
     template.setHashKeySerializer(new StringRedisSerializer());
 
-    // Cấu hình value là JSON
+    // serialize cho value
     GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer = new GenericJackson2JsonRedisSerializer(this.objectMapper);
     template.setValueSerializer(genericJackson2JsonRedisSerializer);
     template.setHashValueSerializer(genericJackson2JsonRedisSerializer);

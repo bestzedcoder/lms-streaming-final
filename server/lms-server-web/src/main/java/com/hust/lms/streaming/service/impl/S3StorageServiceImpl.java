@@ -12,6 +12,7 @@ import com.hust.lms.streaming.dto.request.upload.VideoCreatingRequest;
 import com.hust.lms.streaming.dto.request.upload.VideoUpdatingRequest;
 import com.hust.lms.streaming.dto.response.resource.InstructorLectureResponse;
 import com.hust.lms.streaming.dto.response.resource.InstructorVideoResponse;
+import com.hust.lms.streaming.enums.VideoStatus;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.mapper.ResourceMapper;
 import com.hust.lms.streaming.model.Instructor;
@@ -54,9 +55,6 @@ public class S3StorageServiceImpl implements S3StorageService {
 
   @Value("${app.storage.s3.bucket-staging}")
   private String stagingBucket;
-
-  @Value("${app.storage.s3.bucket-production}")
-  private String productionBucket;
 
   @Override
   public UploadFileResponse requestUploadLecture(String fileName) {
@@ -263,5 +261,24 @@ public class S3StorageServiceImpl implements S3StorageService {
     } catch (Exception e) {
       throw new RuntimeException("Lỗi khi tạo link từ MinIO", e);
     }
+  }
+
+  @Override
+  public void handleVideoProcessingSuccess(UUID videoId, String hlsUrl) {
+    Video video = this.videoRepository.findById(videoId).orElse(null);
+    if (video == null) return;
+
+    video.setStatus(VideoStatus.READY);
+    video.setHlsUrl(hlsUrl);
+    this.videoRepository.save(video);
+  }
+
+  @Override
+  public void handleVideoProcessingFailure(UUID videoId) {
+    Video video = this.videoRepository.findById(videoId).orElse(null);
+    if (video == null) return;
+
+    video.setStatus(VideoStatus.PENDING_REVIEW);
+    this.videoRepository.save(video);
   }
 }

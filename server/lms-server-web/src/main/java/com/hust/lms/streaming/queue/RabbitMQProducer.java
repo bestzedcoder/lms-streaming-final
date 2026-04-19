@@ -1,8 +1,9 @@
 package com.hust.lms.streaming.queue;
 
+import com.hust.lms.streaming.common.Gen;
 import com.hust.lms.streaming.configuration.RabbitConfiguration;
 import com.hust.lms.streaming.queue.message.MailMessage;
-import com.hust.lms.streaming.queue.message.VideoMessage;
+import com.hust.lms.streaming.queue.message.VideoProcessingMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -23,13 +24,16 @@ public class RabbitMQProducer {
     log.info("Sent mail message: {}", message.getTo());
   }
 
-  // Hàm gửi video
-  public void sendVideoEncode(VideoMessage message) {
+  public void sendProcessingVideo(VideoProcessingMessage msg) {
     rabbitTemplate.convertAndSend(
         RabbitConfiguration.EXCHANGE,
-        RabbitConfiguration.ROUTING_KEY_VIDEO,
-        message
+        RabbitConfiguration.ROUTING_KEY_STREAMING,
+        msg,
+        message -> {
+          message.getMessageProperties().setMessageId(Gen.genMessageId("VIDEO"));
+          return message;
+        }
     );
-//    log.info("Sent video encode request: {}", message.getVideoId());
+    log.info("Sent video encode request: {}", msg.getVideoId());
   }
 }
