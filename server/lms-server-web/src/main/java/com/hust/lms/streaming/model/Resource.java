@@ -5,6 +5,9 @@ import com.hust.lms.streaming.model.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -33,9 +36,13 @@ public class Resource extends BaseEntity {
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
   @Builder.Default
-  private ResourceStatus status = ResourceStatus.PENDING_REVIEW;
+  private ResourceStatus status = ResourceStatus.VALIDATING;
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "owner_id", nullable = false, updatable = false)
   private Instructor owner;
+
+  @OneToMany(mappedBy = "resource", fetch = FetchType.LAZY)
+  @Builder.Default
+  private List<Lesson> lessons = new ArrayList<>();
 }

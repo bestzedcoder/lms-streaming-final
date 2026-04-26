@@ -1,4 +1,4 @@
-package com.hust.lms.lms_core_streaming.netty;
+package com.hust.lms.lms_core_streaming.service.impl;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -6,6 +6,9 @@ import java.time.Instant;
 import java.util.Base64;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
+import com.hust.lms.lms_core_streaming.dto.PlaybackTokenPayload;
+import com.hust.lms.lms_core_streaming.service.PlaybackTokenValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,8 +20,10 @@ import org.springframework.stereotype.Component;
  * - verify chữ ký HMAC
  * - decode payload
  * - check hạn dùng
+ * - lấy shortLink để tra lookup path/video
  *
- * Nếu token sai -> chặn request media ngay tại Netty handler.
+ * Token format:
+ *   base64url(shortLink|expiredAt).base64url(hmacSHA256(shortLink|expiredAt))
  */
 @Component
 public class PlaybackTokenValidatorImpl implements PlaybackTokenValidator {
@@ -38,8 +43,8 @@ public class PlaybackTokenValidatorImpl implements PlaybackTokenValidator {
       String signatureBase64 = parts[1];
 
       String payload = new String(
-          Base64.getUrlDecoder().decode(payloadBase64),
-          StandardCharsets.UTF_8
+              Base64.getUrlDecoder().decode(payloadBase64),
+              StandardCharsets.UTF_8
       );
 
       byte[] expectedSignature = hmacSha256(payload, playbackSecret);
@@ -50,22 +55,19 @@ public class PlaybackTokenValidatorImpl implements PlaybackTokenValidator {
       }
 
       String[] fields = payload.split("\\|");
-      if (fields.length != 4) {
+      if (fields.length != 2) {
         throw new IllegalArgumentException("Invalid token payload");
       }
 
-      PlaybackTokenPayload result = new PlaybackTokenPayload(
-          fields[0], // userId
-          fields[1], // ownerId
-          fields[2], // videoId
-          Long.parseLong(fields[3]) // expiredAt
-      );
+      String shortLink = fields[0];
+      long expiredAt = Long.parseLong(fields[1]);
 
-      if (Instant.now().getEpochSecond() > result.getExpiredAt()) {
+      if (Instant.now().getEpochSecond() > expiredAt) {
         throw new IllegalArgumentException("Token expired");
       }
 
-      return result;
+      return new PlaybackTokenPayload(shortLink, expiredAt);
+
     } catch (Exception e) {
       throw new RuntimeException("Playback token is invalid", e);
     }

@@ -4,31 +4,27 @@ import com.hust.lms.streaming.configuration.CustomMinioClient;
 import com.hust.lms.streaming.dto.request.upload.MultipartCompleteRequest;
 import com.hust.lms.streaming.dto.request.upload.MultipartInitRequest;
 import com.hust.lms.streaming.dto.request.upload.MultipartInitResponse;
-import com.hust.lms.streaming.dto.request.upload.ResourceCreatingRequest;
 import com.hust.lms.streaming.dto.request.upload.ResourcePreviewResponse;
-import com.hust.lms.streaming.dto.request.upload.ResourceUpdatingRequest;
 import com.hust.lms.streaming.dto.request.upload.UploadFileResponse;
-import com.hust.lms.streaming.dto.request.upload.VideoCreatingRequest;
-import com.hust.lms.streaming.dto.request.upload.VideoUpdatingRequest;
 import com.hust.lms.streaming.dto.response.resource.InstructorLectureResponse;
 import com.hust.lms.streaming.dto.response.resource.InstructorVideoResponse;
 import com.hust.lms.streaming.enums.VideoStatus;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.mapper.ResourceMapper;
-import com.hust.lms.streaming.model.Instructor;
 import com.hust.lms.streaming.model.Resource;
 import com.hust.lms.streaming.model.Video;
-import com.hust.lms.streaming.repository.jpa.InstructorRepository;
 import com.hust.lms.streaming.repository.jpa.ResourceRepository;
 import com.hust.lms.streaming.repository.jpa.VideoRepository;
 import com.hust.lms.streaming.service.PathProvider;
 import com.hust.lms.streaming.service.S3StorageService;
-import com.hust.lms.streaming.upload.CloudinaryService;
-import com.hust.lms.streaming.upload.CloudinaryUploadResult;
+import io.minio.DownloadObjectArgs;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
+import io.minio.RemoveObjectArgs;
 import io.minio.http.Method;
 import io.minio.messages.Part;
+
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,25 +32,24 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class S3StorageServiceImpl implements S3StorageService {
 
   private final PathProvider pathProvider;
   private final MinioClient minioClient;
   private final CustomMinioClient customMinioClient;
-  private final InstructorRepository instructorRepository;
   private final VideoRepository videoRepository;
   private final ResourceRepository resourceRepository;
-  private final CloudinaryService cloudinaryService;
 
   @Value("${app.storage.s3.bucket-staging}")
-  private String stagingBucket;
+  private String STAGING_BUCKET;
 
   @Override
   public UploadFileResponse requestUploadLecture(String fileName) {
@@ -65,7 +60,7 @@ public class S3StorageServiceImpl implements S3StorageService {
       String presignedUrl = minioClient.getPresignedObjectUrl(
           GetPresignedObjectUrlArgs.builder()
               .method(Method.PUT)
-              .bucket(stagingBucket)
+              .bucket(STAGING_BUCKET)
               .object(targetPath)
               .expiry(5, TimeUnit.MINUTES)
               .build()
@@ -86,7 +81,7 @@ public class S3StorageServiceImpl implements S3StorageService {
 
     try {
       var response = customMinioClient.createMultipartUploadPublic(
-          stagingBucket,
+              STAGING_BUCKET,
           null,
           targetPath,
           null,
@@ -104,7 +99,7 @@ public class S3StorageServiceImpl implements S3StorageService {
         urls.add(minioClient.getPresignedObjectUrl(
             GetPresignedObjectUrlArgs.builder()
                 .method(Method.PUT)
-                .bucket(stagingBucket)
+                .bucket(STAGING_BUCKET)
                 .object(targetPath)
                 .expiry(10, TimeUnit.MINUTES)
                 .extraQueryParams(queryParams)
@@ -132,7 +127,7 @@ public class S3StorageServiceImpl implements S3StorageService {
       }
 
       customMinioClient.completeMultipartUploadPublic(
-          stagingBucket,
+              STAGING_BUCKET,
           null,
           req.getFileKey(),
           req.getUploadId(),
@@ -144,59 +139,6 @@ public class S3StorageServiceImpl implements S3StorageService {
     } catch (Exception e) {
       throw new RuntimeException("Lỗi ghép file video: " + e.getMessage(), e);
     }
-  }
-
-  @Override
-  public void createVideoRecord(VideoCreatingRequest request) {
-    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    Instructor instructor = this.instructorRepository.getReferenceById(UUID.fromString(authId));
-
-    Video video = Video.builder()
-        .title(request.getTitle())
-        .duration(request.getDuration())
-        .originalUrl(request.getFileKey())
-        .size(request.getSize())
-        .owner(instructor)
-        .build();
-    this.videoRepository.save(video);
-  }
-
-  @Override
-  public void createResourceRecord(ResourceCreatingRequest request) {
-    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    Instructor instructor = this.instructorRepository.getReferenceById(UUID.fromString(authId));
-
-    Resource resource = Resource.builder()
-        .url(request.getFileKey())
-        .title(request.getTitle())
-        .size(request.getSize())
-        .owner(instructor)
-        .build();
-    this.resourceRepository.save(resource);
-  }
-
-  @Override
-  public void updateResourceRecord(ResourceUpdatingRequest request) {
-    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    Resource resource = this.resourceRepository.findByOwner(UUID.fromString(authId), UUID.fromString(request.getResourceId())).orElseThrow(() -> new BadRequestException("Không tồn tại tài nguyên"));
-    resource.setTitle(request.getTitle());
-    this.resourceRepository.save(resource);
-  }
-
-  @Override
-  public void updateVideoRecord(VideoUpdatingRequest request, MultipartFile image) {
-    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    Video video = this.videoRepository.findByOwner(UUID.fromString(authId), UUID.fromString(request.getVideoId())).orElseThrow(() -> new BadRequestException("Không tồn tại tài nguyên"));
-    if (image != null) {
-      if (video.getThumbnail() != null) {
-        this.cloudinaryService.deleteImage(video.getPublicId());
-      }
-      CloudinaryUploadResult res = this.cloudinaryService.uploadImage(image, "video");
-      video.setThumbnail(res.getUrl());
-      video.setPublicId(res.getPublicId());
-    }
-    video.setTitle(request.getTitle());
-    this.videoRepository.save(video);
   }
 
   @Override
@@ -222,7 +164,7 @@ public class S3StorageServiceImpl implements S3StorageService {
       String presignedUrl = minioClient.getPresignedObjectUrl(
           GetPresignedObjectUrlArgs.builder()
               .method(Method.GET)
-              .bucket(stagingBucket)
+              .bucket(STAGING_BUCKET)
               .object(video.getOriginalUrl())
               .expiry(15, TimeUnit.MINUTES)
               .build()
@@ -247,7 +189,7 @@ public class S3StorageServiceImpl implements S3StorageService {
       String presignedUrl = minioClient.getPresignedObjectUrl(
           GetPresignedObjectUrlArgs.builder()
               .method(Method.GET)
-              .bucket(stagingBucket)
+              .bucket(STAGING_BUCKET)
               .object(resource.getUrl())
               .expiry(15, TimeUnit.MINUTES)
               .build()
@@ -280,5 +222,36 @@ public class S3StorageServiceImpl implements S3StorageService {
 
     video.setStatus(VideoStatus.PENDING_REVIEW);
     this.videoRepository.save(video);
+  }
+
+  @Override
+  public void download(String objectKey, String bucket, Path target) {
+    try {
+      minioClient.downloadObject(
+              DownloadObjectArgs.builder()
+                      .bucket(bucket)
+                      .object(objectKey)
+                      .filename(target.toAbsolutePath().toString())
+                      .build()
+      );
+
+    } catch (Exception e) {
+      log.error("Downloading file failed :", e);
+      throw new RuntimeException("Cannot download object from MinIO: " + objectKey, e);
+    }
+  }
+
+  @Override
+  public void deleteFromStaging(String objectKey, String bucket) {
+    try {
+      minioClient.removeObject(
+              RemoveObjectArgs.builder()
+                      .bucket(bucket)
+                      .object(objectKey)
+                      .build()
+      );
+    } catch (Exception e) {
+      log.error("Cannot delete invalid object from staging: {}", objectKey, e);
+    }
   }
 }

@@ -6,6 +6,7 @@ import com.hust.lms.streaming.mapper.CourseElasticsearchMapper;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.elasticsearch.CourseDocument;
 import com.hust.lms.streaming.model.elasticsearch.CourseDocumentDto;
+import com.hust.lms.streaming.repository.elasticsearch.CourseElasticsearchRepository;
 import com.hust.lms.streaming.repository.jpa.CourseRepository;
 import com.hust.lms.streaming.service.CourseElasticsearchService;
 import java.util.Map;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 public class CourseElasticsearchServiceImpl implements CourseElasticsearchService {
 
   private final ElasticsearchOperations elasticsearchOperations;
+  private final CourseElasticsearchRepository courseElasticsearchRepository;
   private final CourseRepository courseRepository;
 
   @Override

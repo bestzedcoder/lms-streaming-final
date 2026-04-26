@@ -27,4 +27,14 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
   boolean existsByUserIdAndCourseSlug(UUID userId, String slug);
 
   Optional<Enrollment> findByUserIdAndCourseId(UUID userId, UUID courseId);
+
+
+  @Query(value = """
+    SELECT EXISTS(
+        SELECT 1
+        FROM sections s INNER JOIN lessons l ON s.id = l.section_id
+        WHERE s.course_id = :courseId AND l.video_id = :videoId
+    )
+""",nativeQuery = true)
+  boolean existsVideoInCourse(UUID courseId, UUID videoId);
 }

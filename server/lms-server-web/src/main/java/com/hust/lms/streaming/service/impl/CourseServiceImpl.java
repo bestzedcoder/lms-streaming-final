@@ -13,29 +13,19 @@ import com.hust.lms.streaming.dto.response.course.CourseAuthDetailsResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
-import com.hust.lms.streaming.enums.CourseStatus;
-import com.hust.lms.streaming.enums.EnrollmentStatus;
+import com.hust.lms.streaming.dto.response.resource.SelectLectureResponse;
+import com.hust.lms.streaming.dto.response.resource.SelectVideoResponse;
+import com.hust.lms.streaming.enums.*;
 import com.hust.lms.streaming.event.custom.CourseEvent;
 import com.hust.lms.streaming.event.enums.CourseEventType;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.exception.ResourceAccessDeniedException;
 import com.hust.lms.streaming.mapper.CourseElasticsearchMapper;
 import com.hust.lms.streaming.mapper.CourseMapper;
-import com.hust.lms.streaming.model.Category;
-import com.hust.lms.streaming.model.Course;
-import com.hust.lms.streaming.model.Enrollment;
-import com.hust.lms.streaming.model.Instructor;
-import com.hust.lms.streaming.model.Lesson;
-import com.hust.lms.streaming.model.Section;
-import com.hust.lms.streaming.model.User;
+import com.hust.lms.streaming.mapper.ResourceMapper;
+import com.hust.lms.streaming.model.*;
 import com.hust.lms.streaming.redis.RedisService;
-import com.hust.lms.streaming.repository.jpa.CategoryRepository;
-import com.hust.lms.streaming.repository.jpa.CourseRepository;
-import com.hust.lms.streaming.repository.jpa.EnrollmentRepository;
-import com.hust.lms.streaming.repository.jpa.InstructorRepository;
-import com.hust.lms.streaming.repository.jpa.LessonRepository;
-import com.hust.lms.streaming.repository.jpa.SectionRepository;
-import com.hust.lms.streaming.repository.jpa.UserRepository;
+import com.hust.lms.streaming.repository.jpa.*;
 import com.hust.lms.streaming.service.CourseService;
 import com.hust.lms.streaming.upload.CloudinaryService;
 import com.hust.lms.streaming.upload.CloudinaryUploadResult;
@@ -60,6 +50,8 @@ public class CourseServiceImpl implements CourseService {
   private final LessonRepository lessonRepository;
   private final InstructorRepository instructorRepository;
   private final EnrollmentRepository enrollmentRepository;
+  private final VideoRepository videoRepository;
+  private final ResourceRepository resourceRepository;
   private final RedisService redisService;
   private final ApplicationEventPublisher eventPublisher;
 
@@ -310,6 +302,85 @@ public class CourseServiceImpl implements CourseService {
     } else if (status.equals(CourseStatus.PRIVATE)) {
       this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.MADE_PRIVATE, UUID.fromString(authId), id, null,null));
     }
+  }
+
+  @Override
+  public List<SelectVideoResponse> getAllVideo() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    String keyCache = String.format("lms:instructor:%s:videos", authId);
+
+    List<SelectVideoResponse> dataCache = this.redisService.getValue(keyCache, new TypeReference<List<SelectVideoResponse>>() {});
+    if (dataCache != null) {
+      return dataCache;
+    }
+
+    List<Video> data = this.videoRepository.findAllByOwnerAndStatus(UUID.fromString(authId), VideoStatus.READY.toString());
+    List<SelectVideoResponse> res = data.stream().map(ResourceMapper::mapVideoToSelectVideoResponse).toList();
+    this.redisService.saveKeyAndValue(keyCache, res, 10, TimeUnit.MINUTES);
+    return res;
+  }
+
+  @Override
+  public List<SelectLectureResponse> getAllLecture() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    String keyCache = String.format("lms:instructor:%s:lectures", authId);
+
+    List<SelectLectureResponse> dataCache = this.redisService.getValue(keyCache, new TypeReference<List<SelectLectureResponse>>() {});
+    if (dataCache != null) {
+      return dataCache;
+    }
+
+    List<Resource> data = this.resourceRepository.findAllByOwnerAndStatus(UUID.fromString(authId), ResourceStatus.APPROVED.toString());
+    List<SelectLectureResponse> res = data.stream().map(ResourceMapper::mapLectureToSelectLectureResponse).toList();
+    this.redisService.saveKeyAndValue(keyCache, res, 10, TimeUnit.MINUTES);
+    return res;
+  }
+
+  @Override
+  public void addResourceForLesson(UUID courseId, UUID lessonId, UUID resourceId, LessonType type) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    UUID ownerId = UUID.fromString(authId);
+
+    Lesson lesson = lessonRepository.findByOwner(ownerId, courseId, lessonId)
+            .orElseThrow(() -> new BadRequestException("Thao tác không hợp lệ"));
+
+    if (!lesson.getLessonType().equals(type)) {
+      throw new BadRequestException("Bài học không hợp dạng");
+    }
+
+    switch (type) {
+      case VIDEO -> {
+        Video video = videoRepository.findByOwner(ownerId, resourceId)
+                .orElseThrow(() -> new BadRequestException("Video không tồn tại"));
+
+        lesson.setVideo(video);
+        lesson.setResource(null);
+      }
+      case TEXT -> {
+        Resource lecture = resourceRepository.findByOwner(ownerId, resourceId)
+                .orElseThrow(() -> new BadRequestException("Lecture không tồn tại"));
+
+        lesson.setResource(lecture);
+        lesson.setVideo(null);
+      }
+      default -> throw new BadRequestException("Loại bài học không được hỗ trợ");
+    }
+
+    lessonRepository.save(lesson);
+  }
+
+  @Override
+  public void removeResourceForLesson(UUID courseId, UUID lessonId) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    UUID ownerId = UUID.fromString(authId);
+
+    Lesson lesson = lessonRepository.findByOwner(ownerId, courseId, lessonId)
+            .orElseThrow(() -> new BadRequestException("Thao tác không hợp lệ"));
+
+    lesson.setResource(null);
+    lesson.setVideo(null);
+
+    lessonRepository.save(lesson);
   }
 
 }

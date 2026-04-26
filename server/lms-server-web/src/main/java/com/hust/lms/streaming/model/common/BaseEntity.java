@@ -36,6 +36,6 @@ public class BaseEntity {
   private String createdBy;
 
   @LastModifiedBy
-  @Column(name = "_updated_by")
+  @Column(name = "updated_by")
   private String updatedBy;
 }

@@ -109,13 +109,13 @@
 			<version>1.33.0</version>
 		</dependency>
 
-		<!--	rabbitMQ	-->
+		<!--	RabbitMQ	-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 
-		<!--	Giúp làm sạch dữ liệu input người dùng	-->
+		<!--	Validation input	-->
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
@@ -127,6 +127,13 @@
 			<groupId>io.minio</groupId>
 			<artifactId>minio</artifactId>
 			<version>8.5.9</version>
+		</dependency>
+
+		<!-- 	Validation file      -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>3.0.0</version>
 		</dependency>
 
 		<dependency>

@@ -1,16 +1,14 @@
-package com.hust.lms.lms_core_streaming.netty;
+package com.hust.lms.lms_core_streaming.service;
 
 public interface HlsObjectService {
 
   /**
-   * Lấy bytes của file HLS từ production bucket.
+   * Đọc file HLS từ production bucket theo object key thật.
+   *
+   * Ví dụ objectKey:
+   * ownerId/videos/videoId/hls/master.m3u8
    */
-  byte[] getObjectBytes(String ownerId, String videoId, String fileName);
-
-  /**
-   * Build object key đúng với format mà worker encode đang upload.
-   */
-  String buildObjectKey(String ownerId, String videoId, String fileName);
+  byte[] getObjectBytesByKey(String objectKey);
 
   /**
    * Content-Type theo phần mở rộng file.

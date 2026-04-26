@@ -1,4 +1,4 @@
-package com.hust.lms.lms_core_streaming.netty;
+package com.hust.lms.lms_core_streaming.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PlaybackTokenPayload {
-  private String userId;
-  private String ownerId;
-  private String videoId;
+  private String shortLink;
   private long expiredAt;
 }

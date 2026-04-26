@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hust.lms.streaming.security.AuditorAwareImpl;
+import org.apache.tika.Tika;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -34,5 +35,10 @@ public class BeanConfiguration {
   @Bean
   public AuditorAware<String> auditorAware() {
     return new AuditorAwareImpl();
+  }
+
+  @Bean
+  public Tika getTika() {
+    return new Tika();
   }
 }

@@ -46,17 +46,17 @@ public class AuthServiceImpl implements AuthService {
   private final ApplicationEventPublisher eventPublisher;
 
   @Value("${app.security.jwt.accessExpiration}")
-  private long accessTokenExpireTime;
+  private long ACCESS_TOKEN_EXPIRE_TIME;
 
   @Value("${app.security.jwt.refreshExpiration}")
-  private long refreshTokenExpireTime;
+  private long REFRESH_TOKEN_EXPIRE_TIME;
 
   @Value("${app.admin.account.email}")
-  private String adminEmail;
+  private String ADMIN_USERNAME;
 
   @Override
   public LoginUserInfoResponse login(HttpServletResponse response,String email, String password) {
-    if (email.equals(adminEmail)) {
+    if (email.equals(ADMIN_USERNAME)) {
       throw new AdminException("Truy nhập trái phép.");
     }
 
@@ -74,8 +74,8 @@ public class AuthServiceImpl implements AuthService {
 
     this.redisService.deleteKey("lms:auth:blacklist:" + currentUser.getUsername());
 
-    CookieUtils.setCookieValue(response, "refreshToken", refreshToken, this.refreshTokenExpireTime, "/api/auth/refresh");
-    CookieUtils.setCookieValue(response, "accessToken", accessToken, this.refreshTokenExpireTime, "/api");
+    CookieUtils.setCookieValue(response, "refreshToken", refreshToken, REFRESH_TOKEN_EXPIRE_TIME, "/api/auth/refresh");
+    CookieUtils.setCookieValue(response, "accessToken", accessToken, REFRESH_TOKEN_EXPIRE_TIME, "/api");
 
     return AuthMapper.toLoginUserInfoResponse(currentUser);
   }
@@ -183,7 +183,7 @@ public class AuthServiceImpl implements AuthService {
     CookieUtils.setCookieValue(response, "refreshToken", null, 0, "/api/auth/refresh");
     CookieUtils.setCookieValue(response, "accessToken", null, 0, "/api");
 
-    this.eventPublisher.publishEvent(new AuthEvent(AuthEventType.LOGOUT , currentUser.getEmail() , String.valueOf(accessTokenExpireTime)));
+    this.eventPublisher.publishEvent(new AuthEvent(AuthEventType.LOGOUT , currentUser.getEmail() , String.valueOf(ACCESS_TOKEN_EXPIRE_TIME)));
   }
 
   @Override

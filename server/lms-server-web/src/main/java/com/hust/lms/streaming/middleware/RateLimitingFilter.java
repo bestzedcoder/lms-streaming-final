@@ -34,10 +34,10 @@ public class RateLimitingFilter extends OncePerRequestFilter {
   private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
   @Value("${app.rate-limit.capacity:20}")
-  private int capacity;
+  private int CAPACITY;
 
   @Value("${app.rate-limit.duration:60}")
-  private int durationInSeconds;
+  private int DURATION_IN_SECONDS;
 
   @Override
   protected void doFilterInternal(
@@ -59,8 +59,8 @@ public class RateLimitingFilter extends OncePerRequestFilter {
   }
 
   private Bucket createNewBucket() {
-    Refill refill = Refill.greedy(capacity, Duration.ofSeconds(durationInSeconds));
-    Bandwidth limit = Bandwidth.classic(capacity, refill);
+    Refill refill = Refill.greedy(CAPACITY, Duration.ofSeconds(DURATION_IN_SECONDS));
+    Bandwidth limit = Bandwidth.classic(CAPACITY, refill);
     return Bucket.builder().addLimit(limit).build();
   }
 

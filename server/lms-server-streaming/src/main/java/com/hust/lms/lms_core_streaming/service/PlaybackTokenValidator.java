@@ -1,4 +1,6 @@
-package com.hust.lms.lms_core_streaming.netty;
+package com.hust.lms.lms_core_streaming.service;
+
+import com.hust.lms.lms_core_streaming.dto.PlaybackTokenPayload;
 
 public interface PlaybackTokenValidator {
 

@@ -9,6 +9,10 @@ import com.hust.lms.streaming.dto.request.instructor.LessonUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionCancelRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionCreatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionUpdatingRequest;
+import com.hust.lms.streaming.dto.request.upload.ResourceCreatingRequest;
+import com.hust.lms.streaming.dto.request.upload.ResourceUpdatingRequest;
+import com.hust.lms.streaming.dto.request.upload.VideoCreatingRequest;
+import com.hust.lms.streaming.dto.request.upload.VideoUpdatingRequest;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
@@ -23,4 +27,9 @@ import org.springframework.web.multipart.MultipartFile;
 public interface InstructorService {
   void update(InstructorUpdatingRequest request);
   InstructorInfoResponse getInfo();
+
+  void createVideoRecord(VideoCreatingRequest request);
+  void createResourceRecord(ResourceCreatingRequest request);
+  void updateResourceRecord(ResourceUpdatingRequest request);
+  void updateVideoRecord(VideoUpdatingRequest request, MultipartFile image);
 }

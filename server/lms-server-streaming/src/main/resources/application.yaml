@@ -15,8 +15,8 @@ spring:
     listener:
       simple:
         retry:
-          max-attempts: 3 # gửi tối đa 3 lần
-          initial-interval: 20000 # mỗi lần cách 2s
+          max-attempts: 3
+          initial-interval: 20000
           enabled: true
           multiplier: 2
 
@@ -24,9 +24,16 @@ app:
   netty:
     port: 8088
   playback:
-    secret: your-very-strong-shared-secret
+    secret: ${STREAMING_SECRET_KEY}
   ffmpeg:
-    bin: C:\ffmpeg\bin\ffmpeg.exe
+    bin: ${STREAMING_PATH_FFMPEG}
+  dir:
+    origin-path: ${SERVER_FILE_PATH}
+  security:
+    hash:
+      key: ${SHORT_LINK_HASH_KEY}
+  redis:
+    key-streaming: "lms:streaming:"
   storage:
     s3:
       endpoint: ${STORAGE_ENDPOINT}

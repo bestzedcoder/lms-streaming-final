@@ -1,6 +1,6 @@
-package com.hust.lms.lms_core_streaming.netty;
+package com.hust.lms.lms_core_streaming.service.impl;
 
-
+import com.hust.lms.lms_core_streaming.service.HlsObjectService;
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import java.io.ByteArrayOutputStream;
@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
  *
  * Nhiệm vụ:
  * - đọc file HLS đã xử lý từ production bucket
+ * - không còn phụ thuộc ownerId/videoId
+ * - chỉ cần objectKey thật trong MinIO
  */
 @Service
 @RequiredArgsConstructor
@@ -25,15 +27,13 @@ public class HlsObjectServiceImpl implements HlsObjectService {
   private final MinioClient minioClient;
 
   @Override
-  public byte[] getObjectBytes(String ownerId, String videoId, String fileName) {
-    String objectKey = buildObjectKey(ownerId, videoId, fileName);
-
+  public byte[] getObjectBytesByKey(String objectKey) {
     try (InputStream inputStream = minioClient.getObject(
-        GetObjectArgs.builder()
-            .bucket(productionBucket)
-            .object(objectKey)
-            .build());
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            GetObjectArgs.builder()
+                    .bucket(productionBucket)
+                    .object(objectKey)
+                    .build());
+         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
       inputStream.transferTo(outputStream);
       return outputStream.toByteArray();
@@ -44,18 +44,19 @@ public class HlsObjectServiceImpl implements HlsObjectService {
   }
 
   @Override
-  public String buildObjectKey(String ownerId, String videoId, String fileName) {
-    // Phải khớp với format upload trước đó:
-    // ownerId/videos/videoId/hls/...
-    return ownerId + "/videos/" + videoId + "/hls/" + fileName;
-  }
-
-  @Override
   public String getContentType(String fileName) {
     String lower = fileName.toLowerCase();
-    if (lower.endsWith(".m3u8")) return "application/vnd.apple.mpegurl";
-    if (lower.endsWith(".ts")) return "video/mp2t";
-    if (lower.endsWith(".m4s")) return "video/iso.segment";
+
+    if (lower.endsWith(".m3u8")) {
+      return "application/vnd.apple.mpegurl";
+    }
+    if (lower.endsWith(".ts")) {
+      return "video/mp2t";
+    }
+    if (lower.endsWith(".m4s")) {
+      return "video/iso.segment";
+    }
+
     return "application/octet-stream";
   }
 }

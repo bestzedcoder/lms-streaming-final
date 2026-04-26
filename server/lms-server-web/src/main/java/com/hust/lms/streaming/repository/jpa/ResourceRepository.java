@@ -26,7 +26,24 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   @Query(value = """
     SELECT r.*
     FROM resources r
+    WHERE r.owner_id = :ownerId AND r.status = :status
+""",nativeQuery = true)
+  List<Resource> findAllByOwnerAndStatus(UUID ownerId, String status);
+
+  @Query(value = """
+    SELECT r.*
+    FROM resources r
     WHERE r.status = :status
 """,nativeQuery = true)
   List<Resource> findByPreview(String status);
+
+
+  @Query(value = """
+    SELECT EXISTS (
+        SELECT 1
+        FROM resources r
+        WHERE r.id = :lectureId AND r.status = :status
+    )
+""",nativeQuery = true)
+  boolean existsByIdAndStatus(UUID lectureId, String status);
 }

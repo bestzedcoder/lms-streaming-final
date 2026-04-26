@@ -24,10 +24,15 @@ import java.util.concurrent.TimeUnit;
 public class StreamingServiceImpl implements StreamingService {
 
     @Value("${app.redis.key-streaming}")
-    private String prefixKey;
+    private String PREFIX_KEY;
 
     @Value("${app.security.hash.key}")
-    private String hashKey;
+    private String HASH_KEY;
+
+    @Value("${app.security.streaming.key}")
+    private String SECRET_KEY_STREAMING;
+
+
 
     private final VideoRepository videoRepository;
     private final EnrollmentRepository enrollmentRepository;
@@ -49,14 +54,34 @@ public class StreamingServiceImpl implements StreamingService {
         if (!video.getStatus().equals(VideoStatus.READY) || video.getHlsUrl() == null) {
             throw new BadRequestException("Video đã gặp sự cố");
         }
-        String hashCode = HashString.hash(video.getHlsUrl(), hashKey);
-        String dataCache = this.redisService.getValue(prefixKey + hashCode, new TypeReference<String>() {});
+        String hashCode = HashString.hash(video.getHlsUrl(), HASH_KEY);
+        String dataCache = this.redisService.getValue(PREFIX_KEY + hashCode, new TypeReference<String>() {});
 
         if (dataCache == null) {
-            this.redisService.saveKeyAndValue(prefixKey + hashCode, video.getHlsUrl() , 10 , TimeUnit.MINUTES);
+            this.redisService.saveKeyAndValue(PREFIX_KEY + hashCode, video.getHlsUrl() , 10 , TimeUnit.MINUTES);
         }
 
-        return "/hls/video/streaming?short-link=" + hashCode;
+        String token = HashString.generatePlaybackToken(hashCode, SECRET_KEY_STREAMING, 600);
+
+        return "/hls/" + hashCode + "/master.m3u8?token=" + token;
+    }
+
+    @Override
+    public String startTest(UUID videoId) {
+        Video video = this.videoRepository.findById(videoId).orElseThrow(() -> new BadRequestException("Video đã bị xóa hoặc không tồn tại"));
+        if (!video.getStatus().equals(VideoStatus.READY) || video.getHlsUrl() == null) {
+            throw new BadRequestException("Video đã gặp sự cố");
+        }
+        String hashCode = HashString.hash(video.getHlsUrl(), HASH_KEY);
+        String dataCache = this.redisService.getValue(PREFIX_KEY + hashCode, new TypeReference<String>() {});
+
+        if (dataCache == null) {
+            this.redisService.saveKeyAndValue(PREFIX_KEY + hashCode, video.getHlsUrl() , 10 , TimeUnit.MINUTES);
+        }
+
+        String token = HashString.generatePlaybackToken(hashCode, SECRET_KEY_STREAMING, 600);
+
+        return "/hls/" + hashCode + "/master.m3u8?token=" + token;
     }
 
 }

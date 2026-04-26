@@ -32,6 +32,9 @@ public class StreamingServiceImpl implements StreamingService {
   @Value("${app.ffmpeg.bin:ffmpeg}")
   private String ffmpegBin;
 
+  @Value("${app.dir.origin-path}")
+  private String tempDir;
+
   private final MinioClient minioClient;
 
   // xử lý video
@@ -40,11 +43,12 @@ public class StreamingServiceImpl implements StreamingService {
     String videoId = msg.getVideoId();
     String ownerId = msg.getOwnerId();
     String originalUrl = msg.getOriginalUrl();
-
+    Path baseDir = Path.of(tempDir);
     Path workDir = null;
 
     try {
-      workDir = Files.createTempDirectory("encode-" + videoId + "-");
+      Files.createDirectories(baseDir);
+      workDir = Files.createTempDirectory(baseDir, "encode-" + videoId + "-");
       Path sourceFile = workDir.resolve("source.mp4");
       Path hlsDir = workDir.resolve("hls");
       Files.createDirectories(hlsDir);

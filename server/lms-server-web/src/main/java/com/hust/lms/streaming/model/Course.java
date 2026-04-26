@@ -52,10 +52,10 @@ public class Course extends BaseEntity {
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
-  @Column(name = "_description_short", columnDefinition = "TEXT")
+  @Column(name = "description_short", columnDefinition = "TEXT")
   private String descriptionShort;
 
-  @Column(name = "_course_requirements", columnDefinition = "TEXT")
+  @Column(name = "course_requirements", columnDefinition = "TEXT")
   private String requirements;
 
   @Column(name = "thumbnail")

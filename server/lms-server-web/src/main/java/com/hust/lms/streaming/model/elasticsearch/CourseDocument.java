@@ -12,12 +12,12 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.InnerField;
 import org.springframework.data.elasticsearch.annotations.MultiField;
 
-@Document(indexName = "courses")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Document(indexName = "courses")
 public class CourseDocument {
   @Id
   private String id;

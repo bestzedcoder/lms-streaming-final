@@ -1,40 +1,65 @@
 package com.hust.lms.lms_core_streaming.netty;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hust.lms.lms_core_streaming.dto.ErrorResponse;
+import com.hust.lms.lms_core_streaming.dto.PlaybackTokenPayload;
+import com.hust.lms.lms_core_streaming.service.HlsObjectService;
+import com.hust.lms.lms_core_streaming.service.PlaybackTokenValidator;
+import com.hust.lms.lms_core_streaming.service.ShortLinkResolverService;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.netty.handler.codec.http.HttpHeaderNames.*;
+import static io.netty.handler.codec.http.HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaderValues.KEEP_ALIVE;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * Handler chính của Netty streaming server.
  *
- * Nhiệm vụ:
- * 1. nhận request /hls/{ownerId}/{videoId}/{fileName}?token=...
- * 2. verify token
- * 3. check ownerId/videoId trong path có khớp token không
- * 4. nếu hợp lệ -> lấy file từ MinIO production và trả về
- * 5. nếu sai -> trả 401 / 403 / 404
+ * URL mới:
+ *   /hls/{shortId}/{fileName}?token=...
+ *
+ * Flow:
+ * 1. nhận request /hls/{shortId}/{fileName}?token=...
+ * 2. verify playback token
+ * 3. resolve shortId -> hlsPrefix thật
+ * 4. build objectKey = hlsPrefix + fileName
+ * 5. lấy file từ MinIO production và trả về
  */
 public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
   private final HlsObjectService hlsObjectService;
   private final PlaybackTokenValidator playbackTokenValidator;
+  private final ShortLinkResolverService shortLinkResolverService;
+  private final ObjectMapper objectMapper;
 
   public HlsRequestHandler(
-      HlsObjectService hlsObjectService,
-      PlaybackTokenValidator playbackTokenValidator
+          HlsObjectService hlsObjectService,
+          PlaybackTokenValidator playbackTokenValidator,
+          ShortLinkResolverService shortLinkResolverService,
+          ObjectMapper objectMapper
   ) {
     this.hlsObjectService = hlsObjectService;
     this.playbackTokenValidator = playbackTokenValidator;
+    this.shortLinkResolverService = shortLinkResolverService;
+    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -46,7 +71,7 @@ public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     String rawUri = URLDecoder.decode(request.uri(), StandardCharsets.UTF_8);
 
-    // Tách query param khỏi path
+    // tách query string khỏi path
     String pathOnly = rawUri;
     String queryString = "";
     int queryIndex = rawUri.indexOf('?');
@@ -60,22 +85,21 @@ public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
       return;
     }
 
-    // Path mong muốn:
-    // /hls/{ownerId}/{videoId}/{fileName}
+    // Path mới:
+    // /hls/{shortId}/{fileName}
     String path = pathOnly.substring("/hls/".length());
     String[] parts = path.split("/");
 
-    if (parts.length < 3) {
+    if (parts.length < 2) {
       writeError(ctx, HttpResponseStatus.BAD_REQUEST,
-          "Path must be /hls/{ownerId}/{videoId}/{fileName}");
+              "Path must be /hls/{shortId}/{fileName}");
       return;
     }
 
-    String ownerId = parts[0];
-    String videoId = parts[1];
-    String fileName = parts[2];
+    String shortLink = parts[0];
+    String fileName = parts[1];
 
-    // Parse token từ query param
+    // parse token từ query param
     Map<String, String> queryParams = parseQuery(queryString);
     String token = queryParams.get("token");
 
@@ -84,35 +108,34 @@ public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
       return;
     }
 
-    PlaybackTokenPayload payload;
     try {
-      payload = playbackTokenValidator.validate(token);
-    } catch (Exception e) {
-      writeError(ctx, HttpResponseStatus.UNAUTHORIZED, "Invalid playback token");
-      return;
-    }
+      // verify token
+      PlaybackTokenPayload payload = playbackTokenValidator.validate(token);
 
-    // Check token có đúng video/path đang request không
-    if (!ownerId.equals(payload.getOwnerId()) || !videoId.equals(payload.getVideoId())) {
-      writeError(ctx, HttpResponseStatus.FORBIDDEN, "Token does not match requested resource");
-      return;
-    }
+      if (payload == null) {
+        writeError(ctx, HttpResponseStatus.UNAUTHORIZED, "Invalid playback token");
+        return;
+      }
 
-    try {
-      byte[] content = hlsObjectService.getObjectBytes(ownerId, videoId, fileName);
+      String hlsPrefix = shortLinkResolverService.resolvePrefix(shortLink);
+
+      String objectKey = hlsPrefix + fileName;
+
+      // lấy file từ MinIO
+      byte[] content = hlsObjectService.getObjectBytesByKey(objectKey);
       String contentType = hlsObjectService.getContentType(fileName);
 
       FullHttpResponse response = new DefaultFullHttpResponse(
-          HTTP_1_1,
-          HttpResponseStatus.OK,
-          Unpooled.wrappedBuffer(content)
+              HTTP_1_1,
+              HttpResponseStatus.OK,
+              Unpooled.wrappedBuffer(content)
       );
 
       response.headers().set(CONTENT_TYPE, contentType);
       response.headers().set(CONTENT_LENGTH, content.length);
       response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
 
-      // Playlist cache ngắn, segment cache dài hơn một chút
+      // playlist cache ngắn, segment cache dài hơn
       if (fileName.endsWith(".m3u8")) {
         response.headers().set(CACHE_CONTROL, "public, max-age=3");
       } else {
@@ -128,13 +151,16 @@ public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
         future.addListener(ChannelFutureListener.CLOSE);
       }
 
+    } catch (RuntimeException e) {
+      writeError(ctx, HttpResponseStatus.NOT_FOUND, e.getMessage() != null ? e.getMessage() : "HLS object not found");
     } catch (Exception e) {
-      writeError(ctx, HttpResponseStatus.NOT_FOUND, "HLS object not found");
+      writeError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, "Internal server error");
     }
   }
 
   /**
-   * Parse query string kiểu token=abc&x=1
+   * Parse query string kiểu:
+   * token=abc&x=1
    */
   private Map<String, String> parseQuery(String queryString) {
     Map<String, String> result = new HashMap<>();
@@ -152,17 +178,43 @@ public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
     return result;
   }
 
+  /**
+   * Trả lỗi JSON thống nhất cho client.
+   */
   private void writeError(ChannelHandlerContext ctx, HttpResponseStatus status, String message) {
-    byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+    try {
+      ErrorResponse error = ErrorResponse.builder()
+              .code(status.code())
+              .message(message)
+              .timestamp(LocalDateTime.now())
+              .build();
 
-    FullHttpResponse response = new DefaultFullHttpResponse(
-        HTTP_1_1,
-        status,
-        Unpooled.wrappedBuffer(bytes)
-    );
-    response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
-    response.headers().set(CONTENT_LENGTH, bytes.length);
+      byte[] bytes = objectMapper.writeValueAsBytes(error);
 
-    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+      FullHttpResponse response = new DefaultFullHttpResponse(
+              HTTP_1_1,
+              status,
+              Unpooled.wrappedBuffer(bytes)
+      );
+
+      response.headers().set(CONTENT_TYPE, "application/json; charset=UTF-8");
+      response.headers().set(CONTENT_LENGTH, bytes.length);
+
+      ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+
+    } catch (Exception e) {
+      byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+
+      FullHttpResponse response = new DefaultFullHttpResponse(
+              HTTP_1_1,
+              HttpResponseStatus.INTERNAL_SERVER_ERROR,
+              Unpooled.wrappedBuffer(bytes)
+      );
+
+      response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
+      response.headers().set(CONTENT_LENGTH, bytes.length);
+
+      ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+    }
   }
 }

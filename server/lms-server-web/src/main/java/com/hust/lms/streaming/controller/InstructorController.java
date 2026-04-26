@@ -2,21 +2,7 @@ package com.hust.lms.streaming.controller;
 
 import com.hust.lms.streaming.dto.common.BaseListResponse;
 import com.hust.lms.streaming.dto.common.BaseResponse;
-import com.hust.lms.streaming.dto.request.instructor.ActiveRequest;
-import com.hust.lms.streaming.dto.request.instructor.BannedRequest;
-import com.hust.lms.streaming.dto.request.instructor.CourseCreatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.CourseUpdatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.InstructorUpdatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.LessonCancelRequest;
-import com.hust.lms.streaming.dto.request.instructor.LessonCreatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.LessonUpdatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.QuestionCategoryCreatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.QuestionCategoryUpdatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.QuestionCreatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.QuestionUpdatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.SectionCancelRequest;
-import com.hust.lms.streaming.dto.request.instructor.SectionCreatingRequest;
-import com.hust.lms.streaming.dto.request.instructor.SectionUpdatingRequest;
+import com.hust.lms.streaming.dto.request.instructor.*;
 import com.hust.lms.streaming.dto.request.upload.MultipartCompleteRequest;
 import com.hust.lms.streaming.dto.request.upload.MultipartInitRequest;
 import com.hust.lms.streaming.dto.request.upload.MultipartInitResponse;
@@ -37,6 +23,8 @@ import com.hust.lms.streaming.dto.response.question.QuestionResponse;
 import com.hust.lms.streaming.dto.response.registration.RegistrationResponse;
 import com.hust.lms.streaming.dto.response.resource.InstructorLectureResponse;
 import com.hust.lms.streaming.dto.response.resource.InstructorVideoResponse;
+import com.hust.lms.streaming.dto.response.resource.SelectLectureResponse;
+import com.hust.lms.streaming.dto.response.resource.SelectVideoResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
 import com.hust.lms.streaming.service.CourseService;
 import com.hust.lms.streaming.service.EnrollmentService;
@@ -458,7 +446,7 @@ public class InstructorController {
 
   @PostMapping("storage/create-video")
   public ResponseEntity<BaseResponse<?>> createVideo(@RequestBody @Valid VideoCreatingRequest req) {
-    this.s3StorageService.createVideoRecord(req);
+    this.instructorService.createVideoRecord(req);
     return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.builder()
             .code(HttpStatus.CREATED.value())
             .message("Success")
@@ -469,7 +457,7 @@ public class InstructorController {
 
   @PostMapping("storage/create-resource")
   public ResponseEntity<BaseResponse<?>> createResource(@RequestBody @Valid ResourceCreatingRequest req) {
-    this.s3StorageService.createResourceRecord(req);
+    this.instructorService.createResourceRecord(req);
     return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.builder()
         .code(HttpStatus.CREATED.value())
         .message("Success")
@@ -482,7 +470,7 @@ public class InstructorController {
   public ResponseEntity<BaseResponse<?>> updateVideo(
       @RequestPart("data") @Valid VideoUpdatingRequest req,
       @RequestPart(value = "image", required = false) MultipartFile image ) {
-    this.s3StorageService.updateVideoRecord(req, image);
+    this.instructorService.updateVideoRecord(req, image);
     return ResponseEntity.ok(BaseResponse.builder()
         .code(200)
         .message("Success")
@@ -493,7 +481,7 @@ public class InstructorController {
 
   @PostMapping("storage/update-resource")
   public ResponseEntity<BaseResponse<?>> updateResource(@RequestBody @Valid ResourceUpdatingRequest req) {
-    this.s3StorageService.updateResourceRecord(req);
+    this.instructorService.updateResourceRecord(req);
     return ResponseEntity.ok(BaseResponse.builder()
         .code(200)
         .message("Success")
@@ -548,5 +536,59 @@ public class InstructorController {
         .success(true)
         .timestamp(LocalDateTime.now())
         .build());
+  }
+
+  @GetMapping("resources/prepare-select/get-videos")
+  public ResponseEntity<BaseListResponse<?>> getSelectVideos() {
+    List<SelectVideoResponse> res = this.courseService.getAllVideo();
+    return ResponseEntity.ok(BaseListResponse.<SelectVideoResponse>builder()
+                    .code(200)
+                    .message("Success")
+                    .data(res)
+                    .success(true)
+                    .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  @GetMapping("resources/prepare-select/get-lectures")
+  public ResponseEntity<BaseListResponse<?>> getSelectLectures() {
+    List<SelectLectureResponse> res = this.courseService.getAllLecture();
+    return ResponseEntity.ok(BaseListResponse.<SelectLectureResponse>builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  // add Resource for Lesson
+  @PostMapping("lesson/add-resource")
+  public ResponseEntity<BaseResponse<?>> addResource(@RequestBody @Valid AddResourceForLesson req) {
+    this.courseService.addResourceForLesson(
+            UUID.fromString(req.getCourseId()),
+            UUID.fromString(req.getLessonId()),
+            UUID.fromString(req.getResourceId()),
+            req.getType());
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  @PostMapping("lesson/reomve-resource")
+  public ResponseEntity<BaseResponse<?>> addResource(@RequestBody @Valid RemoveResourceForLesson req) {
+    this.courseService.removeResourceForLesson(
+            UUID.fromString(req.getCourseId()),
+            UUID.fromString(req.getLessonId())
+            );
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
   }
 }

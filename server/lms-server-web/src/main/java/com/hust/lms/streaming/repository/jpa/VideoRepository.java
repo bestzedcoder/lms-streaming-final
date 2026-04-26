@@ -1,5 +1,6 @@
 package com.hust.lms.streaming.repository.jpa;
 
+import com.hust.lms.streaming.enums.VideoStatus;
 import com.hust.lms.streaming.model.Video;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,13 @@ public interface VideoRepository extends JpaRepository<Video, UUID> {
 """,nativeQuery = true)
   List<Video> findAllByOwner(UUID ownerId);
 
+  @Query(value = """
+    SELECT v.*
+    FROM videos v 
+    WHERE v.status = :status AND v.owner_id = :ownerId
+""",nativeQuery = true)
+  List<Video> findAllByOwnerAndStatus(UUID ownerId, String status);
+
 
   @Query(value = """
     SELECT v.*
@@ -30,4 +38,13 @@ public interface VideoRepository extends JpaRepository<Video, UUID> {
     WHERE v.status = :status
 """,nativeQuery = true)
   List<Video> findByPreview(String status);
+
+  @Query(value = """
+    SELECT EXISTS (
+        SELECT 1
+        FROM videos v
+        WHERE v.id = :videoId AND v.status = :status
+    )
+""",nativeQuery = true)
+  boolean existsByIdAndStatus(UUID videoId, String status);
 }

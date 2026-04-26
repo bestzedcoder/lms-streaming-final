@@ -10,25 +10,25 @@ import org.springframework.context.annotation.Configuration;
 public class MinioConfiguration {
 
   @Value("${app.storage.s3.endpoint}")
-  private String endpoint;
+  private String ENDPOINT;
   @Value("${app.storage.s3.access-key}")
-  private String accessKey;
+  private String ACCESS_KEY;
   @Value("${app.storage.s3.secret-key}")
-  private String secretKey;
+  private String SECRET_KEY;
 
   @Bean
   public MinioClient getMinioClient() {
     return MinioClient.builder()
-        .endpoint(endpoint)
-        .credentials(accessKey, secretKey)
+        .endpoint(ENDPOINT)
+        .credentials(ACCESS_KEY, SECRET_KEY)
         .build();
   }
 
   @Bean
   public MinioAsyncClient minioAsyncClient() {
     return MinioAsyncClient.builder()
-        .endpoint(endpoint)
-        .credentials(accessKey, secretKey)
+        .endpoint(ENDPOINT)
+        .credentials(ACCESS_KEY, SECRET_KEY)
         .build();
   }
 

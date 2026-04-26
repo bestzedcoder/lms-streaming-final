@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class LmsStreamingPlatformApplication {
 
 	public static void main(String[] args) {
+		System.out.println(java.util.TimeZone.getDefault());
 		SpringApplication.run(LmsStreamingPlatformApplication.class, args);
 	}
 

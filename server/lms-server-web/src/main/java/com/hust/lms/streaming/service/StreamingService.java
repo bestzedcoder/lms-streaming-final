@@ -4,4 +4,6 @@ import java.util.UUID;
 
 public interface StreamingService {
     String start(UUID videoId, UUID courseId);
+
+    String startTest(UUID videoId);
 }

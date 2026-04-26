@@ -17,7 +17,7 @@ import com.hust.lms.streaming.enums.Role;
 import com.hust.lms.streaming.enums.VideoStatus;
 import com.hust.lms.streaming.event.custom.AuthEvent;
 import com.hust.lms.streaming.event.custom.CourseEvent;
-import com.hust.lms.streaming.event.custom.VideoEvent;
+import com.hust.lms.streaming.event.custom.VideoProcessingEvent;
 import com.hust.lms.streaming.event.enums.AuthEventType;
 import com.hust.lms.streaming.event.enums.CourseEventType;
 import com.hust.lms.streaming.exception.AdminException;
@@ -39,12 +39,14 @@ import com.hust.lms.streaming.security.JwtUtils;
 import com.hust.lms.streaming.service.AdminService;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
+import io.minio.RemoveObjectArgs;
 import io.minio.http.Method;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -57,6 +59,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
   private final CourseRepository courseRepository;
@@ -71,10 +74,11 @@ public class AdminServiceImpl implements AdminService {
   private final MinioClient minioClient;
 
   @Value("${app.security.jwt.accessAdminExpiration}")
-  private long accessTokenAdminExpire;
+  private long ACCESS_TOKEN_ADMIN_EXPIRE;
 
   @Value("${app.storage.s3.bucket-staging}")
-  private String stagingBucket;
+  private String STAGING_BUCKET;
+
 
 
   @Override
@@ -108,7 +112,7 @@ public class AdminServiceImpl implements AdminService {
 
     this.redisService.deleteKey("lms:auth:blacklist:" + currentUser.getUsername());
 
-    CookieUtils.setCookieValue(response, "accessToken", accessToken, this.accessTokenAdminExpire, "/api/admin");
+    CookieUtils.setCookieValue(response, "accessToken", accessToken, ACCESS_TOKEN_ADMIN_EXPIRE, "/api/admin");
     return AuthMapper.toAdminResponse(currentUser);
   }
 
@@ -119,7 +123,7 @@ public class AdminServiceImpl implements AdminService {
 
     CookieUtils.setCookieValue(response, "accessToken", null, 0, "/api/admin");
 
-    this.eventPublisher.publishEvent(new AuthEvent(AuthEventType.LOGOUT , currentUser.getEmail() , String.valueOf(this.accessTokenAdminExpire)));
+    this.eventPublisher.publishEvent(new AuthEvent(AuthEventType.LOGOUT , currentUser.getEmail() , String.valueOf(ACCESS_TOKEN_ADMIN_EXPIRE)));
   }
 
   @Override
@@ -209,13 +213,24 @@ public class AdminServiceImpl implements AdminService {
 
     video.setStatus(VideoStatus.PENDING);
     this.videoRepository.save(video);
-    this.eventPublisher.publishEvent(new VideoEvent(videoId, video.getOwner().getId() ,video.getOriginalUrl()));
+    this.eventPublisher.publishEvent(new VideoProcessingEvent(videoId, video.getOwner().getId() ,video.getOriginalUrl()));
   }
 
   @Override
   public void rejectVideo(UUID videoId) {
     Video video = this.videoRepository.findById(videoId).orElse(null);
     if (video == null) return;
+
+    try {
+      minioClient.removeObject(
+              RemoveObjectArgs.builder()
+                      .bucket(STAGING_BUCKET)
+                      .object(video.getOriginalUrl())
+                      .build()
+      );
+    } catch (Exception e) {
+      log.error("Cannot delete invalid object from staging: {}", video.getOriginalUrl(), e);
+    }
 
     video.setStatus(VideoStatus.DELETED);
     this.videoRepository.save(video);
@@ -235,6 +250,17 @@ public class AdminServiceImpl implements AdminService {
     Resource resource = this.resourceRepository.findById(lectureId).orElse(null);
     if (resource == null) return;
 
+    try {
+      minioClient.removeObject(
+              RemoveObjectArgs.builder()
+                      .bucket(STAGING_BUCKET)
+                      .object(resource.getUrl())
+                      .build()
+      );
+    } catch (Exception e) {
+      log.error("Cannot delete invalid object from staging: {}", resource.getUrl(), e);
+    }
+
     resource.setStatus(ResourceStatus.DELETED);
     this.resourceRepository.save(resource);
   }
@@ -246,7 +272,7 @@ public class AdminServiceImpl implements AdminService {
       return this.minioClient.getPresignedObjectUrl(
           GetPresignedObjectUrlArgs.builder()
               .method(Method.GET)
-              .bucket(stagingBucket)
+              .bucket(STAGING_BUCKET)
               .object(video.getOriginalUrl())
               .expiry(15, TimeUnit.MINUTES)
               .build()
@@ -263,7 +289,7 @@ public class AdminServiceImpl implements AdminService {
       return this.minioClient.getPresignedObjectUrl(
           GetPresignedObjectUrlArgs.builder()
               .method(Method.GET)
-              .bucket(stagingBucket)
+              .bucket(STAGING_BUCKET)
               .object(resource.getUrl())
               .expiry(15, TimeUnit.MINUTES)
               .build()

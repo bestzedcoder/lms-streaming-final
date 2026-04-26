@@ -1,5 +1,9 @@
 package com.hust.lms.lms_core_streaming.netty;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hust.lms.lms_core_streaming.service.HlsObjectService;
+import com.hust.lms.lms_core_streaming.service.PlaybackTokenValidator;
+import com.hust.lms.lms_core_streaming.service.ShortLinkResolverService;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -29,6 +33,8 @@ public class NettyHlsServer {
 
   private final HlsObjectService hlsObjectService;
   private final PlaybackTokenValidator playbackTokenValidator;
+  private final ShortLinkResolverService shortLinkResolverService;
+  private final ObjectMapper objectMapper;
 
   private EventLoopGroup bossGroup;
   private EventLoopGroup workerGroup;
@@ -43,7 +49,7 @@ public class NettyHlsServer {
       ServerBootstrap bootstrap = new ServerBootstrap();
       bootstrap.group(bossGroup, workerGroup)
           .channel(NioServerSocketChannel.class)
-          .childHandler(new NettyServerInitializer(hlsObjectService, playbackTokenValidator))
+          .childHandler(new NettyServerInitializer(hlsObjectService, playbackTokenValidator, shortLinkResolverService, objectMapper))
           .option(ChannelOption.SO_BACKLOG, 1024)
           .childOption(ChannelOption.SO_KEEPALIVE, true);
 

@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VideoEvent {
+public class VideoProcessingEvent {
   private UUID videoId;
   private UUID ownerId;
   private String originalUrl;

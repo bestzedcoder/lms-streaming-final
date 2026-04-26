@@ -11,6 +11,8 @@ import com.hust.lms.streaming.dto.request.upload.VideoCreatingRequest;
 import com.hust.lms.streaming.dto.request.upload.VideoUpdatingRequest;
 import com.hust.lms.streaming.dto.response.resource.InstructorLectureResponse;
 import com.hust.lms.streaming.dto.response.resource.InstructorVideoResponse;
+
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,11 +22,6 @@ public interface S3StorageService {
   MultipartInitResponse initMultipartVideo(MultipartInitRequest req);
   void completeMultipartVideo(MultipartCompleteRequest req);
 
-  void createVideoRecord(VideoCreatingRequest request);
-  void createResourceRecord(ResourceCreatingRequest request);
-  void updateResourceRecord(ResourceUpdatingRequest request);
-  void updateVideoRecord(VideoUpdatingRequest request, MultipartFile image);
-
   List<InstructorLectureResponse> getInstructorLectureList();
   List<InstructorVideoResponse> getInstructorVideoList();
 
@@ -33,4 +30,7 @@ public interface S3StorageService {
 
   void handleVideoProcessingSuccess(UUID videoId, String hlsUrl);
   void handleVideoProcessingFailure(UUID videoId);
+
+  void download(String objectKey, String bucket, Path target);
+  void deleteFromStaging(String objectKey, String bucket);
 }

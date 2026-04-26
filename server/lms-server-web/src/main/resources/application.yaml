@@ -17,7 +17,7 @@ spring:
     password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
-    database: postgresql
+    database: PostgreSQL
     show-sql: false
     hibernate:
       ddl-auto: update
@@ -63,6 +63,8 @@ spring:
       enabled: ALWAYS
 
 app:
+  redis:
+    key-streaming: "lms:streaming:"
   storage:
     s3:
       endpoint: ${STORAGE_ENDPOINT}
@@ -78,6 +80,10 @@ app:
     name: ${ADMIN_NAME}
     phone: ${ADMIN_PHONE}
   security:
+    streaming:
+      key:  ${STREAMING_SECRET_KEY}
+    hash:
+      key: ${SHORT_LINK_HASH_KEY}
     jwt:
       secretKey: ${JWT_SECRET_KEY}
       accessExpiration: ${JWT_ACCESS_EXPIRATION}
@@ -89,6 +95,7 @@ app:
     api-secret: ${CLOUDINARY_API_SECRET}
   origin:
     client: ${ORIGIN_CLIENT}
+    dir: ${BASE_FILE_PATH}
 
 
 # logging

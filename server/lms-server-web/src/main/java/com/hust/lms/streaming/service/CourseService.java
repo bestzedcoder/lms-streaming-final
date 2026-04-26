@@ -12,9 +12,13 @@ import com.hust.lms.streaming.dto.response.course.CourseAuthDetailsResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
+import com.hust.lms.streaming.dto.response.resource.SelectLectureResponse;
+import com.hust.lms.streaming.dto.response.resource.SelectVideoResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
 import java.util.List;
 import java.util.UUID;
+
+import com.hust.lms.streaming.enums.LessonType;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface CourseService {
@@ -32,4 +36,9 @@ public interface CourseService {
   List<InstructorCourseResponse> getAllCourses();
   InstructorCourseDetailsResponse getCourseDetails(UUID id);
   void updateStatusCourse(UUID id, CourseStatus status);
+
+  List<SelectVideoResponse> getAllVideo();
+  List<SelectLectureResponse> getAllLecture();
+  void addResourceForLesson(UUID courseId, UUID lessonId, UUID resourceId, LessonType type);
+  void removeResourceForLesson(UUID courseId, UUID lessonId);
 }

@@ -18,11 +18,11 @@ public class DatabaseSeeder implements CommandLineRunner {
   private final PasswordEncoder passwordEncoder;
 
   @Value("${app.admin.account.email}")
-  private String adminEmail;
+  private String ADMIN_USERNAME;
   @Value("${app.admin.account.password}")
-  private String adminPassword;
+  private String ADMIN_PASSWORD;
   @Value("${app.admin.phone}")
-  private String adminPhone;
+  private String ADMIN_PHONE;
 
   @Override
   public void run(String... args) throws Exception {
@@ -32,15 +32,15 @@ public class DatabaseSeeder implements CommandLineRunner {
 
   private void seedAdminUser() {
 
-    if (this.userRepository.existsByEmail(adminEmail)) {
+    if (this.userRepository.existsByEmail(ADMIN_USERNAME)) {
       return;
     }
 
     log.info("Khởi tạo ứng dụng lần đầu tiên bắt đầu khởi tạo tài khoản admin");
     User user = new User();
-    user.setEmail(adminEmail);
-    user.setPassword(this.passwordEncoder.encode(adminPassword));
-    user.setPhone(adminPhone);
+    user.setEmail(ADMIN_USERNAME);
+    user.setPassword(this.passwordEncoder.encode(ADMIN_PASSWORD));
+    user.setPhone(ADMIN_PHONE);
     user.setFirstName("administrator");
     user.setLastName("system");
     user.setEnabled(true);
