@@ -3,6 +3,7 @@ package com.hust.lms.streaming.service.impl;
 import com.hust.lms.streaming.event.enums.ResourceType;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.service.FileValidationService;
+import com.hust.lms.streaming.service.MalwareScannerService;
 import com.hust.lms.streaming.service.S3StorageService;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
@@ -39,6 +40,7 @@ public class FileValidationServiceImpl implements FileValidationService {
     private static final Set<String> VIDEO_MIME = Set.of("video/mp4", "application/mp4");
 
     private final S3StorageService s3StorageService;
+    private final MalwareScannerService malwareScannerService;
     private final Tika tika;
 
     @Override
@@ -102,6 +104,9 @@ public class FileValidationServiceImpl implements FileValidationService {
             validateMime(mime, type);
 
             validateSignature(tempFile, ext, type);
+            if (!malwareScannerService.isSafe(tempFile)) {
+                throw new BadRequestException("File có dấu hiệu chứa mã độc.");
+            }
 
             log.info("File validation passed objectKey={}, type={}, mime={}", objectKey, type, mime);
 

@@ -96,6 +96,9 @@ app:
   origin:
     client: ${ORIGIN_CLIENT}
     dir: ${BASE_FILE_PATH}
+  clamav:
+    port: ${CLAMAV_PORT}
+    host: ${CLAMAV_HOST}
 
 
 # logging

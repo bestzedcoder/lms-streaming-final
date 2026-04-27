@@ -55,7 +55,7 @@ const LectureUploader: React.FC = () => {
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md border">
-      <h2 className="text-2xl font-bold mb-4">Tải lên bài giảng (PDF)</h2>
+      <h2 className="text-2xl font-bold mb-4">Tải lên tài liệu bài giảng</h2>
 
       <div className="mb-4">
         <Text strong>Tiêu đề tài liệu</Text>
@@ -70,11 +70,11 @@ const LectureUploader: React.FC = () => {
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
         <input
           type="file"
-          accept=".pdf"
+          accept=".pdf,.txt"
           onChange={handleFileChange}
           className="mb-4 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
         />
-        <p className="text-xs text-gray-400">PDF(Tối đa 50MB)</p>
+        <p className="text-xs text-gray-400">Chỉ chấp nhận file PDF hoặc TXT</p>
       </div>
 
       {uploading && (
