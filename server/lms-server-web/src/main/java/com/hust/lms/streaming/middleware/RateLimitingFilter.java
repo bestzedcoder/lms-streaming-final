@@ -33,7 +33,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
   private final ObjectMapper objectMapper;
   private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
-  @Value("${app.rate-limit.capacity:20}")
+  @Value("${app.rate-limit.capacity:50}")
   private int CAPACITY;
 
   @Value("${app.rate-limit.duration:60}")

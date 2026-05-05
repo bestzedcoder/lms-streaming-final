@@ -100,7 +100,7 @@ const InstructorLayout = () => {
         {
           key: "/instructor/resources/quizzes",
           icon: <QuestionCircleOutlined />,
-          label: "Ngân hàng Quiz",
+          label: "Ngân hàng câu hỏi",
         },
       ],
     },

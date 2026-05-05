@@ -16,7 +16,6 @@ import {
   UserOutlined,
   LogoutOutlined,
   BookOutlined,
-  HeartOutlined,
   RocketOutlined,
   PlayCircleOutlined,
   AppstoreOutlined,
@@ -164,14 +163,9 @@ const StudentHeader = () => {
     { type: "divider" },
     {
       key: "learning",
-      label: "Quá trình học tập",
+      label: "Các khóa học của bạn",
       icon: <BookOutlined />,
       onClick: () => navigate("/student/my-courses"),
-    },
-    {
-      key: "wishlist",
-      label: "Danh sách yêu thích",
-      icon: <HeartOutlined />,
     },
     { type: "divider" },
     {

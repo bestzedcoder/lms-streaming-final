@@ -9,10 +9,9 @@ import com.hust.lms.streaming.dto.request.instructor.LessonUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionCancelRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionCreatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.SectionUpdatingRequest;
-import com.hust.lms.streaming.dto.response.course.CourseAuthDetailsResponse;
-import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
-import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
-import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
+import com.hust.lms.streaming.dto.response.course.*;
+import com.hust.lms.streaming.dto.response.instructor.*;
+import com.hust.lms.streaming.dto.response.quiz.SelectQuizResponse;
 import com.hust.lms.streaming.dto.response.resource.SelectLectureResponse;
 import com.hust.lms.streaming.dto.response.resource.SelectVideoResponse;
 import com.hust.lms.streaming.enums.*;
@@ -22,6 +21,7 @@ import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.exception.ResourceAccessDeniedException;
 import com.hust.lms.streaming.mapper.CourseElasticsearchMapper;
 import com.hust.lms.streaming.mapper.CourseMapper;
+import com.hust.lms.streaming.mapper.QuizMapper;
 import com.hust.lms.streaming.mapper.ResourceMapper;
 import com.hust.lms.streaming.model.*;
 import com.hust.lms.streaming.redis.RedisService;
@@ -52,6 +52,7 @@ public class CourseServiceImpl implements CourseService {
   private final EnrollmentRepository enrollmentRepository;
   private final VideoRepository videoRepository;
   private final ResourceRepository resourceRepository;
+  private final QuizRepository quizRepository;
   private final RedisService redisService;
   private final ApplicationEventPublisher eventPublisher;
 
@@ -137,6 +138,28 @@ public class CourseServiceImpl implements CourseService {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
     Course course = this.courseRepository.findByIdAndInstructorId(id, UUID.fromString(authId)).orElse(null);
     return CourseMapper.mapCourseToInstructorCourseInfoResponse(course);
+  }
+
+  @Override
+  public List<InstructorLessonDetailResponse> getLessonsInCourse(UUID courseId) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    if (this.courseRepository.notExistsByIdAndInstructorId(courseId, UUID.fromString(authId))) {
+      throw new BadRequestException("Khóa học không hợp lệ");
+    }
+
+    List<Lesson> data = this.lessonRepository.findLessonsByCourse(courseId);
+
+    return data.stream().map(l -> {
+      if (l == null) return null;
+      boolean hasResource;
+      if (LessonType.QUIZ.equals(l.getLessonType())) {
+        hasResource = this.quizRepository.existsByLesson(l.getId());
+      } else {
+        hasResource = l.getResource() != null || l.getVideo() != null;
+      }
+
+      return CourseMapper.mapLessonToInstructorLessonDetailResponse(l, hasResource);
+    }).toList();
   }
 
   @Override
@@ -307,7 +330,7 @@ public class CourseServiceImpl implements CourseService {
   @Override
   public List<SelectVideoResponse> getAllVideo() {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    String keyCache = String.format("lms:instructor:%s:videos", authId);
+    String keyCache = String.format("lms:select:videos:instructor:%s", authId);
 
     List<SelectVideoResponse> dataCache = this.redisService.getValue(keyCache, new TypeReference<List<SelectVideoResponse>>() {});
     if (dataCache != null) {
@@ -316,14 +339,14 @@ public class CourseServiceImpl implements CourseService {
 
     List<Video> data = this.videoRepository.findAllByOwnerAndStatus(UUID.fromString(authId), VideoStatus.READY.toString());
     List<SelectVideoResponse> res = data.stream().map(ResourceMapper::mapVideoToSelectVideoResponse).toList();
-    this.redisService.saveKeyAndValue(keyCache, res, 10, TimeUnit.MINUTES);
+    this.redisService.saveKeyAndValue(keyCache, res, 1, TimeUnit.MINUTES);
     return res;
   }
 
   @Override
   public List<SelectLectureResponse> getAllLecture() {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-    String keyCache = String.format("lms:instructor:%s:lectures", authId);
+    String keyCache = String.format("lms:select:lectures:instructor:%s", authId);
 
     List<SelectLectureResponse> dataCache = this.redisService.getValue(keyCache, new TypeReference<List<SelectLectureResponse>>() {});
     if (dataCache != null) {
@@ -332,7 +355,23 @@ public class CourseServiceImpl implements CourseService {
 
     List<Resource> data = this.resourceRepository.findAllByOwnerAndStatus(UUID.fromString(authId), ResourceStatus.APPROVED.toString());
     List<SelectLectureResponse> res = data.stream().map(ResourceMapper::mapLectureToSelectLectureResponse).toList();
-    this.redisService.saveKeyAndValue(keyCache, res, 10, TimeUnit.MINUTES);
+    this.redisService.saveKeyAndValue(keyCache, res, 1, TimeUnit.MINUTES);
+    return res;
+  }
+
+  @Override
+  public List<SelectQuizResponse> getAllQuiz() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    String keyCache = String.format("lms:select:quizzes:instructor:%s", authId);
+
+    List<SelectQuizResponse> dataCache = this.redisService.getValue(keyCache, new TypeReference<List<SelectQuizResponse>>() {});
+    if (dataCache != null) {
+      return dataCache;
+    }
+
+    List<Quiz> data = this.quizRepository.findAllByOwnerAndStatus(UUID.fromString(authId), QuizStatus.PUBLISHED.toString());
+    List<SelectQuizResponse> res = data.stream().map(QuizMapper::mapQuizToSelectQuizResponse).toList();
+    this.redisService.saveKeyAndValue(keyCache, res, 1, TimeUnit.MINUTES);
     return res;
   }
 
@@ -363,6 +402,18 @@ public class CourseServiceImpl implements CourseService {
         lesson.setResource(lecture);
         lesson.setVideo(null);
       }
+
+      case QUIZ -> {
+        if (this.quizRepository.existsByLesson(lessonId)) {
+          throw new BadRequestException("Quiz cũ chưa được xóa trước khi thêm");
+        }
+        lesson.setResource(null);
+        lesson.setVideo(null);
+        Quiz quiz = this.quizRepository.findById(resourceId).orElseThrow(() -> new BadRequestException("Quiz không tồn tại"));
+        quiz.setLesson(lesson);
+        this.quizRepository.save(quiz);
+      }
+
       default -> throw new BadRequestException("Loại bài học không được hỗ trợ");
     }
 
@@ -377,10 +428,87 @@ public class CourseServiceImpl implements CourseService {
     Lesson lesson = lessonRepository.findByOwner(ownerId, courseId, lessonId)
             .orElseThrow(() -> new BadRequestException("Thao tác không hợp lệ"));
 
+    if (this.quizRepository.existsByLesson(lessonId)) {
+      Quiz quiz = this.quizRepository.findByLesson(lessonId).orElse(null);
+      if (quiz != null) {
+        quiz.setLesson(null);
+        this.quizRepository.save(quiz);
+      }
+    }
+
     lesson.setResource(null);
     lesson.setVideo(null);
 
     lessonRepository.save(lesson);
+  }
+
+  @Override
+  public List<CourseEnrollmentResponse> getCoursesByStudent() {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    String keyCache = "lms:course:enrollment:student:"+authId;
+
+    List<CourseEnrollmentResponse> dataCache = this.redisService.getValue(keyCache, new TypeReference<List<CourseEnrollmentResponse>>() {});
+    if (dataCache != null) return dataCache;
+
+    List<Enrollment> data = this.enrollmentRepository.findEnrollmentsByUserId(UUID.fromString(authId));
+    List<CourseEnrollmentResponse> res = data.stream().map(e -> CourseMapper.mapCourseToCourseEnrollmentResponse(e.getCourse(), e.getStatus(), e.getCreatedAt())).toList();
+
+    this.redisService.saveKeyAndValue(keyCache, res, 1, TimeUnit.MINUTES);
+    return res;
+  }
+
+  @Override
+  public CourseEnrollmentDetailsResponse getCourseByStudent(String slug) {
+    String keyCache = "lms:course:learning:" + slug;
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    Course course = this.courseRepository.findBySlugAndStatus(slug, CourseStatus.PUBLISHED).
+            orElseThrow(() -> new BadRequestException("Khóa học không hợp lệ"));
+    Enrollment enrollment = this.enrollmentRepository.findByUserIdAndCourseId(UUID.fromString(authId), course.getId()).orElse(null);
+
+    if (enrollment == null || EnrollmentStatus.BANNED.equals(enrollment.getStatus())) {
+      throw new BadRequestException("Truy cập không hợp lệ");
+    }
+
+    CourseEnrollmentDetailsResponse dataCache = this.redisService.getValue(keyCache, new TypeReference<CourseEnrollmentDetailsResponse>() {});
+
+    if (dataCache != null) return dataCache;
+
+    CourseEnrollmentDetailsResponse data = CourseMapper.mapCourseToCourseEnrollmentDetailsResponse(course);
+
+    for (SectionEnrollmentDetailsResponse v : data.getSections()) {
+      if (v == null || v.getLessons() == null) continue;
+      for (LessonEnrollmentDetailsResponse l : v.getLessons()) {
+        if (l == null) continue;
+
+        boolean hasResource;
+        if (LessonType.QUIZ.equals(l.getLessonType())) {
+          hasResource = this.quizRepository.existsByLesson(l.getLessonId());
+        } else {
+          Lesson lesson = lessonRepository.findById(l.getLessonId())
+                  .orElseThrow(() -> new BadRequestException("Bài học không tồn tại"));
+          hasResource = lesson.getResource() != null || lesson.getVideo() != null;
+        }
+        l.setHasResource(hasResource);
+      }
+    }
+
+    this.redisService.saveKeyAndValue(keyCache, data, 1, TimeUnit.MINUTES);
+
+    return data;
+  }
+
+  @Override
+  public LessonLearningResponse learningStart(String slug, UUID lessonId) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    Enrollment enrollment = this.enrollmentRepository.findByUserIdAndCourseSlug(UUID.fromString(authId), slug)
+            .orElse(null);
+    if (enrollment == null || !EnrollmentStatus.ACTIVE.equals(enrollment.getStatus())) {
+      throw new BadRequestException("Truy cập không hợp lệ");
+    }
+
+    Lesson lesson = this.lessonRepository.findLessonByCourseSlug(slug, lessonId)
+            .orElseThrow(() -> new BadRequestException("Bài học không hợp lệ"));
+    return CourseMapper.mapLessonToLessonLearningResponse(lesson);
   }
 
 }

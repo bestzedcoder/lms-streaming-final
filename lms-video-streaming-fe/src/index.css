@@ -114,3 +114,14 @@
   display: block;
   margin-bottom: 2px;
 }
+
+.learning-quiz-item:hover {
+  background-color: #f0f7ff;
+}
+.learning-sidebar .ant-collapse-header {
+  padding: 16px !important;
+  background-color: #f7f9fa;
+}
+.learning-sidebar .ant-collapse-content-box {
+  padding: 0 !important;
+}

@@ -17,9 +17,9 @@ public class AuditorAwareImpl implements AuditorAware<String> {
 
     if (authentication != null && authentication.isAuthenticated()) {
       String authId = authentication.getPrincipal().toString();
-      return Optional.of(authId);
+      return Optional.of(authId.length() > 255 ? "SYSTEM" : authId);
     }
 
-    return Optional.of("system");
+    return Optional.of("SYSTEM");
   }
 }

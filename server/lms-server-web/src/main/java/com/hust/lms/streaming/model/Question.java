@@ -51,7 +51,10 @@ public class Question extends BaseEntity {
   @JoinColumn(name = "owner_id", nullable = false, updatable = false)
   private Instructor owner;
 
-  @OneToMany(mappedBy = "question",cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+  @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
   @Builder.Default
   private List<Option> options = new ArrayList<>();
+
+  @OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  private List<QuizQuestion> quizQuestions;
 }

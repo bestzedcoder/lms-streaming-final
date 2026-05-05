@@ -11,7 +11,7 @@ public enum CourseEventType {
   CONTENT_UPDATED,      // Thay đổi cấu trúc bài học (Thêm/xóa chương, bài giảng, video)
   DELETED,              // Xóa hoàn toàn khóa học
   ADD_STUDENT,          // Thêm học viên
-  ADD_REVIEW,           // Thêm đánh giá
+  UPDATE_REVIEW,           // Thêm đánh giá
 
   // ==========================================
   // 2. NHÓM SỰ KIỆN VÒNG ĐỜI & TRẠNG THÁI

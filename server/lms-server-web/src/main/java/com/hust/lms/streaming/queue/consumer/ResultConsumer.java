@@ -26,9 +26,10 @@ public class ResultConsumer {
     System.out.println(messageId);
     System.out.println(message);
     if (message.getStatus().equals(VideoProcessingResult.FAILURE)) {
-
+      this.s3StorageService.handleVideoProcessingFailure(UUID.fromString(message.getVideoId()));
     }
-
-    this.s3StorageService.handleVideoProcessingSuccess(UUID.fromString(message.getVideoId()), message.getHlsUrl());
+    else {
+      this.s3StorageService.handleVideoProcessingSuccess(UUID.fromString(message.getVideoId()), message.getHlsUrl());
+    }
   }
 }

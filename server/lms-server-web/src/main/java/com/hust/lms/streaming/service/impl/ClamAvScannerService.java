@@ -27,8 +27,9 @@ public class ClamAvScannerService implements MalwareScannerService {
                 OutputStream out = socket.getOutputStream();
                 InputStream in = socket.getInputStream()
         ) {
+            socket.setSoTimeout(120_000);
 
-            out.write("zINSTREAM\0".getBytes());
+            out.write("zINSTREAM\0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
             out.flush();
 
             try (InputStream fis = Files.newInputStream(file)) {
@@ -44,15 +45,23 @@ public class ClamAvScannerService implements MalwareScannerService {
             out.write(intToBytes(0));
             out.flush();
 
-            String response = new String(in.readAllBytes());
+            String response = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
 
             log.info("ClamAV response: {}", response);
 
-            return response.contains("OK");
+            if (response.contains("OK")) {
+                return true;
+            }
+
+            if (response.contains("FOUND")) {
+                return false;
+            }
+
+            throw new IllegalStateException("ClamAV scan failed: " + response);
 
         } catch (Exception e) {
             log.error("ClamAV scan error", e);
-            return false;
+            throw new IllegalStateException("Không thể quét virus bằng ClamAV", e);
         }
     }
 

@@ -14,24 +14,18 @@ import com.hust.lms.streaming.dto.request.registration.RegistrationProcessingReq
 import com.hust.lms.streaming.dto.request.upload.UploadFileResponse;
 import com.hust.lms.streaming.dto.request.upload.VideoCreatingRequest;
 import com.hust.lms.streaming.dto.request.upload.VideoUpdatingRequest;
-import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
-import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
-import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
-import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
+import com.hust.lms.streaming.dto.response.instructor.*;
 import com.hust.lms.streaming.dto.response.question.QuestionCategoryResponse;
 import com.hust.lms.streaming.dto.response.question.QuestionResponse;
+import com.hust.lms.streaming.dto.response.quiz.QuizResponse;
+import com.hust.lms.streaming.dto.response.quiz.SelectQuizResponse;
 import com.hust.lms.streaming.dto.response.registration.RegistrationResponse;
 import com.hust.lms.streaming.dto.response.resource.InstructorLectureResponse;
 import com.hust.lms.streaming.dto.response.resource.InstructorVideoResponse;
 import com.hust.lms.streaming.dto.response.resource.SelectLectureResponse;
 import com.hust.lms.streaming.dto.response.resource.SelectVideoResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
-import com.hust.lms.streaming.service.CourseService;
-import com.hust.lms.streaming.service.EnrollmentService;
-import com.hust.lms.streaming.service.InstructorService;
-import com.hust.lms.streaming.service.QuestionService;
-import com.hust.lms.streaming.service.RegistrationService;
-import com.hust.lms.streaming.service.S3StorageService;
+import com.hust.lms.streaming.service.*;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -61,6 +55,7 @@ public class InstructorController {
   private final RegistrationService registrationService;
   private final QuestionService questionService;
   private final S3StorageService s3StorageService;
+  private final QuizService quizService;
 
   @GetMapping
   public ResponseEntity<BaseResponse<?>> getInfo() {
@@ -171,6 +166,18 @@ public class InstructorController {
             .success(true)
             .timestamp(LocalDateTime.now())
         .build());
+  }
+
+  @GetMapping("courses/{uuid}/get-lessons")
+  public ResponseEntity<BaseListResponse<?>> getLessonsInCourse(@PathVariable("uuid") UUID courseId) {
+    List<InstructorLessonDetailResponse> res = this.courseService.getLessonsInCourse(courseId);
+    return ResponseEntity.ok(BaseListResponse.<InstructorLessonDetailResponse>builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
   }
 
   @PostMapping("course/{uuid}/publish")
@@ -562,6 +569,18 @@ public class InstructorController {
             .build());
   }
 
+  @GetMapping("resources/prepare-select/get-quizzes")
+  public ResponseEntity<BaseListResponse<?>> getSelectQuizzes() {
+    List<SelectQuizResponse> res = this.courseService.getAllQuiz();
+    return ResponseEntity.ok(BaseListResponse.<SelectQuizResponse>builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
+  }
+
   // add Resource for Lesson
   @PostMapping("lesson/add-resource")
   public ResponseEntity<BaseResponse<?>> addResource(@RequestBody @Valid AddResourceForLesson req) {
@@ -578,12 +597,81 @@ public class InstructorController {
             .build());
   }
 
-  @PostMapping("lesson/reomve-resource")
-  public ResponseEntity<BaseResponse<?>> addResource(@RequestBody @Valid RemoveResourceForLesson req) {
+  @PostMapping("lesson/remove-resource")
+  public ResponseEntity<BaseResponse<?>> removeResource(@RequestBody @Valid RemoveResourceForLesson req) {
     this.courseService.removeResourceForLesson(
             UUID.fromString(req.getCourseId()),
             UUID.fromString(req.getLessonId())
             );
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  // Quizzes
+
+  @GetMapping("quizzes")
+  public ResponseEntity<BaseListResponse<?>> getQuizzes() {
+    List<QuizResponse> res = this.quizService.getQuizzes();
+    return ResponseEntity.ok(BaseListResponse.<QuizResponse>builder()
+                    .code(200)
+                    .message("Success")
+                    .data(res)
+                    .success(true)
+                    .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  @PostMapping("quizzes/handle-create")
+  public ResponseEntity<BaseResponse<?>> createQuiz(@RequestBody @Valid QuizCreatingRequest req) {
+    this.quizService.createQuiz(req);
+    return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.builder()
+                    .code(HttpStatus.CREATED.value())
+                    .message("Success")
+                    .success(true)
+                    .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  @PostMapping("quizzes/handle-update")
+  public ResponseEntity<BaseResponse<?>> updateQuiz(@RequestBody @Valid QuizUpdatingRequest req) {
+    this.quizService.updateQuiz(req);
+    return ResponseEntity.ok(BaseResponse.builder()
+                    .code(200)
+                    .message("Success")
+                    .success(true)
+                    .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  @DeleteMapping("quizzes/handle-delete/{id}")
+  public ResponseEntity<BaseResponse<?>> deleteQuiz(@PathVariable("id") UUID quizId) {
+    this.quizService.deleteQuiz(quizId);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  @PostMapping("quizzes/add-question")
+  public ResponseEntity<BaseResponse<?>> addQuizQuestion(@RequestBody @Valid AddQuizQuestionRequest req) {
+    this.quizService.addQuizQuestion(req);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  @PostMapping("quizzes/remove-question")
+  public ResponseEntity<BaseResponse<?>> removeQuizQuestion(@RequestBody @Valid RemoveQuizQuestionRequest req) {
+    this.quizService.removeQuizQuestion(req);
     return ResponseEntity.ok(BaseResponse.builder()
             .code(200)
             .message("Success")

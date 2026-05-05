@@ -1,6 +1,6 @@
 package com.hust.lms.streaming.mapper;
 
-import com.hust.lms.streaming.dto.response.course.InstructorPublicResponse;
+import com.hust.lms.streaming.dto.response.instructor.InstructorPublicResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
 import com.hust.lms.streaming.model.Instructor;
 

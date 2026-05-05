@@ -1,6 +1,7 @@
 import { useState } from "react";
 import CategoryManager from "./resource/CategoryManager";
 import QuestionBank from "./resource/QuestionBank";
+import QuizList from "./resource/QuizList";
 
 const QuizManagementPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("CATEGORY");
@@ -23,7 +24,7 @@ const QuizManagementPage: React.FC = () => {
             }`}
             onClick={() => setActiveTab("CATEGORY")}
           >
-            📂 Quản lý danh mục
+            📂 Danh mục
           </button>
 
           <button
@@ -36,10 +37,23 @@ const QuizManagementPage: React.FC = () => {
           >
             📝 Ngân hàng câu hỏi
           </button>
+
+          <button
+            className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ease-in-out ${
+              activeTab === "QUIZ"
+                ? "bg-white text-blue-600 shadow-sm ring-1 ring-gray-900/5"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-300"
+            }`}
+            onClick={() => setActiveTab("QUIZ")}
+          >
+            🏆 Quản lý bài kiểm tra
+          </button>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 min-h-[500px]">
-          {activeTab === "CATEGORY" ? <CategoryManager /> : <QuestionBank />}
+          {activeTab === "CATEGORY" && <CategoryManager />}
+          {activeTab === "QUESTION" && <QuestionBank />}
+          {activeTab === "QUIZ" && <QuizList />}
         </div>
       </div>
     </div>

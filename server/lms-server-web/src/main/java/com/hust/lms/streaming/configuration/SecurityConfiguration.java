@@ -6,6 +6,8 @@ import com.hust.lms.streaming.security.CustomAccessDeniedHandler;
 import com.hust.lms.streaming.security.CustomAuthenticationEntryPoint;
 import com.hust.lms.streaming.security.CustomizeAuthenticationProvider;
 import java.util.List;
+
+import com.hust.lms.streaming.security.Oauth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +35,8 @@ public class SecurityConfiguration {
   private final JwtFilter jwtFilter;
   private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
   private final CustomAccessDeniedHandler customAccessDeniedHandler;
+  private final Oauth2SuccessHandler successHandler;
+
   @Bean
   public SecurityFilterChain configure(HttpSecurity http) throws Exception {
     http
@@ -59,6 +63,7 @@ public class SecurityConfiguration {
             .requestMatchers("/api/instructor/**").hasRole(Role.INSTRUCTOR.name())
             .anyRequest().authenticated()
         )
+        .oauth2Login(oauth -> oauth.successHandler(successHandler))
         .addFilterBefore(jwtFilter , UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
@@ -77,11 +82,6 @@ public class SecurityConfiguration {
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
-  }
-
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
   }
 
   @Bean

@@ -8,7 +8,6 @@ import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.Instructor;
 import com.hust.lms.streaming.model.Resource;
-import com.hust.lms.streaming.model.User;
 import com.hust.lms.streaming.model.Video;
 
 public class AdminMapper {

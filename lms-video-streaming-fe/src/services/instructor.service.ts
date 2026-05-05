@@ -37,6 +37,17 @@ import type {
   InstructorVideoResponse,
   InstructorLectureResponse,
   ResourcePreviewResponse,
+  QuizResponse,
+  QuizCreatingRequest,
+  QuizUpdatingRequest,
+  AddQuizQuestionRequest,
+  RemoveQuizQuestionRequest,
+  InstructorLessonDetailResponse,
+  SelectVideoResponse,
+  SelectLectureResponse,
+  SelectQuizResponse,
+  AddResourceForLesson,
+  RemoveResourceForLesson,
 } from "../@types/instructor.types";
 
 const createFormData = (data: any, file?: File | null) => {
@@ -140,6 +151,12 @@ export const instructorService = {
 
   deleteLesson: async (data: LessonCancelRequest): Promise<ResponseData> => {
     return axiosClient.delete("/instructor/delete-lesson", { data });
+  },
+
+  getLessonsInCourse: async (
+    courseId: string,
+  ): Promise<ResponseData<InstructorLessonDetailResponse[]>> => {
+    return axiosClient.get(`/instructor/courses/${courseId}/get-lessons`);
   },
 
   // Registration
@@ -298,5 +315,63 @@ export const instructorService = {
     id: string,
   ): Promise<ResponseData<ResourcePreviewResponse>> => {
     return axiosClient.get(`instructor/resources/preview-lecture/${id}`);
+  },
+
+  // Quizzes
+
+  getQuizzes: async (): Promise<ResponseData<QuizResponse[]>> => {
+    return axiosClient.get("instructor/quizzes");
+  },
+
+  createQuiz: async (data: QuizCreatingRequest): Promise<ResponseData> => {
+    return axiosClient.post("instructor/quizzes/handle-create", data);
+  },
+
+  updateQuiz: async (data: QuizUpdatingRequest): Promise<ResponseData> => {
+    return axiosClient.post("instructor/quizzes/handle-update", data);
+  },
+
+  deleteQuiz: async (id: string): Promise<ResponseData> => {
+    return axiosClient.delete(`instructor/quizzes/handle-delete/${id}`);
+  },
+
+  addQuizQuestion: async (
+    data: AddQuizQuestionRequest,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("instructor/quizzes/add-question", data);
+  },
+
+  removeQuizQuestion: async (
+    data: RemoveQuizQuestionRequest,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("instructor/quizzes/remove-question", data);
+  },
+
+  // handle add resource for lesson
+
+  getSelectVideos: async (): Promise<ResponseData<SelectVideoResponse[]>> => {
+    return axiosClient.get("instructor/resources/prepare-select/get-videos");
+  },
+
+  getSelectLectures: async (): Promise<
+    ResponseData<SelectLectureResponse[]>
+  > => {
+    return axiosClient.get("instructor/resources/prepare-select/get-lectures");
+  },
+
+  getSelectQuizzes: async (): Promise<ResponseData<SelectQuizResponse[]>> => {
+    return axiosClient.get("instructor/resources/prepare-select/get-quizzes");
+  },
+
+  addResourceForLesson: async (
+    data: AddResourceForLesson,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("instructor/lesson/add-resource", data);
+  },
+
+  removeResourceForLesson: async (
+    data: RemoveResourceForLesson,
+  ): Promise<ResponseData> => {
+    return axiosClient.post("instructor/lesson/remove-resource", data);
   },
 };

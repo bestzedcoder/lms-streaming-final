@@ -57,10 +57,10 @@ public class User extends BaseEntity implements UserDetails {
   @Column(name = "phone")
   private String phone;
 
-  @Column(name = "avatar_url")
+  @Column(name = "avatar_url", columnDefinition = "TEXT")
   private String avatarUrl;
 
-  @Column(name = "public_id")
+  @Column(name = "public_id", columnDefinition = "TEXT")
   private String publicId;
 
   @Column(name = "active" , nullable = false)

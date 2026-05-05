@@ -127,20 +127,69 @@ public class StreamingServiceImpl implements StreamingService {
 
   @NotNull
   private ProcessBuilder getProcessBuilder(Path sourceFile, Path hlsDir) {
+
     List<String> command = List.of(
-        ffmpegBin,
-        "-y",
-        "-i", sourceFile.toAbsolutePath().toString(),
-        "-c:v", "libx264",
-        "-c:a", "aac",
-        "-preset", "veryfast",
-        "-f", "hls",
-        "-hls_time", "6",
-        "-hls_list_size", "0",
-        "-hls_playlist_type", "vod",
-        "-hls_flags", "independent_segments",
-        "-hls_segment_filename", hlsDir.resolve("segment_%03d.ts").toAbsolutePath().toString(),
-        hlsDir.resolve("master.m3u8").toAbsolutePath().toString()
+            ffmpegBin,
+            "-y",
+            "-i", sourceFile.toAbsolutePath().toString(),
+
+            "-filter_complex",
+            "[0:v]split=3[v360][v480][v720];" +
+                    "[v360]scale=-2:360[v360out];" +
+                    "[v480]scale=-2:480[v480out];" +
+                    "[v720]scale=-2:720[v720out]",
+
+            // 360p
+            "-map", "[v360out]",
+            "-map", "0:a:0?",
+            "-c:v:0", "libx264",
+            "-b:v:0", "800k",
+            "-maxrate:v:0", "856k",
+            "-bufsize:v:0", "1200k",
+
+            // 480p
+            "-map", "[v480out]",
+            "-map", "0:a:0?",
+            "-c:v:1", "libx264",
+            "-b:v:1", "1400k",
+            "-maxrate:v:1", "1498k",
+            "-bufsize:v:1", "2100k",
+
+            // 720p
+            "-map", "[v720out]",
+            "-map", "0:a:0?",
+            "-c:v:2", "libx264",
+            "-b:v:2", "2800k",
+            "-maxrate:v:2", "2996k",
+            "-bufsize:v:2", "4200k",
+
+            // audio
+            "-c:a", "aac",
+            "-b:a", "128k",
+            "-ac", "2",
+
+            // giảm khả năng OOM
+            "-preset", "veryfast",
+            "-threads", "2",
+            "-g", "48",
+            "-keyint_min", "48",
+            "-sc_threshold", "0",
+
+            // HLS
+            "-f", "hls",
+            "-hls_time", "6",
+            "-hls_playlist_type", "vod",
+            "-hls_flags", "independent_segments",
+
+            "-hls_segment_filename",
+            hlsDir.resolve("%v/segment_%03d.ts").toAbsolutePath().toString(),
+
+            "-master_pl_name", "master.m3u8",
+
+            "-var_stream_map",
+            "v:0,a:0,name:360p v:1,a:1,name:480p v:2,a:2,name:720p",
+
+            hlsDir.resolve("%v/playlist.m3u8").toAbsolutePath().toString()
     );
 
     ProcessBuilder processBuilder = new ProcessBuilder(command);

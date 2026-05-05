@@ -67,7 +67,8 @@ public class AuthServiceImpl implements AuthService {
 
     String authId =  authentication.getPrincipal().toString();
 
-    User currentUser = this.userRepository.getReferenceById(UUID.fromString(authId));
+    User currentUser = this.userRepository.findById(UUID.fromString(authId))
+            .orElseThrow(() -> new BadRequestException("Tài khoản không hợp lệ"));
 
     String accessToken = jwtUtils.generateAccessToken(currentUser);
     String refreshToken = jwtUtils.generateRefreshToken(currentUser);

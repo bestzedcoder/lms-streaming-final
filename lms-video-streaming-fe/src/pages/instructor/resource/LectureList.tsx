@@ -20,6 +20,7 @@ import {
   EditOutlined,
   EyeOutlined,
   DownloadOutlined,
+  SyncOutlined,
 } from "@ant-design/icons";
 import type { InstructorLectureResponse } from "../../../@types/instructor.types";
 import { instructorService } from "../../../services/instructor.service";
@@ -81,7 +82,6 @@ const LectureList: React.FC = () => {
     }
   };
 
-  // --- LOGIC XỬ LÝ PREVIEW ---
   const handlePreview = async (lecture: InstructorLectureResponse) => {
     setIsPreviewModalOpen(true);
     setPreviewLoading(true);
@@ -166,14 +166,26 @@ const LectureList: React.FC = () => {
       key: "status",
       width: 180,
       render: (status: string) => {
-        const statusMap: Record<string, { color: string; text: string }> = {
+        const statusMap: Record<
+          string,
+          { color: string; text: string; icon?: React.ReactNode }
+        > = {
           APPROVED: { color: "success", text: "Đã duyệt" },
           PENDING_REVIEW: { color: "processing", text: "Chờ kiểm duyệt" },
+          VALIDATING: {
+            color: "cyan",
+            text: "Đang kiểm tra",
+            icon: <SyncOutlined spin />,
+          },
           DELETED: { color: "default", text: "Đã xóa" },
         };
         const s = statusMap[status] || { color: "default", text: status };
         return (
-          <Tag color={s.color} className="font-medium px-3 py-1 text-sm">
+          <Tag
+            icon={s.icon}
+            color={s.color}
+            className="font-medium px-3 py-1 text-sm"
+          >
             {s.text}
           </Tag>
         );
@@ -249,6 +261,7 @@ const LectureList: React.FC = () => {
             >
               <Option value="APPROVED">Đã duyệt</Option>
               <Option value="PENDING_REVIEW">Chờ kiểm duyệt</Option>
+              <Option value="VALIDATING">Đang kiểm tra</Option>
               <Option value="DELETED">Đã xóa</Option>
             </Select>
           </div>
@@ -277,11 +290,10 @@ const LectureList: React.FC = () => {
         />
       </Card>
 
-      {/* --- MODAL XEM TRƯỚC TÀI LIỆU (PREVIEW PDF) --- */}
       <Modal
         title={
           <div className="flex justify-between items-center pr-10">
-            <span className="text-lg font-bold">
+            <span className="text-lg font-bold truncate max-w-[500px]">
               Xem trước: {previewData?.title}
             </span>
             {previewData?.url && (
@@ -330,7 +342,6 @@ const LectureList: React.FC = () => {
         </div>
       </Modal>
 
-      {/* MODAL CẬP NHẬT TÀI LIỆU */}
       <Modal
         title={<span className="text-lg font-bold">Cập nhật Tài liệu</span>}
         open={isEditModalOpen}

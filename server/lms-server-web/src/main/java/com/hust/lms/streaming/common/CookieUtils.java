@@ -31,6 +31,7 @@ public class CookieUtils {
         .sameSite("Lax")
         .secure(false)
         .path(path)
+        .httpOnly(true)
         .build();
     response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
   }

@@ -416,7 +416,7 @@ const CourseDetailsPage = () => {
   };
 
   const handleStudyNow = () => {
-    navigate(`/student/learning/${course?.slug}`);
+    navigate(`/student/courses/${course?.slug}/learning`);
   };
 
   if (loading) return <Skeleton active className="p-20" />;

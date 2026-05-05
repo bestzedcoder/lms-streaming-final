@@ -49,7 +49,9 @@ public class JwtFilter extends OncePerRequestFilter {
     final String jwt = CookieUtils.getCookieValue(request, "accessToken");
     final String userEmail;
 
-    if (jwt == null || request.getRequestURI().contains("/auth/refresh")) {
+    if (jwt == null
+            || request.getRequestURI().contains("/auth/refresh")
+            || request.getRequestURI().contains("/auth/login")) {
       filterChain.doFilter(request, response);
       return;
     }

@@ -29,6 +29,9 @@ import PendingRegistrationsPage from "../pages/instructor/PendingRegistrationsPa
 import VideoResourcePage from "../pages/instructor/VideoResourcePage";
 import QuizManagementPage from "../pages/instructor/QuizManagementPage";
 import LectureResourcePage from "../pages/instructor/LectureResourcePage";
+import CourseLearningPage from "../pages/student/CourseLearningPage";
+import MyCourses from "../pages/student/MyCourses";
+import CourseLearningWorkspace from "../pages/student/CourseLearningWorkspace";
 
 const AppRouter = () => {
   return (
@@ -70,9 +73,14 @@ const AppRouter = () => {
               <Route path="security" element={<ChangePasswordPage />} />
             </Route>
             <Route
-              path="/student/my-courses"
-              element={<div>Khóa học của tôi</div>}
+              path="/student/courses/:slug/learning"
+              element={<CourseLearningPage />}
             />
+            <Route
+              path="/student/courses/:slug/learning/:lessonId"
+              element={<CourseLearningWorkspace />}
+            />
+            <Route path="/student/my-courses" element={<MyCourses />} />
           </Route>
         </Route>
 

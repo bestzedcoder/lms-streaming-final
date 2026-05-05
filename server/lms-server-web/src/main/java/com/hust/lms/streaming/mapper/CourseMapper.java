@@ -1,22 +1,15 @@
 package com.hust.lms.streaming.mapper;
 
 import com.hust.lms.streaming.dto.response.category.CategoryPublicResponse;
-import com.hust.lms.streaming.dto.response.course.CourseAuthDetailsResponse;
-import com.hust.lms.streaming.dto.response.course.CoursePublicDetailsResponse;
-import com.hust.lms.streaming.dto.response.course.CoursePublicRegistrationResponse;
-import com.hust.lms.streaming.dto.response.course.LessonPublicResponse;
-import com.hust.lms.streaming.dto.response.course.SectionPublicResponse;
-import com.hust.lms.streaming.dto.response.instructor.InstructorCourseDetailsResponse;
-import com.hust.lms.streaming.dto.response.instructor.InstructorCourseInfoResponse;
-import com.hust.lms.streaming.dto.response.instructor.InstructorCourseParticipantResponse;
-import com.hust.lms.streaming.dto.response.instructor.InstructorCourseResponse;
-import com.hust.lms.streaming.dto.response.instructor.InstructorLessonResponse;
-import com.hust.lms.streaming.dto.response.instructor.InstructorSectionResponse;
+import com.hust.lms.streaming.dto.response.course.*;
+import com.hust.lms.streaming.dto.response.instructor.*;
 import com.hust.lms.streaming.enums.EnrollmentStatus;
 import com.hust.lms.streaming.model.Course;
 import com.hust.lms.streaming.model.Lesson;
 import com.hust.lms.streaming.model.Section;
 import com.hust.lms.streaming.model.User;
+
+import java.time.LocalDateTime;
 
 public class CourseMapper {
   private CourseMapper() {
@@ -166,4 +159,70 @@ public class CourseMapper {
     response.setStatus(status);
     return response;
   }
+
+  public static InstructorLessonDetailResponse mapLessonToInstructorLessonDetailResponse(Lesson lesson, boolean hasResource) {
+    if (lesson == null) return null;
+
+    InstructorLessonDetailResponse response = new InstructorLessonDetailResponse();
+    response.setId(lesson.getId());
+    response.setTitle(lesson.getTitle());
+    response.setLessonType(lesson.getLessonType());
+    response.setPreview(lesson.getPreview());
+    response.setHasResource(hasResource);
+    return response;
+  }
+
+  public static CourseEnrollmentDetailsResponse mapCourseToCourseEnrollmentDetailsResponse(Course course) {
+    if (course == null) return null;
+
+    CourseEnrollmentDetailsResponse response = new CourseEnrollmentDetailsResponse();
+    response.setDescription(course.getDescription());
+    response.setSlug(course.getSlug());
+    response.setTitle(course.getTitle());
+    response.setSections(course.getSections().stream().map(CourseMapper::mapSectionToSectionEnrollmentDetailsResponse).toList());
+    return response;
+  }
+
+  public static SectionEnrollmentDetailsResponse mapSectionToSectionEnrollmentDetailsResponse(Section section) {
+    if (section == null) return null;
+
+    SectionEnrollmentDetailsResponse response = new SectionEnrollmentDetailsResponse();
+    response.setTitle(section.getTitle());
+    response.setLessons(section.getLessons().stream().map(CourseMapper::mapLessonToLessonEnrollmentDetailsResponse).toList());
+    return response;
+  }
+
+  public static LessonEnrollmentDetailsResponse mapLessonToLessonEnrollmentDetailsResponse(Lesson lesson) {
+    if (lesson == null) return null;
+
+    LessonEnrollmentDetailsResponse response = new LessonEnrollmentDetailsResponse();
+    response.setLessonId(lesson.getId());
+    response.setTitle(lesson.getTitle());
+    response.setLessonType(lesson.getLessonType());
+    return response;
+  }
+
+  public static LessonLearningResponse mapLessonToLessonLearningResponse(Lesson lesson) {
+    if (lesson == null) return null;
+
+    LessonLearningResponse response = new LessonLearningResponse();
+    response.setTitle(lesson.getTitle());
+    response.setLessonType(lesson.getLessonType());
+    return response;
+  }
+
+  public static CourseEnrollmentResponse mapCourseToCourseEnrollmentResponse(Course course, EnrollmentStatus active, LocalDateTime startTime) {
+    if (course == null) return null;
+
+    CourseEnrollmentResponse response = new CourseEnrollmentResponse();
+    response.setTitle(course.getTitle());
+    response.setSlug(course.getSlug());
+    response.setAuthor(course.getInstructor().getNickname());
+    response.setThumbnail(course.getThumbnail());
+    response.setStatus(course.getStatus());
+    response.setStartTime(startTime);
+    response.setActive(active);
+    return response;
+  }
+
 }

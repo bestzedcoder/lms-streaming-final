@@ -23,7 +23,7 @@ import {
   Space,
   Popconfirm,
   message,
-  Modal, // Thêm Modal từ antd
+  Modal,
 } from "antd";
 import {
   UserOutlined,
@@ -222,7 +222,7 @@ const InstructorCourseDetailPage = () => {
           {course.requirements ? (
             <ul className="list-none pl-0 m-0 space-y-2">
               {!course.requirements.includes("<") ? (
-                course.requirements.split("; ").map(
+                course.requirements.split(";").map(
                   (req, idx) =>
                     req.trim() && (
                       <li

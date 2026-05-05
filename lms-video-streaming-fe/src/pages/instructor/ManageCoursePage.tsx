@@ -7,6 +7,7 @@ import type { InstructorCourseDetailsResponse } from "../../@types/instructor.ty
 import CourseBasicInfo from "../../components/CourseBasicInfo";
 import CourseCurriculum from "../../components/CourseCurriculum";
 import CourseSettings from "../../components/CourseSettings";
+import CourseResourcesManager from "../../components/CourseResourcesManager";
 
 const ManageCoursePage = () => {
   const { courseId } = useParams();
@@ -143,6 +144,16 @@ const ManageCoursePage = () => {
             },
             {
               key: "3",
+              label: "Quản lý Tài nguyên",
+              children: (
+                <CourseResourcesManager
+                  courseId={course.id}
+                  onRefresh={fetchDetails}
+                />
+              ),
+            },
+            {
+              key: "4",
               label: "Cài đặt & Xuất bản",
               children: (
                 <CourseSettings course={course} onRefresh={fetchDetails} />

@@ -37,7 +37,7 @@ public class FileValidationServiceImpl implements FileValidationService {
     private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4");
 
     private static final Set<String> LECTURE_MIME = Set.of("application/pdf", "text/plain");
-    private static final Set<String> VIDEO_MIME = Set.of("video/mp4", "application/mp4");
+    private static final Set<String> VIDEO_MIME = Set.of("video/mp4", "application/mp4", "video/quicktime");
 
     private final S3StorageService s3StorageService;
     private final MalwareScannerService malwareScannerService;
@@ -104,17 +104,18 @@ public class FileValidationServiceImpl implements FileValidationService {
             validateMime(mime, type);
 
             validateSignature(tempFile, ext, type);
-            if (!malwareScannerService.isSafe(tempFile)) {
-                throw new BadRequestException("File có dấu hiệu chứa mã độc.");
+
+            if (type != ResourceType.VIDEO) {
+                if (!malwareScannerService.isSafe(tempFile)) {
+                    throw new BadRequestException("File có dấu hiệu chứa mã độc.");
+                }
             }
 
             log.info("File validation passed objectKey={}, type={}, mime={}", objectKey, type, mime);
 
-        } catch (BadRequestException e) {
-            log.error("Lỗi file", e);
-            throw e;
         } catch (Exception e) {
             log.error("Validate file failed objectKey={}, type={}", objectKey, type, e);
+            this.s3StorageService.deleteFromStaging(objectKey, STAGING_BUCKET);
             throw new BadRequestException("File không hợp lệ hoặc không thể kiểm tra.");
         } finally {
             cleanupDirectory(workDir);

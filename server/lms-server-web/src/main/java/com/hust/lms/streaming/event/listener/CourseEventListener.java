@@ -53,7 +53,10 @@ public class CourseEventListener {
           this.instructorRepository.save(instructor);
         }
         break;
-      case APPROVED_COURSE, ADD_REVIEW, UNLOCKED, CREATED:
+      case APPROVED_COURSE, UNLOCKED, CREATED:
+        break;
+      case UPDATE_REVIEW:
+
         break;
       case PUBLISHED:
         this.courseElasticsearchService.saveCourse(event.getCourseDocument());

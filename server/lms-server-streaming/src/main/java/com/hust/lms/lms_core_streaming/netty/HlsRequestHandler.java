@@ -10,39 +10,15 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.*;
 
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
-import static io.netty.handler.codec.http.HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL;
-import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
-import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
-import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static io.netty.handler.codec.http.HttpHeaderValues.KEEP_ALIVE;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-/**
- * Handler chính của Netty streaming server.
- *
- * URL mới:
- *   /hls/{shortId}/{fileName}?token=...
- *
- * Flow:
- * 1. nhận request /hls/{shortId}/{fileName}?token=...
- * 2. verify playback token
- * 3. resolve shortId -> hlsPrefix thật
- * 4. build objectKey = hlsPrefix + fileName
- * 5. lấy file từ MinIO production và trả về
- */
 public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
   private final HlsObjectService hlsObjectService;
@@ -69,15 +45,12 @@ public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
       return;
     }
 
-    String rawUri = URLDecoder.decode(request.uri(), StandardCharsets.UTF_8);
+    String rawUri = request.uri();
 
-    // tách query string khỏi path
     String pathOnly = rawUri;
-    String queryString = "";
     int queryIndex = rawUri.indexOf('?');
     if (queryIndex >= 0) {
       pathOnly = rawUri.substring(0, queryIndex);
-      queryString = rawUri.substring(queryIndex + 1);
     }
 
     if (!pathOnly.startsWith("/hls/")) {
@@ -85,31 +58,34 @@ public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
       return;
     }
 
-    // Path mới:
-    // /hls/{shortId}/{fileName}
     String path = pathOnly.substring("/hls/".length());
     String[] parts = path.split("/");
 
-    if (parts.length < 2) {
+    if (parts.length < 3) {
       writeError(ctx, HttpResponseStatus.BAD_REQUEST,
-              "Path must be /hls/{shortId}/{fileName}");
+              "Path must be /hls/{shortId}/{token}/{filePath}");
       return;
     }
 
     String shortLink = parts[0];
-    String fileName = parts[1];
+    String token = parts[1];
 
-    // parse token từ query param
-    Map<String, String> queryParams = parseQuery(queryString);
-    String token = queryParams.get("token");
+    StringBuilder filePathBuilder = new StringBuilder();
+    for (int i = 2; i < parts.length; i++) {
+      filePathBuilder.append(parts[i]);
+      if (i < parts.length - 1) {
+        filePathBuilder.append("/");
+      }
+    }
 
-    if (token == null || token.isBlank()) {
+    String filePath = filePathBuilder.toString();
+
+    if (token.isBlank()) {
       writeError(ctx, HttpResponseStatus.UNAUTHORIZED, "Missing playback token");
       return;
     }
 
     try {
-      // verify token
       PlaybackTokenPayload payload = playbackTokenValidator.validate(token);
 
       if (payload == null) {
@@ -119,11 +95,19 @@ public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
 
       String hlsPrefix = shortLinkResolverService.resolvePrefix(shortLink);
 
-      String objectKey = hlsPrefix + fileName;
+      if (hlsPrefix == null || hlsPrefix.isBlank()) {
+        writeError(ctx, HttpResponseStatus.NOT_FOUND, "HLS prefix not found");
+        return;
+      }
 
-      // lấy file từ MinIO
+      String objectKey = hlsPrefix + filePath;
+
       byte[] content = hlsObjectService.getObjectBytesByKey(objectKey);
-      String contentType = hlsObjectService.getContentType(fileName);
+      String contentType = hlsObjectService.getContentType(filePath);
+
+      if (filePath.endsWith(".m3u8")) {
+        content = rewritePlaylist(content, shortLink, token, filePath);
+      }
 
       FullHttpResponse response = new DefaultFullHttpResponse(
               HTTP_1_1,
@@ -135,11 +119,10 @@ public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
       response.headers().set(CONTENT_LENGTH, content.length);
       response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
 
-      // playlist cache ngắn, segment cache dài hơn
-      if (fileName.endsWith(".m3u8")) {
-        response.headers().set(CACHE_CONTROL, "public, max-age=3");
+      if (filePath.endsWith(".m3u8")) {
+        response.headers().set(CACHE_CONTROL, "no-cache");
       } else {
-        response.headers().set(CACHE_CONTROL, "public, max-age=60");
+        response.headers().set(CACHE_CONTROL, "public, max-age=3600");
       }
 
       if (HttpUtil.isKeepAlive(request)) {
@@ -152,35 +135,60 @@ public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
       }
 
     } catch (RuntimeException e) {
-      writeError(ctx, HttpResponseStatus.NOT_FOUND, e.getMessage() != null ? e.getMessage() : "HLS object not found");
+      writeError(ctx, HttpResponseStatus.NOT_FOUND,
+              e.getMessage() != null ? e.getMessage() : "HLS object not found");
     } catch (Exception e) {
       writeError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, "Internal server error");
     }
   }
 
-  /**
-   * Parse query string kiểu:
-   * token=abc&x=1
-   */
-  private Map<String, String> parseQuery(String queryString) {
-    Map<String, String> result = new HashMap<>();
-    if (queryString == null || queryString.isBlank()) {
-      return result;
+  private byte[] rewritePlaylist(byte[] content, String shortLink, String token, String currentFilePath) {
+    String playlist = new String(content, StandardCharsets.UTF_8);
+
+    String currentDir = "";
+    int lastSlash = currentFilePath.lastIndexOf('/');
+    if (lastSlash >= 0) {
+      currentDir = currentFilePath.substring(0, lastSlash + 1);
     }
 
-    String[] pairs = queryString.split("&");
-    for (String pair : pairs) {
-      String[] kv = pair.split("=", 2);
-      if (kv.length == 2) {
-        result.put(kv[0], kv[1]);
+    StringBuilder result = new StringBuilder();
+
+    String[] lines = playlist.split("\\R");
+
+    for (String line : lines) {
+      String trimmed = line.trim();
+
+      if (trimmed.isBlank() || trimmed.startsWith("#")) {
+        result.append(line).append("\n");
+        continue;
       }
+
+      if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("/hls/")) {
+        result.append(line).append("\n");
+        continue;
+      }
+
+      String targetPath;
+
+      if (trimmed.contains("/")) {
+        targetPath = trimmed;
+      } else {
+        targetPath = currentDir + trimmed;
+      }
+
+      result
+              .append("/hls/")
+              .append(shortLink)
+              .append("/")
+              .append(token)
+              .append("/")
+              .append(targetPath)
+              .append("\n");
     }
-    return result;
+
+    return result.toString().getBytes(StandardCharsets.UTF_8);
   }
 
-  /**
-   * Trả lỗi JSON thống nhất cho client.
-   */
   private void writeError(ChannelHandlerContext ctx, HttpResponseStatus status, String message) {
     try {
       ErrorResponse error = ErrorResponse.builder()
@@ -199,6 +207,7 @@ public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
 
       response.headers().set(CONTENT_TYPE, "application/json; charset=UTF-8");
       response.headers().set(CONTENT_LENGTH, bytes.length);
+      response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
 
       ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
 
@@ -213,6 +222,7 @@ public class HlsRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
 
       response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
       response.headers().set(CONTENT_LENGTH, bytes.length);
+      response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
 
       ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }

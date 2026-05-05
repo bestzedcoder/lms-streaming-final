@@ -32,7 +32,7 @@ public class PublicServiceImpl implements PublicService {
     }
 
     List<CategoryPublicResponse> res = this.categoryRepository.findAll().stream().map(CategoryMapper::mapCategoryToCategoryPublicResponse).toList();
-    this.redisService.saveKeyAndValue(keyCache, res , 10, TimeUnit.MINUTES);
+    this.redisService.saveKeyAndValue(keyCache, res , 1, TimeUnit.MINUTES);
     return res;
   }
 

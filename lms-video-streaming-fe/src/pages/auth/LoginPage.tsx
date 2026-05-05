@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Form, Input, Button, Checkbox, Divider } from "antd";
-import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import { Form, Input, Button, Checkbox, Divider, Space } from "antd";
+import { UserOutlined, LockOutlined, GoogleOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore.store";
 import { authService } from "../../services/auth.service";
@@ -21,7 +21,6 @@ const LoginPage = () => {
 
       if (response.data) {
         login(response.data);
-
         notify.success("Xác thực thành công", response.message);
       }
     } catch (error) {
@@ -29,6 +28,12 @@ const LoginPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    const API_BASE_URL =
+      import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+    window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
   };
 
   return (
@@ -93,10 +98,22 @@ const LoginPage = () => {
         </Form.Item>
 
         <Divider plain>
-          <span className="text-gray-400 text-xs">HOẶC</span>
+          <span className="text-gray-400 text-xs">HOẶC ĐĂNG NHẬP VỚI</span>
         </Divider>
 
-        <div className="text-center mt-4">
+        {/* Phần OAuth2 Buttons */}
+        <Space direction="vertical" className="w-full" size="middle">
+          <Button
+            block
+            icon={<GoogleOutlined />}
+            onClick={() => handleSocialLogin("google")}
+            className="flex items-center justify-center border-gray-300 rounded-lg h-11 font-medium hover:text-red-500 hover:border-red-500 transition-all"
+          >
+            Google
+          </Button>
+        </Space>
+
+        <div className="text-center mt-6">
           <span className="text-secondary">Chưa có tài khoản? </span>
           <Link
             to="/register"

@@ -1,8 +1,9 @@
 package com.hust.lms.streaming.dto.response.course;
 
+import com.hust.lms.streaming.dto.response.instructor.InstructorPublicResponse;
 import com.hust.lms.streaming.dto.response.review.ReviewPublicResponse;
 import com.hust.lms.streaming.enums.LevelCourse;
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

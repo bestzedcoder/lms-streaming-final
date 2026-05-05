@@ -20,6 +20,7 @@ import {
   EditOutlined,
   EyeOutlined,
   UploadOutlined,
+  SyncOutlined,
 } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 import type { InstructorVideoResponse } from "../../../@types/instructor.types";
@@ -82,7 +83,6 @@ const VideoList: React.FC = () => {
     }
   };
 
-  // --- Logic Xử lý Preview ---
   const handlePreview = async (video: InstructorVideoResponse) => {
     setIsPreviewModalOpen(true);
     setPreviewLoading(true);
@@ -182,16 +182,24 @@ const VideoList: React.FC = () => {
       key: "status",
       width: 150,
       render: (status: string) => {
-        const statusMap: Record<string, { color: string; text: string }> = {
+        const statusMap: Record<
+          string,
+          { color: string; text: string; icon?: React.ReactNode }
+        > = {
           READY: { color: "success", text: "Đã duyệt" },
           PENDING_REVIEW: { color: "processing", text: "Chờ kiểm duyệt" },
-          PENDING: { color: "warning", text: "Đang xử lý/Nháp" },
+          VALIDATING: {
+            color: "cyan",
+            text: "Đang kiểm tra",
+            icon: <SyncOutlined spin />,
+          },
+          PENDING: { color: "warning", text: "Đang xử lý" },
           FAILURE: { color: "error", text: "Lỗi xử lý" },
           DELETED: { color: "default", text: "Đã xóa" },
         };
         const s = statusMap[status] || { color: "default", text: status };
         return (
-          <Tag color={s.color} className="font-medium px-2 py-1">
+          <Tag icon={s.icon} color={s.color} className="font-medium px-2 py-1">
             {s.text}
           </Tag>
         );
@@ -268,6 +276,7 @@ const VideoList: React.FC = () => {
             >
               <Option value="READY">Đã duyệt</Option>
               <Option value="PENDING_REVIEW">Chờ kiểm duyệt</Option>
+              <Option value="VALIDATING">Đang kiểm tra</Option>
               <Option value="PENDING">Đang xử lý</Option>
               <Option value="FAILURE">Lỗi xử lý</Option>
               <Option value="DELETED">Đã xóa</Option>
@@ -297,7 +306,6 @@ const VideoList: React.FC = () => {
         />
       </Card>
 
-      {/* --- Modal Xem trước Video (Preview) --- */}
       <Modal
         title={
           <span className="text-lg font-bold">
@@ -340,7 +348,6 @@ const VideoList: React.FC = () => {
         </div>
       </Modal>
 
-      {/* --- Modal Cập nhật Thông tin --- */}
       <Modal
         title={<span className="text-lg font-bold">Cập nhật Video</span>}
         open={isEditModalOpen}

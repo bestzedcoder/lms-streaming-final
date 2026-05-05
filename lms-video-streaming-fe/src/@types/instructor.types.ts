@@ -149,6 +149,14 @@ export interface InstructorLessonResponse {
   preview: boolean;
 }
 
+export interface InstructorLessonDetailResponse {
+  id: string;
+  title: string;
+  lessonType: "QUIZ" | "VIDEO" | "TEXT";
+  preview: boolean;
+  hasResource: boolean;
+}
+
 // registration
 
 export interface RegistrationResponse {
@@ -295,7 +303,13 @@ export interface InstructorVideoResponse {
   id: string;
   title: string;
   thumbnail?: string;
-  status: "PENDING" | "READY" | "FAILURE" | "PENDING_REVIEW" | "DELETED";
+  status:
+    | "PENDING"
+    | "READY"
+    | "FAILURE"
+    | "VALIDATING"
+    | "PENDING_REVIEW"
+    | "DELETED";
   duration: number;
   size: number;
 }
@@ -303,11 +317,82 @@ export interface InstructorVideoResponse {
 export interface InstructorLectureResponse {
   id: string;
   title: string;
-  status: "APPROVED" | "PENDING_REVIEW" | "DELETED";
+  status: "APPROVED" | "PENDING_REVIEW" | "VALIDATING" | "DELETED";
   size: number;
 }
 
 export interface ResourcePreviewResponse {
   url: string;
   title: string;
+}
+
+// Quiz
+
+export interface QuizCreatingRequest {
+  title: string;
+}
+
+export interface QuizUpdatingRequest {
+  id: string;
+  title: string;
+  status: "PUBLISHED" | "DRAFT";
+}
+
+export interface AddQuizQuestionRequest {
+  quizId: string;
+  questionId: string;
+}
+
+export interface RemoveQuizQuestionRequest {
+  quizId: string;
+  quizQuestionId: string;
+}
+
+export interface QuizResponse {
+  id: string;
+  title: string;
+  totalQuestions: number;
+  status: "PUBLISHED" | "DRAFT";
+  questions: QuizQuestionResponse[];
+}
+
+export interface QuizQuestionResponse {
+  id: string;
+  content: string;
+  type: "MULTIPLE_CHOICE" | "SINGLE_CHOICE";
+  answers: QuestionAnswerResponse[];
+}
+
+export interface QuestionAnswerResponse {
+  answer: string;
+  correct: boolean;
+}
+
+// add Resource For Lesson
+
+export interface SelectLectureResponse {
+  lectureId: string;
+  title: string;
+}
+
+export interface SelectVideoResponse {
+  videoId: string;
+  title: string;
+}
+
+export interface SelectQuizResponse {
+  quizId: string;
+  title: string;
+}
+
+export interface AddResourceForLesson {
+  courseId: string;
+  lessonId: string;
+  resourceId: string;
+  type: "VIDEO" | "TEXT" | "QUIZ";
+}
+
+export interface RemoveResourceForLesson {
+  courseId: string;
+  lessonId: string;
 }
