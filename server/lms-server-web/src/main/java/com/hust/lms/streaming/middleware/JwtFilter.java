@@ -51,7 +51,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
     if (jwt == null
             || request.getRequestURI().contains("/auth/refresh")
-            || request.getRequestURI().contains("/auth/login")) {
+            || request.getRequestURI().contains("/auth/login")
+            || request.getRequestURI().contains("/ws/")
+    ) {
       filterChain.doFilter(request, response);
       return;
     }
@@ -72,7 +74,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         if (jwtUtils.isTokenValid(jwt, currentUser)) {
           UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-              currentUser.getId(),
+              currentUser.getId().toString(),
               null,
               currentUser.getAuthorities()
           );

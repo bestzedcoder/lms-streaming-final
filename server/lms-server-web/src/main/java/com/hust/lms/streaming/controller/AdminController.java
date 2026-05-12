@@ -17,6 +17,7 @@ import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
 import com.hust.lms.streaming.dto.response.admin.SummaryDashboardResponse;
 import com.hust.lms.streaming.dto.response.auth.AdminResponse;
 import com.hust.lms.streaming.dto.response.category.CategoryResponse;
+import com.hust.lms.streaming.dto.response.report.CourseRequestResponse;
 import com.hust.lms.streaming.dto.response.report.InstructorRequestResponse;
 import com.hust.lms.streaming.dto.response.user.UserResponse;
 import com.hust.lms.streaming.service.AdminService;
@@ -74,6 +75,30 @@ public class AdminController {
             .success(true)
             .timestamp(LocalDateTime.now())
         .build());
+  }
+
+  @GetMapping("requests/course")
+  public ResponseEntity<BaseListResponse<?>> getCourseRequests() {
+    List<CourseRequestResponse> res = this.requestService.getCourseRequests();
+    return ResponseEntity.ok(BaseListResponse.<CourseRequestResponse>builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  @GetMapping("requests/count-course")
+  public ResponseEntity<BaseResponse<?>> getCountCourseRequests() {
+    int res = this.requestService.countCourseRequests();
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
   }
 
   @PostMapping("requests/instructor/{uuid}")

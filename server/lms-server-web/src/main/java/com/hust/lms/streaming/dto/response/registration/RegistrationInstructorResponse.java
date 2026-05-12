@@ -1,22 +1,21 @@
 package com.hust.lms.streaming.dto.response.registration;
 
 import com.hust.lms.streaming.dto.response.course.CoursePublicRegistrationResponse;
+import com.hust.lms.streaming.dto.response.user.UserPublicResponse;
 import com.hust.lms.streaming.enums.RegistrationStatus;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegistrationResponse {
-    private RegistrationStatus status;
-    private String studentMessage;
-    private String teacherNote;
-    private CoursePublicRegistrationResponse course;
-    private LocalDateTime resolvedAt;
+public class RegistrationInstructorResponse {
+  private UUID id;
+  private RegistrationStatus status;
+  private UserPublicResponse student;
+  private CoursePublicRegistrationResponse course;
 }

@@ -1,6 +1,7 @@
 package com.hust.lms.streaming.service.impl;
 
 import com.hust.lms.streaming.configuration.CustomMinioClient;
+import com.hust.lms.streaming.dto.message.NotificationMessage;
 import com.hust.lms.streaming.dto.request.upload.MultipartCompleteRequest;
 import com.hust.lms.streaming.dto.request.upload.MultipartInitRequest;
 import com.hust.lms.streaming.dto.request.upload.MultipartInitResponse;
@@ -8,6 +9,7 @@ import com.hust.lms.streaming.dto.request.upload.ResourcePreviewResponse;
 import com.hust.lms.streaming.dto.request.upload.UploadFileResponse;
 import com.hust.lms.streaming.dto.response.resource.InstructorLectureResponse;
 import com.hust.lms.streaming.dto.response.resource.InstructorVideoResponse;
+import com.hust.lms.streaming.enums.NotificationType;
 import com.hust.lms.streaming.enums.VideoStatus;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.mapper.ResourceMapper;
@@ -15,6 +17,7 @@ import com.hust.lms.streaming.model.Resource;
 import com.hust.lms.streaming.model.Video;
 import com.hust.lms.streaming.repository.jpa.ResourceRepository;
 import com.hust.lms.streaming.repository.jpa.VideoRepository;
+import com.hust.lms.streaming.service.NotificationService;
 import com.hust.lms.streaming.service.PathProvider;
 import com.hust.lms.streaming.service.S3StorageService;
 import io.minio.DownloadObjectArgs;
@@ -25,6 +28,7 @@ import io.minio.http.Method;
 import io.minio.messages.Part;
 
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +51,7 @@ public class S3StorageServiceImpl implements S3StorageService {
   private final CustomMinioClient customMinioClient;
   private final VideoRepository videoRepository;
   private final ResourceRepository resourceRepository;
+  private final NotificationService notificationService;
 
   @Value("${app.storage.s3.bucket-staging}")
   private String STAGING_BUCKET;
@@ -213,6 +218,12 @@ public class S3StorageServiceImpl implements S3StorageService {
     video.setStatus(VideoStatus.READY);
     video.setHlsUrl(hlsUrl);
     this.videoRepository.save(video);
+    this.notificationService.sendToInstructor(video.getOwner().getId(), NotificationMessage.builder()
+                    .type(NotificationType.VIDEO_PROCESSING_SUCCESS)
+                    .title("Cập nhập trạng thái xử lý video")
+                    .content(String.format("Video %s đã xử lý thành công", video.getTitle()))
+                    .createdAt(LocalDateTime.now())
+            .build());
   }
 
   @Override
@@ -222,6 +233,12 @@ public class S3StorageServiceImpl implements S3StorageService {
 
     video.setStatus(VideoStatus.PENDING_REVIEW);
     this.videoRepository.save(video);
+    this.notificationService.sendToInstructor(video.getOwner().getId(), NotificationMessage.builder()
+            .type(NotificationType.VIDEO_PROCESSING_FAILED)
+            .title("Cập nhập trạng thái xử lý video")
+            .content(String.format("Video %s đã xử lý thất bại", video.getTitle()))
+            .createdAt(LocalDateTime.now())
+            .build());
   }
 
   @Override

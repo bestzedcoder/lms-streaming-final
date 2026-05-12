@@ -3,6 +3,7 @@ package com.hust.lms.streaming.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.hust.lms.streaming.common.CookieUtils;
 import com.hust.lms.streaming.dto.common.PageResponse;
+import com.hust.lms.streaming.dto.message.NotificationMessage;
 import com.hust.lms.streaming.dto.request.auth.LoginRequest;
 import com.hust.lms.streaming.dto.response.admin.AdminLecturePreview;
 import com.hust.lms.streaming.dto.response.admin.AdminVideoPreview;
@@ -11,10 +12,7 @@ import com.hust.lms.streaming.dto.response.admin.CoursePendingResponse;
 import com.hust.lms.streaming.dto.response.admin.InstructorResponse;
 import com.hust.lms.streaming.dto.response.admin.SummaryDashboardResponse;
 import com.hust.lms.streaming.dto.response.auth.AdminResponse;
-import com.hust.lms.streaming.enums.CourseStatus;
-import com.hust.lms.streaming.enums.ResourceStatus;
-import com.hust.lms.streaming.enums.Role;
-import com.hust.lms.streaming.enums.VideoStatus;
+import com.hust.lms.streaming.enums.*;
 import com.hust.lms.streaming.event.custom.AuthEvent;
 import com.hust.lms.streaming.event.custom.CourseEvent;
 import com.hust.lms.streaming.event.custom.VideoProcessingEvent;
@@ -37,11 +35,14 @@ import com.hust.lms.streaming.repository.jpa.UserRepository;
 import com.hust.lms.streaming.repository.jpa.VideoRepository;
 import com.hust.lms.streaming.security.JwtUtils;
 import com.hust.lms.streaming.service.AdminService;
+import com.hust.lms.streaming.service.NotificationService;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.RemoveObjectArgs;
 import io.minio.http.Method;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -72,6 +73,7 @@ public class AdminServiceImpl implements AdminService {
   private final VideoRepository videoRepository;
   private final ResourceRepository resourceRepository;
   private final MinioClient minioClient;
+  private final NotificationService notificationService;
 
   @Value("${app.security.jwt.accessAdminExpiration}")
   private long ACCESS_TOKEN_ADMIN_EXPIRE;
@@ -90,6 +92,12 @@ public class AdminServiceImpl implements AdminService {
 
     course.setStatus(CourseStatus.PRIVATE);
     this.courseRepository.save(course);
+    this.notificationService.sendToInstructor(course.getInstructor().getId(), NotificationMessage.builder()
+                    .type(NotificationType.COURSE_APPROVED)
+                    .title("Trạng thái phê duyệt khóa học")
+                    .content("Khóa học đã được phê duyệt")
+                    .createdAt(LocalDateTime.now())
+            .build());
     this.eventPublisher.publishEvent(new CourseEvent(CourseEventType.APPROVED_COURSE, course.getInstructor().getId(), courseId, null, null));
   }
 
@@ -213,6 +221,12 @@ public class AdminServiceImpl implements AdminService {
 
     video.setStatus(VideoStatus.PENDING);
     this.videoRepository.save(video);
+    this.notificationService.sendToInstructor(video.getOwner().getId(), NotificationMessage.builder()
+                    .type(NotificationType.VIDEO_APPROVED)
+                    .title("Cập nhập trạng thái của video")
+                    .content(String.format("Video %s đã được phê duyệt", video.getTitle()))
+                    .createdAt(LocalDateTime.now())
+            .build());
     this.eventPublisher.publishEvent(new VideoProcessingEvent(videoId, video.getOwner().getId() ,video.getOriginalUrl()));
   }
 
@@ -234,6 +248,12 @@ public class AdminServiceImpl implements AdminService {
 
     video.setStatus(VideoStatus.DELETED);
     this.videoRepository.save(video);
+    this.notificationService.sendToInstructor(video.getOwner().getId(), NotificationMessage.builder()
+            .type(NotificationType.VIDEO_REJECTED)
+            .title("Cập nhập trạng thái của video")
+            .content(String.format("Video %s đã bị xóa do vi phạm", video.getTitle()))
+            .createdAt(LocalDateTime.now())
+            .build());
   }
 
   @Override
@@ -243,6 +263,12 @@ public class AdminServiceImpl implements AdminService {
 
     resource.setStatus(ResourceStatus.APPROVED);
     this.resourceRepository.save(resource);
+    this.notificationService.sendToInstructor(resource.getOwner().getId(), NotificationMessage.builder()
+            .type(NotificationType.RESOURCE_APPROVED)
+            .title("Cập nhập trạng thái của lecture")
+            .content(String.format("Lecture %s đã được phê duyệt", resource.getTitle()))
+            .createdAt(LocalDateTime.now())
+            .build());
   }
 
   @Override
@@ -263,6 +289,12 @@ public class AdminServiceImpl implements AdminService {
 
     resource.setStatus(ResourceStatus.DELETED);
     this.resourceRepository.save(resource);
+    this.notificationService.sendToInstructor(resource.getOwner().getId(), NotificationMessage.builder()
+            .type(NotificationType.RESOURCE_APPROVED)
+            .title("Cập nhập trạng thái của lecture")
+            .content(String.format("Lecture %s đã bị xóa do vi phạm", resource.getTitle()))
+            .createdAt(LocalDateTime.now())
+            .build());
   }
 
   @Override

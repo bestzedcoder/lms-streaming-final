@@ -4,15 +4,16 @@ import type {
   CourseAuthDetailsResponse,
   CourseEnrollmentDetailsResponse,
   CourseEnrollmentResponse,
-  InstructorRequest,
+  InstructorAndCourseRequest,
   QuizLearningResponse,
   QuizResultResponse,
   QuizSubmissionRequest,
   RegistrationCreatingRequest,
+  RegistrationResponse,
+  RequestResponse,
   ReviewRequest,
   ReviewResponse,
 } from "../@types/student.types";
-import { data } from "react-router-dom";
 
 export const studentService = {
   getCourseDetails: async (
@@ -22,8 +23,21 @@ export const studentService = {
   },
 
   // request
-  instructorRequest: async (data: InstructorRequest): Promise<ResponseData> => {
+  instructorRequest: async (
+    data: InstructorAndCourseRequest,
+  ): Promise<ResponseData> => {
     return axiosClient.post("/requests/instructor", data);
+  },
+
+  courseRequest: async (
+    data: InstructorAndCourseRequest,
+    slug: string,
+  ): Promise<ResponseData> => {
+    return axiosClient.post(`/requests/course/${slug}`, data);
+  },
+
+  getRequests: async (): Promise<ResponseData<RequestResponse[]>> => {
+    return axiosClient.get("/requests");
   },
 
   // registration
@@ -31,6 +45,10 @@ export const studentService = {
     data: RegistrationCreatingRequest,
   ): Promise<ResponseData> => {
     return axiosClient.post("/registrations", data);
+  },
+
+  getRegistrations: async (): Promise<ResponseData<RegistrationResponse[]>> => {
+    return axiosClient.get("/registrations");
   },
 
   // learning

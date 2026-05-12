@@ -1,3 +1,4 @@
+import type { CoursePublicRegistrationResponse } from "./instructor.types";
 import type { CoursePublicDetailsResponse } from "./public.types";
 
 export interface CourseAuthDetailsResponse {
@@ -8,8 +9,16 @@ export interface CourseAuthDetailsResponse {
 
 // request
 
-export interface InstructorRequest {
+export interface InstructorAndCourseRequest {
   message?: string;
+}
+
+export interface RequestResponse {
+  title: string;
+  description: string;
+  status: boolean;
+  requestType: "TEACHER_REQUEST" | "COURSE_REPORT";
+  resolvedAt: string;
 }
 
 // registration
@@ -17,6 +26,14 @@ export interface InstructorRequest {
 export interface RegistrationCreatingRequest {
   slug: string;
   message?: string;
+}
+
+export interface RegistrationResponse {
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  studentMessage: string;
+  teacherNote: string;
+  course: CoursePublicRegistrationResponse;
+  resolvedAt: string;
 }
 
 // learning

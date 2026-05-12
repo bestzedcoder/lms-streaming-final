@@ -12,3 +12,12 @@ export interface InstructorRequestResponse {
     avatarUrl?: string;
   };
 }
+
+export interface CourseRequestResponse {
+  id: string;
+  title: string;
+  report?: string;
+  type: "TEACHER_REQUEST" | "COURSE_REPORT";
+  status: boolean;
+  targetId: string;
+}

@@ -13,7 +13,6 @@ import {
   DashboardOutlined,
   VideoCameraOutlined,
   TeamOutlined,
-  BellOutlined,
   SettingOutlined,
   LogoutOutlined,
   MenuUnfoldOutlined,
@@ -29,6 +28,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore.store";
 import { authService } from "../../services/auth.service";
 import { useInstructorStore } from "../../store/useInstructorStore.store";
+import NotificationBell from "../common/NotificationBell";
 
 const { Header, Sider, Content } = Layout;
 
@@ -110,7 +110,6 @@ const InstructorLayout = () => {
       label: (
         <div className="flex items-center justify-between w-full">
           <span>Học viên</span>
-          {/* Chỉ hiện số lượng khi menu đang mở rộng */}
           {!collapsed && pendingApprovals > 0 && (
             <Badge
               count={pendingApprovals}
@@ -220,14 +219,10 @@ const InstructorLayout = () => {
               Tạo khóa học
             </Button>
 
-            <Badge count={pendingApprovals} size="small" offset={[-4, 4]}>
-              <Button
-                type="text"
-                icon={<BellOutlined className="text-xl text-gray-600" />}
-                shape="circle"
-                className="hover:bg-gray-100"
-              />
-            </Badge>
+            <NotificationBell
+              role="instructor"
+              pendingApprovals={pendingApprovals}
+            />
 
             <Dropdown
               menu={{

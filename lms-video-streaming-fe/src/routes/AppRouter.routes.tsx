@@ -32,6 +32,9 @@ import LectureResourcePage from "../pages/instructor/LectureResourcePage";
 import CourseLearningPage from "../pages/student/CourseLearningPage";
 import MyCourses from "../pages/student/MyCourses";
 import CourseLearningWorkspace from "../pages/student/CourseLearningWorkspace";
+import StudentRequestsLayout from "../components/layout/StudentRequestsLayout";
+import ReportsPage from "../pages/student/ReportsPage";
+import RegistrationCoursePage from "../pages/student/RegistrationCoursePage";
 
 const AppRouter = () => {
   return (
@@ -81,6 +84,17 @@ const AppRouter = () => {
               element={<CourseLearningWorkspace />}
             />
             <Route path="/student/my-courses" element={<MyCourses />} />
+            <Route
+              path="/student/my-requests"
+              element={<StudentRequestsLayout />}
+            >
+              <Route index element={<Navigate to="reports" replace />} />
+              <Route path="reports" element={<ReportsPage />} />
+              <Route
+                path="registrations"
+                element={<RegistrationCoursePage />}
+              />
+            </Route>
           </Route>
         </Route>
 

@@ -11,6 +11,7 @@ import InstructorCoursesPage from "../pages/InstructorCoursesPage";
 import InstructorRequestPage from "../pages/InstructorRequestPage";
 import VideoPreviewPage from "../pages/VideoPreviewPage";
 import LecturePreviewPage from "../pages/LecturePreviewPage";
+import CourseRequestManager from "../pages/CourseRequestManager";
 
 function AppRoutes() {
   return (
@@ -30,6 +31,7 @@ function AppRoutes() {
           <Route path="users" element={<UserPage />} />
           <Route path="categories" element={<CategoryPage />} />
           <Route path="pending-courses" element={<CoursePendingPage />} />
+          <Route path="course-requests" element={<CourseRequestManager />} />
           <Route path="courses-search" element={<InstructorCoursesPage />} />
           <Route path="pending-video" element={<VideoPreviewPage />} />
           <Route path="pending-lecture" element={<LecturePreviewPage />} />

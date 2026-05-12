@@ -23,6 +23,8 @@ import {
   DatabaseOutlined,
   VideoCameraOutlined,
   FileTextOutlined,
+  AlertOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
@@ -38,7 +40,11 @@ const AdminLayout: React.FC = () => {
   const location = useLocation();
   const { logout, user } = useAuth();
 
-  const { pendingCoursesCount, pendingInstructorCount } = useNotification();
+  const {
+    pendingCoursesCount,
+    pendingInstructorCount,
+    pendingCourseRequestCount,
+  } = useNotification();
 
   const {
     token: { colorBgContainer, borderRadiusLG, colorPrimary },
@@ -48,7 +54,8 @@ const AdminLayout: React.FC = () => {
     const keys = [];
     if (
       location.pathname.includes("/pending-courses") ||
-      location.pathname.includes("/courses-search")
+      location.pathname.includes("/courses-search") ||
+      location.pathname.includes("/course-requests")
     ) {
       keys.push("sub-courses");
     }
@@ -167,6 +174,25 @@ const AdminLayout: React.FC = () => {
           ),
         },
         {
+          key: "/course-requests",
+          icon: <AlertOutlined />,
+          label: (
+            <Link
+              to="/course-requests"
+              className="flex justify-between items-center w-full pr-4"
+            >
+              <span>Yêu cầu & Báo cáo</span>
+              {pendingCourseRequestCount > 0 && (
+                <Badge
+                  count={pendingCourseRequestCount}
+                  style={{ backgroundColor: "#faad14", boxShadow: "none" }}
+                  offset={[0, 0]}
+                />
+              )}
+            </Link>
+          ),
+        },
+        {
           key: "/courses-search",
           icon: <FileSearchOutlined />,
           label: <Link to="/courses-search">Tra cứu theo giáo viên</Link>,
@@ -191,6 +217,9 @@ const AdminLayout: React.FC = () => {
       ],
     },
   ];
+
+  const totalNotifications =
+    pendingCoursesCount + pendingInstructorCount + pendingCourseRequestCount;
 
   return (
     <Layout className="min-h-screen bg-slate-50">
@@ -239,8 +268,7 @@ const AdminLayout: React.FC = () => {
           className="px-6 flex justify-between items-center sticky top-0 z-10"
           style={{
             background: colorBgContainer,
-            boxShadow:
-              "0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)",
+            boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.03)",
           }}
         >
           <div className="flex items-center gap-4">
@@ -252,14 +280,114 @@ const AdminLayout: React.FC = () => {
             />
           </div>
 
-          <div className="flex items-center gap-4 cursor-pointer">
+          <div className="flex items-center gap-6">
+            {/* CHUÔNG THÔNG BÁO TỔNG */}
+            <Dropdown
+              trigger={["click"]}
+              placement="bottomRight"
+              arrow
+              dropdownRender={() => (
+                <div className="bg-white rounded-xl shadow-2xl border border-gray-100 w-80 overflow-hidden">
+                  <div className="p-4 border-b border-gray-50 bg-slate-50/50">
+                    <Text strong className="text-gray-800">
+                      Thông báo hệ thống
+                    </Text>
+                  </div>
+                  <div className="py-2">
+                    {/* Mục Khóa học */}
+                    <Link
+                      to="/pending-courses"
+                      className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 transition-colors group"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <BookOutlined />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-700">
+                          Khóa học chờ duyệt
+                        </div>
+                        <Text type="secondary" className="text-xs">
+                          Bạn có {pendingCoursesCount} khóa học mới
+                        </Text>
+                      </div>
+                      {pendingCoursesCount > 0 && (
+                        <Badge count={pendingCoursesCount} size="small" />
+                      )}
+                    </Link>
+
+                    {/* Mục Giảng viên */}
+                    <Link
+                      to="/instructor-requests"
+                      className="flex items-center gap-4 px-4 py-3 hover:bg-purple-50 transition-colors group"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                        <UserOutlined />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-700">
+                          Yêu cầu Giảng viên
+                        </div>
+                        <Text type="secondary" className="text-xs">
+                          {pendingInstructorCount} người đang chờ nâng cấp
+                        </Text>
+                      </div>
+                      {pendingInstructorCount > 0 && (
+                        <Badge count={pendingInstructorCount} size="small" />
+                      )}
+                    </Link>
+
+                    {/* Mục Báo cáo */}
+                    <Link
+                      to="/course-requests"
+                      className="flex items-center gap-4 px-4 py-3 hover:bg-orange-50 transition-colors group"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                        <AlertOutlined />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-700">
+                          Báo cáo & Khiếu nại
+                        </div>
+                        <Text type="secondary" className="text-xs">
+                          {pendingCourseRequestCount} vấn đề cần xử lý
+                        </Text>
+                      </div>
+                      {pendingCourseRequestCount > 0 && (
+                        <Badge count={pendingCourseRequestCount} size="small" />
+                      )}
+                    </Link>
+                  </div>
+                  {totalNotifications === 0 && (
+                    <div className="p-8 text-center">
+                      <Text type="secondary">
+                        Tuyệt vời! Không có yêu cầu nào tồn đọng.
+                      </Text>
+                    </div>
+                  )}
+                </div>
+              )}
+            >
+              <div className="relative cursor-pointer p-2 rounded-full hover:bg-slate-100 transition-all">
+                <Badge
+                  count={totalNotifications}
+                  overflowCount={99}
+                  size="small"
+                >
+                  <BellOutlined
+                    style={{ fontSize: "20px", color: "#64748b" }}
+                  />
+                </Badge>
+              </div>
+            </Dropdown>
+
+            {/* AVATAR USER GIỮ NGUYÊN */}
             <Dropdown
               menu={userMenu}
               placement="bottomRight"
               arrow
               trigger={["click"]}
             >
-              <div className="flex items-center gap-3 px-3 py-1.5 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200">
+              <div className="flex items-center gap-3 px-3 py-1.5 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200 cursor-pointer">
                 <Avatar
                   style={{ backgroundColor: colorPrimary }}
                   icon={<UserOutlined />}

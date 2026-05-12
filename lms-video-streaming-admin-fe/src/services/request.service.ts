@@ -1,5 +1,8 @@
 import type { ResponseData } from "../@types/common.type";
-import type { InstructorRequestResponse } from "../@types/request.type";
+import type {
+  CourseRequestResponse,
+  InstructorRequestResponse,
+} from "../@types/request.type";
 import axiosClient from "../api/axiosClient";
 
 export const requestService = {
@@ -15,5 +18,19 @@ export const requestService = {
 
   handleInstructorRequest: async (id: string): Promise<ResponseData> => {
     return axiosClient.post(`admin/requests/instructor/${id}`);
+  },
+
+  getCountCourseRequests: async (): Promise<ResponseData<number>> => {
+    return axiosClient.get("admin/requests/count-course");
+  },
+
+  getCourseRequests: async (): Promise<
+    ResponseData<CourseRequestResponse[]>
+  > => {
+    return axiosClient.get("admin/requests/course");
+  },
+
+  handleCourseRequest: async (id: string): Promise<ResponseData> => {
+    return axiosClient.post(`admin/requests/course/${id}`);
   },
 };

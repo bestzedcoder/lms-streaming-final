@@ -21,18 +21,35 @@ public interface RequestRepository extends JpaRepository<Request, UUID> {
 
   @Query(value = """
     SELECT r.*
-    FROM requests r INNER JOIN users u ON r.user_id = u.id
+    FROM requests r
     WHERE r.status = false AND r.request_type = :type 
 """, nativeQuery = true)
   List<Request> getPendingRequests(String type);
+
+  @Query(value = """
+    SELECT r.*
+    FROM requests r 
+    WHERE r.user_id = :userId 
+""", nativeQuery = true)
+  List<Request> findRequestsByStudent(UUID userId);
+
+  @Query(value = """
+    SELECT EXISTS (
+        SELECT 1
+        FROM requests r INNER JOIN courses c ON r.target_id = c.id
+        WHERE r.request_type = :type AND r.user_id = :userId AND c.slug = :slug
+    )
+""", nativeQuery = true)
+  boolean existsByUserAndCourseSlug(UUID userId, String type, String slug);
 
 
   @Query(value = """
     SELECT EXISTS (
         SELECT 1
-        FROM requests r
+        FROM requests r 
         WHERE r.request_type = :type AND r.user_id = :userId
     )
 """, nativeQuery = true)
   boolean existsByUser(UUID userId, String type);
+
 }

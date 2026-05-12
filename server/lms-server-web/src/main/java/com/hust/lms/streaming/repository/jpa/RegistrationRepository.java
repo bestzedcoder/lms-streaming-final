@@ -12,10 +12,16 @@ public interface RegistrationRepository extends JpaRepository<Registration, UUID
   @Query(value = """
     SELECT r.*
     FROM registrations r INNER JOIN courses c ON r.course_id = c.id
-                         INNER JOIN users u ON r.student_id = u.id
     WHERE c.instructor_id = :instructorId AND r.status = :status
 """, nativeQuery = true)
   List<Registration> findRegistrationsByInstructor(UUID instructorId, String status);
+
+  @Query(value = """
+    SELECT r.*
+    FROM registrations r 
+    WHERE r.student_id = :studentId
+""", nativeQuery = true)
+  List<Registration> findRegistrationsByStudent(UUID studentId);
 
   @Query(value = """
     SELECT r.*

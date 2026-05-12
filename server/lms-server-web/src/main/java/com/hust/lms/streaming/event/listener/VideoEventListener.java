@@ -1,5 +1,7 @@
 package com.hust.lms.streaming.event.listener;
 
+import com.hust.lms.streaming.dto.message.NotificationMessage;
+import com.hust.lms.streaming.enums.NotificationType;
 import com.hust.lms.streaming.enums.ResourceStatus;
 import com.hust.lms.streaming.enums.VideoStatus;
 import com.hust.lms.streaming.event.custom.ResourceValidationEvent;
@@ -12,6 +14,7 @@ import com.hust.lms.streaming.queue.message.VideoProcessingMessage;
 import com.hust.lms.streaming.repository.jpa.ResourceRepository;
 import com.hust.lms.streaming.repository.jpa.VideoRepository;
 import com.hust.lms.streaming.service.FileValidationService;
+import com.hust.lms.streaming.service.NotificationService;
 import com.hust.lms.streaming.service.S3StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +25,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.time.LocalDateTime;
+
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -30,6 +35,7 @@ public class VideoEventListener {
   private final VideoRepository videoRepository;
   private final ResourceRepository resourceRepository;
   private final FileValidationService fileValidationService;
+  private final NotificationService notificationService;
   private final S3StorageService s3StorageService;
 
   @Value("${app.storage.s3.bucket-staging}")
@@ -68,6 +74,12 @@ public class VideoEventListener {
     } catch (Exception e) {
       s3StorageService.deleteFromStaging(event.getOriginalUrl(), STAGING_BUCKET);
       resource.setStatus(ResourceStatus.DELETED);
+      this.notificationService.sendToInstructor(resource.getOwner().getId(), NotificationMessage.builder()
+                      .type(NotificationType.RESOURCE_VALIDATION_FAILED)
+                      .title("Kết quả quét tài nguyên upload")
+                      .content(String.format("Lecture %s đã không vượt qua kiểm tra của hệ thống", resource.getTitle()))
+                      .createdAt(LocalDateTime.now())
+              .build());
     } finally {
       this.resourceRepository.save(resource);
     }
@@ -86,6 +98,12 @@ public class VideoEventListener {
     } catch (Exception e) {
       s3StorageService.deleteFromStaging(event.getOriginalUrl(), STAGING_BUCKET);
       video.setStatus(VideoStatus.DELETED);
+      this.notificationService.sendToInstructor(video.getOwner().getId(), NotificationMessage.builder()
+              .type(NotificationType.VIDEO_VALIDATION_FAILED)
+              .title("Kết quả quét tài nguyên upload")
+              .content(String.format("Video %s đã không vượt qua kiểm tra của hệ thống", video.getTitle()))
+              .createdAt(LocalDateTime.now())
+              .build());
     } finally {
       this.videoRepository.save(video);
     }

@@ -57,7 +57,8 @@ public class SecurityConfiguration {
                 "/api/auth/refresh",
                 "/api/public/**",
                 "/overview/**",
-                "/api/admin/login").permitAll()
+                "/api/admin/login", "/api/ws/**"
+            ).permitAll()
             .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
             .requestMatchers("/api/employee/**").hasRole(Role.EMPLOYEE.name())
             .requestMatchers("/api/instructor/**").hasRole(Role.INSTRUCTOR.name())

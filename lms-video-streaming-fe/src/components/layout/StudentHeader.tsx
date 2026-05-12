@@ -5,20 +5,19 @@ import {
   Button,
   Avatar,
   Dropdown,
-  Badge,
   Input,
   type MenuProps,
   Spin,
 } from "antd";
 import {
   SearchOutlined,
-  BellOutlined,
   UserOutlined,
   LogoutOutlined,
   BookOutlined,
   RocketOutlined,
   PlayCircleOutlined,
   AppstoreOutlined,
+  AlertOutlined,
 } from "@ant-design/icons";
 import { useAuthStore } from "../../store/useAuthStore.store";
 import { notify } from "../../utils/notification.utils";
@@ -26,6 +25,7 @@ import { authService } from "../../services/auth.service";
 import { useInstructorStore } from "../../store/useInstructorStore.store";
 import { publicService } from "../../services/public.service";
 import type { CategoryPublicResponse } from "../../@types/public.types";
+import NotificationBell from "../common/NotificationBell";
 
 const { Header } = Layout;
 
@@ -167,6 +167,12 @@ const StudentHeader = () => {
       icon: <BookOutlined />,
       onClick: () => navigate("/student/my-courses"),
     },
+    {
+      key: "requests",
+      label: "Lịch sử báo cáo & yêu cầu",
+      icon: <AlertOutlined />,
+      onClick: () => navigate("/student/my-requests"),
+    },
     { type: "divider" },
     {
       key: "logout",
@@ -264,18 +270,7 @@ const StudentHeader = () => {
 
         {isAuthenticated && user ? (
           <>
-            <Dropdown
-              menu={{
-                items: [{ key: "1", label: "Thông báo mới từ hệ thống" }],
-              }}
-              trigger={["click"]}
-              placement="bottomRight"
-              arrow
-            >
-              <Badge count={5} size="small" offset={[-2, 2]}>
-                <BellOutlined className="text-xl text-gray-600 cursor-pointer hover:text-primary transition-colors" />
-              </Badge>
-            </Dropdown>
+            <NotificationBell role="student" />
 
             <Dropdown
               menu={{ items: userMenu }}

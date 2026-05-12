@@ -4,6 +4,7 @@ import GlobalNotification from "./components/common/GlobalNotification";
 import "antd/dist/reset.css";
 import { useAuthStore } from "./store/useAuthStore.store";
 import { useEffect } from "react";
+import { WebSocketProvider } from "./context/useWebSocket";
 
 function App() {
   const { checkAuth, isInitialized } = useAuthStore();
@@ -30,7 +31,9 @@ function App() {
     >
       <AntdApp>
         <GlobalNotification />
-        <AppRouter />
+        <WebSocketProvider>
+          <AppRouter />
+        </WebSocketProvider>
       </AntdApp>
     </ConfigProvider>
   );

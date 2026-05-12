@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
-public class InstructorRequest {
+public class InstructorAndCourseRequest {
   @NoHtml
   @Size(max = 500, message = "Mô tả không được quá 500 ký tự")
   private String message;

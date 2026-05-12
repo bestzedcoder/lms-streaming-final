@@ -19,7 +19,7 @@ import com.hust.lms.streaming.dto.response.question.QuestionCategoryResponse;
 import com.hust.lms.streaming.dto.response.question.QuestionResponse;
 import com.hust.lms.streaming.dto.response.quiz.QuizResponse;
 import com.hust.lms.streaming.dto.response.quiz.SelectQuizResponse;
-import com.hust.lms.streaming.dto.response.registration.RegistrationResponse;
+import com.hust.lms.streaming.dto.response.registration.RegistrationInstructorResponse;
 import com.hust.lms.streaming.dto.response.resource.InstructorLectureResponse;
 import com.hust.lms.streaming.dto.response.resource.InstructorVideoResponse;
 import com.hust.lms.streaming.dto.response.resource.SelectLectureResponse;
@@ -84,8 +84,8 @@ public class InstructorController {
 
   @GetMapping("registrations")
   public ResponseEntity<BaseListResponse<?>> getRegistrations() {
-    List<RegistrationResponse> res = this.registrationService.getPendingRegistrationsByUser();
-    return ResponseEntity.ok(BaseListResponse.<RegistrationResponse>builder()
+    List<RegistrationInstructorResponse> res = this.registrationService.getPendingRegistrationsByInstructor();
+    return ResponseEntity.ok(BaseListResponse.<RegistrationInstructorResponse>builder()
             .code(200)
             .message("Success")
             .data(res)
