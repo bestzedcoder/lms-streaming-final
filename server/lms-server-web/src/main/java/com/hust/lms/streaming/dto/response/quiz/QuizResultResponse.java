@@ -1,5 +1,6 @@
 package com.hust.lms.streaming.dto.response.quiz;
 
+import com.hust.lms.streaming.enums.QuizType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,5 +16,7 @@ public class QuizResultResponse {
     private String title;
     private int totalQuestions;
     private int correctAnswers;
+    private QuizType type;
+    private double score;
     private LocalDateTime time;
 }

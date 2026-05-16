@@ -14,6 +14,8 @@ import {
   TrophyOutlined,
   CalendarOutlined,
   CheckCircleFilled,
+  ClockCircleOutlined,
+  FileDoneOutlined,
 } from "@ant-design/icons";
 import { studentService } from "../../../services/student.service";
 import type { QuizResultResponse } from "../../../@types/student.types";
@@ -28,14 +30,13 @@ const LearningResultsTab: React.FC<Props> = ({ slug }) => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<QuizResultResponse[]>([]);
 
-  // 1. Fetch dữ liệu kết quả Quiz
   const fetchResults = async () => {
     setLoading(true);
     try {
       const res = await studentService.getQuizResults(slug);
       let data = res.data || [];
 
-      // 2. Sắp xếp theo thứ tự thời gian sớm nhất (Earliest first)
+      // Sắp xếp lịch sử làm bài theo thời gian từ cũ nhất đến mới nhất
       data.sort(
         (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
       );
@@ -52,62 +53,103 @@ const LearningResultsTab: React.FC<Props> = ({ slug }) => {
     if (slug) fetchResults();
   }, [slug]);
 
+  // Cập nhật mốc qua bài là >= 5 điểm (thang điểm 10)
   const calculateTotalProgress = () => {
     if (results.length === 0) return 0;
-    const passedCount = results.filter(
-      (r) => r.correctAnswers / r.totalQuestions >= 0.5,
-    ).length;
+    const passedCount = results.filter((r) => r.score >= 5).length;
     return Math.round((passedCount / results.length) * 100);
   };
 
   const columns = [
     {
-      title: "Bài kiểm tra",
+      title: "Bài đánh giá",
       dataIndex: "title",
       key: "title",
       render: (text: string) => (
         <Space>
-          <TrophyOutlined className="text-yellow-500" />
-          <Text strong>{text}</Text>
+          <TrophyOutlined className="text-yellow-500 text-lg" />
+          <Text strong className="text-gray-800">
+            {text}
+          </Text>
         </Space>
       ),
     },
     {
-      title: "Kết quả",
-      key: "result",
-      render: (_: any, record: QuizResultResponse) => (
-        <Text>
-          {record.correctAnswers} / {record.totalQuestions}
-          <small className="text-gray-400 ml-1">câu đúng</small>
-        </Text>
-      ),
-    },
-    {
-      title: "Điểm số",
-      key: "score",
-      render: (_: any, record: QuizResultResponse) => {
-        const score = Math.round(
-          (record.correctAnswers / record.totalQuestions) * 100,
-        );
-        const isPassed = score >= 50;
+      title: "Phân loại",
+      dataIndex: "type",
+      key: "type",
+      width: 140,
+      render: (type: "TEST" | "EXAM") => {
+        if (type === "EXAM") {
+          return (
+            <Tag
+              color="purple"
+              icon={<FileDoneOutlined />}
+              className="m-0 border-none font-semibold"
+            >
+              KẾT THÚC
+            </Tag>
+          );
+        }
         return (
           <Tag
-            color={isPassed ? "green" : "red"}
-            className="rounded-full px-3 border-none font-bold"
+            color="cyan"
+            icon={<ClockCircleOutlined />}
+            className="m-0 border-none font-semibold"
           >
-            {score}/100
+            KIỂM TRA
           </Tag>
         );
       },
     },
     {
-      title: "Ngày thực hiện",
+      title: "Số câu đúng",
+      key: "result",
+      align: "center" as const,
+      width: 150,
+      render: (_: any, record: QuizResultResponse) => (
+        <Text strong className="text-gray-600">
+          {record.correctAnswers}{" "}
+          <span className="text-gray-400 font-normal">
+            / {record.totalQuestions}
+          </span>
+        </Text>
+      ),
+    },
+    {
+      title: "Điểm số",
+      dataIndex: "score",
+      key: "score",
+      align: "center" as const,
+      width: 120,
+      render: (score: number) => {
+        // Chỉ cần so sánh điểm số trực tiếp >= 5
+        const isPassed = score >= 5;
+        return (
+          <Tag
+            color={isPassed ? "green" : "red"}
+            className="rounded-full px-3 py-0.5 border-none font-bold text-sm m-0"
+          >
+            {score}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Ngày nộp bài",
       dataIndex: "time",
       key: "time",
+      align: "right" as const,
       render: (time: string) => (
-        <Text type="secondary">
-          <CalendarOutlined className="mr-1" />
-          {new Date(time).toLocaleString("vi-VN")}
+        <Text type="secondary" className="text-sm">
+          <CalendarOutlined className="mr-1.5" />
+          {new Date(time).toLocaleString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })}
         </Text>
       ),
     },
@@ -119,12 +161,16 @@ const LearningResultsTab: React.FC<Props> = ({ slug }) => {
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-2xl border border-blue-100 shadow-sm">
         <Row align="middle" gutter={24}>
           <Col xs={24} md={16}>
-            <Title level={4} className="!mt-0">
+            <Title level={4} className="!mt-0 text-gray-800">
               Tiến độ hoàn thành bài tập
             </Title>
             <Text type="secondary">
-              Hệ thống ghi nhận kết quả dựa trên các bài Quiz bạn đã thực hiện
-              sớm nhất đến muộn nhất.
+              Hệ thống ghi nhận kết quả dựa trên các bài Đánh giá bạn đã nộp.
+              Cần đạt từ{" "}
+              <Text strong className="text-gray-700">
+                5 điểm
+              </Text>{" "}
+              trở lên để được tính là qua bài.
             </Text>
             <Progress
               percent={calculateTotalProgress()}
@@ -135,10 +181,14 @@ const LearningResultsTab: React.FC<Props> = ({ slug }) => {
             />
           </Col>
           <Col xs={0} md={8} className="text-center">
-            <div className="bg-white p-4 rounded-xl shadow-inner inline-block">
+            <div className="bg-white p-5 rounded-xl shadow-inner inline-block border border-blue-50">
               <CheckCircleFilled className="text-4xl text-green-500" />
-              <div className="text-2xl font-bold mt-1">{results.length}</div>
-              <div className="text-gray-400 text-xs">Bài đã làm</div>
+              <div className="text-2xl font-bold mt-2 text-gray-800">
+                {results.length}
+              </div>
+              <div className="text-gray-400 text-xs font-medium uppercase tracking-wider mt-1">
+                Lượt nộp bài
+              </div>
             </div>
           </Col>
         </Row>
@@ -146,12 +196,16 @@ const LearningResultsTab: React.FC<Props> = ({ slug }) => {
 
       {/* Bảng kết quả */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-gray-100 bg-gray-50/50">
+          <Text strong className="text-lg text-gray-800">
+            Lịch sử làm bài
+          </Text>
+        </div>
         <Spin spinning={loading}>
           <Table
             dataSource={results}
             columns={columns}
             rowKey={(record) => record.title + record.time}
-            // Chỉ để 10 bài kiểm tra 1 page
             pagination={{
               pageSize: 10,
               showSizeChanger: false,

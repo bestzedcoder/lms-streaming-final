@@ -7,6 +7,7 @@ import com.hust.lms.streaming.dto.request.instructor.QuizUpdatingRequest;
 import com.hust.lms.streaming.dto.request.instructor.RemoveQuizQuestionRequest;
 import com.hust.lms.streaming.dto.request.quiz.QuestionSubmissionRequest;
 import com.hust.lms.streaming.dto.request.quiz.QuizSubmissionRequest;
+import com.hust.lms.streaming.dto.response.quiz.QuizCacheResponse;
 import com.hust.lms.streaming.dto.response.quiz.QuizResponse;
 import com.hust.lms.streaming.dto.response.quiz.QuizResultResponse;
 import com.hust.lms.streaming.enums.CourseStatus;
@@ -17,13 +18,15 @@ import com.hust.lms.streaming.model.*;
 import com.hust.lms.streaming.redis.RedisService;
 import com.hust.lms.streaming.repository.jpa.*;
 import com.hust.lms.streaming.service.QuizService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +38,7 @@ public class QuizServiceImpl implements QuizService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final QuizVersionRepository quizVersionRepository;
     private final RedisService redisService;
 
     @Override
@@ -72,8 +76,11 @@ public class QuizServiceImpl implements QuizService {
         String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
         Quiz quiz = this.quizRepository.findByOwner(UUID.fromString(authId), UUID.fromString(request.getId())).orElse(null);
         if (quiz == null) return;
+
+        if (QuizStatus.PUBLISHED.equals(quiz.getStatus())) throw new BadRequestException("Phải chuyển bài kiểm tra về trạng thái DRAFT");
+
         quiz.setTitle(request.getTitle());
-        quiz.setStatus(request.getStatus());
+        quiz.setType(request.getType());
         this.quizRepository.save(quiz);
     }
 
@@ -83,6 +90,7 @@ public class QuizServiceImpl implements QuizService {
         Quiz quiz = this.quizRepository.findByOwner(UUID.fromString(authId), UUID.fromString(request.getQuizId())).orElse(null);
         Question question = this.questionRepository.findByOwner(UUID.fromString(request.getQuestionId()), UUID.fromString(authId)).orElse(null);
         if (quiz == null || question == null) return;
+        if (QuizStatus.PUBLISHED.equals(quiz.getStatus())) throw new BadRequestException("Phải chuyển bài kiểm tra về trạng thái DRAFT");
 
         quiz.getQuestions().add(QuizQuestion.builder()
                         .question(question)
@@ -97,6 +105,8 @@ public class QuizServiceImpl implements QuizService {
         Quiz quiz = this.quizRepository.findByOwner(UUID.fromString(authId), UUID.fromString(request.getQuizId())).orElse(null);
 
         if (quiz == null) return;
+
+        if (QuizStatus.PUBLISHED.equals(quiz.getStatus())) throw new BadRequestException("Phải chuyển bài kiểm tra về trạng thái DRAFT");
 
         UUID quizQuestionId = UUID.fromString(request.getQuizQuestionId());
 
@@ -118,6 +128,32 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+    public void publishQuiz(UUID quizId) {
+        String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        Quiz quiz = this.quizRepository.findByOwner(UUID.fromString(authId), quizId).orElse(null);
+        if (quiz == null || QuizStatus.PUBLISHED.equals(quiz.getStatus())) return;
+
+        QuizVersion quizVersion = QuizVersion.builder()
+                .quiz(quiz)
+                .versionNumber(quiz.getVersions().size() + 1)
+                .build();
+        quiz.setStatus(QuizStatus.PUBLISHED);
+        quiz.getVersions().add(quizVersion);
+        this.quizRepository.save(quiz);
+    }
+
+    @Override
+    public void draftQuiz(UUID quizId) {
+        String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        Quiz quiz = this.quizRepository.findByOwner(UUID.fromString(authId), quizId).orElse(null);
+        if (quiz == null || QuizStatus.DRAFT.equals(quiz.getStatus())) return;
+
+        quiz.setStatus(QuizStatus.DRAFT);
+        this.quizRepository.save(quiz);
+    }
+
+    @Override
+    @Transactional
     public Integer submitQuiz(QuizSubmissionRequest request, String slug) {
         String authId = SecurityContextHolder
                 .getContext()
@@ -131,13 +167,26 @@ public class QuizServiceImpl implements QuizService {
         Quiz quiz = quizRepository.findById(UUID.fromString(request.getQuizId()))
                 .orElseThrow(() -> new BadRequestException("Quiz không tồn tại"));
 
-        int countQuestionCorrect = 0;
-        int countQuestion = quiz.getQuestions().size();
+        if (QuizStatus.DRAFT.equals(quiz.getStatus())) {
+            throw new BadRequestException("Quiz đang trong trạng thái không sẵn sàng");
+        }
 
-        List<Question> questions = quiz.getQuestions()
-                .stream()
-                .map(QuizQuestion::getQuestion)
-                .toList();
+        QuizVersion quizVersion = this.quizVersionRepository.findVersionByQuizIdAndVersion(quiz.getId(), request.getVersion()).orElse(null);
+
+        String keyCache = String.format("lms:quiz:%s:version:%s", quiz.getId(), request.getVersion());
+        QuizCacheResponse dataCache = this.redisService.getValue(keyCache, new TypeReference<QuizCacheResponse>() {});
+        if (quizVersion == null || dataCache == null) {
+            throw new BadRequestException("Gặp lỗi phiên bản quiz");
+        }
+
+        Map<String, Set<String>> questions = dataCache.getQuestions();
+
+        int countQuestionCorrect = 0;
+        int countQuestion = questions.size();
+
+        if (request.getQuestions().size() != countQuestion) {
+            throw new BadRequestException("Dữ liệu không hợp lệ");
+        }
 
         for (QuestionSubmissionRequest submittedQuestion : request.getQuestions()) {
 
@@ -146,36 +195,33 @@ public class QuizServiceImpl implements QuizService {
                 continue;
             }
 
-            Question question = questions.stream()
-                    .filter(q -> q.getId().toString().equals(submittedQuestion.getQuestionId()))
-                    .findFirst()
-                    .orElse(null);
+            Set<String> correctAnswerIds = questions.get(
+                    submittedQuestion.getQuestionId()
+            );
 
-            if (question == null) {
+            if (correctAnswerIds == null) {
                 continue;
             }
 
-            List<String> correctAnswerIds = question.getOptions()
-                    .stream()
-                    .filter(option -> Boolean.TRUE.equals(option.getCorrect()))
-                    .map(option -> option.getId().toString())
-                    .sorted()
-                    .toList();
-
-            List<String> submittedAnswerIds = submittedQuestion.getAnswers()
-                    .stream()
-                    .sorted()
-                    .toList();
+            Set<String> submittedAnswerIds =
+                    new HashSet<>(submittedQuestion.getAnswers());
 
             if (correctAnswerIds.equals(submittedAnswerIds)) {
                 countQuestionCorrect++;
             }
         }
 
+        double score = countQuestion > 0
+                ? (countQuestionCorrect * 10.0) / countQuestion
+                : 0.0;
+
         QuizSubmission quizSubmission = QuizSubmission.builder()
                 .title(quiz.getTitle())
                 .correctAnswers(countQuestionCorrect)
                 .course(course)
+                .type(quiz.getType())
+                .score(score)
+                .quizVersion(quizVersion)
                 .user(student)
                 .totalQuestions(countQuestion)
                 .build();
@@ -200,6 +246,6 @@ public class QuizServiceImpl implements QuizService {
         List<QuizResultResponse> res = data.stream().map(QuizMapper::mapQuizSubmissionToQuizResultResponse).toList();
 
         this.redisService.saveKeyAndValue(keyCache, res, 1, TimeUnit.MINUTES);
-        return List.of();
+        return res;
     }
 }

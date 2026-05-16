@@ -15,5 +15,6 @@ import java.util.UUID;
 public class QuizLearningResponse {
     private UUID quizId;
     private String title;
+    private int version;
     private List<QuestionLearningResponse> questions;
 }

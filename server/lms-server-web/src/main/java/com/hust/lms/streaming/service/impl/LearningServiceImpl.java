@@ -3,6 +3,7 @@ package com.hust.lms.streaming.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.hust.lms.streaming.common.HashString;
 import com.hust.lms.streaming.dto.request.upload.ResourcePreviewResponse;
+import com.hust.lms.streaming.dto.response.quiz.QuizCacheResponse;
 import com.hust.lms.streaming.dto.response.quiz.QuizLearningResponse;
 import com.hust.lms.streaming.enums.*;
 import com.hust.lms.streaming.event.enums.ResourceType;
@@ -128,9 +129,15 @@ public class LearningServiceImpl implements LearningService {
             throw new BadRequestException("Bài kiểm tra chưa sẵn sàng");
         }
 
+        String keyCache = String.format("lms:quiz:%s:version:%s",quiz.getId(), quiz.getVersions().size());
+        QuizCacheResponse dataCache = this.redisService.getValue(keyCache, new TypeReference<QuizCacheResponse>() {});
+        if (dataCache == null) {
+            QuizCacheResponse data = QuizMapper.mapQuizToQuizCacheResponse(quiz);
+            this.redisService.saveKeyAndValue(keyCache, data, 10, TimeUnit.MINUTES);
+        }
+
         return QuizMapper.mapQuizToQuizLearningResponse(quiz);
     }
-
 
     private boolean validationUserInCourse(String slug) {
         String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();

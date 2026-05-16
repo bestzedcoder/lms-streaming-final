@@ -6,11 +6,7 @@ import axios, {
 import { useAuthStore } from "../store/useAuthStore.store";
 import { useAppStore } from "../store/useAppStore.store";
 import { notify } from "../utils/notification.utils";
-import type {
-  BaseResponse,
-  ErrorResponse,
-  ResponseData,
-} from "../@types/common.types";
+import type { ErrorResponse, ResponseData } from "../@types/common.types";
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -37,13 +33,20 @@ axiosClient.interceptors.request.use(
 );
 
 axiosClient.interceptors.response.use(
-  (response: AxiosResponse<BaseResponse>) => {
+  (response: AxiosResponse<any>) => {
     useAppStore.getState().setLoading(false);
 
+    // FILE DOWNLOAD
+    if (response.config.responseType === "blob") {
+      return response;
+    }
+
+    // JSON RESPONSE
     const res: ResponseData = {
       data: response.data.data,
       message: response.data.message,
     };
+
     return res as any;
   },
 

@@ -7,7 +7,6 @@ import {
   Modal,
   Input,
   Drawer,
-  List,
   Tag,
   Popconfirm,
   message,
@@ -23,32 +22,38 @@ import {
   PlusOutlined,
   UnorderedListOutlined,
   QuestionCircleOutlined,
+  ClockCircleOutlined,
+  FileDoneOutlined,
+  CheckOutlined,
+  BookOutlined,
+  GlobalOutlined,
+  EyeInvisibleOutlined,
 } from "@ant-design/icons";
 import { instructorService } from "../../../services/instructor.service";
 import type {
   QuizResponse,
   QuestionCategoryResponse,
   QuestionResponse,
+  QuizUpdatingRequest,
 } from "../../../@types/instructor.types";
 
 const { Text } = Typography;
+const { Option } = Select;
 
 const QuizList: React.FC = () => {
-  // --- STATES DỮ LIỆU ---
   const [quizzes, setQuizzes] = useState<QuizResponse[]>([]);
   const [categories, setCategories] = useState<QuestionCategoryResponse[]>([]);
   const [bankQuestions, setBankQuestions] = useState<QuestionResponse[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // --- STATES ĐIỀU KHIỂN UI ---
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
   const [isAddQuestionModalOpen, setIsAddQuestionModalOpen] = useState(false);
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false);
-  const [quizStatus, setQuizStatus] = useState<"PUBLISHED" | "DRAFT">("DRAFT");
 
-  // --- STATES LÀM VIỆC ---
   const [currentQuiz, setCurrentQuiz] = useState<QuizResponse | null>(null);
   const [quizTitle, setQuizTitle] = useState("");
+  const [quizType, setQuizType] = useState<"TEST" | "EXAM">("TEST");
+
   const [selectedCatId, setSelectedCatId] = useState<string>("");
   const [addQuestionLoading, setAddQuestionLoading] = useState(false);
 
@@ -100,11 +105,11 @@ const QuizList: React.FC = () => {
     if (quiz) {
       setCurrentQuiz(quiz);
       setQuizTitle(quiz.title);
-      setQuizStatus((quiz as any).status || "DRAFT");
+      setQuizType(quiz.type || "TEST");
     } else {
       setCurrentQuiz(null);
       setQuizTitle("");
-      setQuizStatus("DRAFT");
+      setQuizType("TEST");
     }
     setIsQuizModalOpen(true);
   };
@@ -113,34 +118,52 @@ const QuizList: React.FC = () => {
     if (!quizTitle.trim()) return message.warning("Vui lòng nhập tiêu đề");
     try {
       if (currentQuiz) {
-        await instructorService.updateQuiz({
+        // Cập nhật bao gồm id, title và type (Bỏ status)
+        const payload: QuizUpdatingRequest = {
           id: currentQuiz.id,
           title: quizTitle,
-          status: quizStatus,
-        });
-        message.success("Đã cập nhật bài Quiz thành công");
+          type: quizType,
+        };
+        await instructorService.updateQuiz(payload);
+        message.success("Đã cập nhật bài Đánh giá thành công");
       } else {
+        // Tạo mới chỉ cần title
         await instructorService.createQuiz({ title: quizTitle });
-        message.success("Đã tạo bài Quiz mới");
+        message.success("Đã tạo bài Đánh giá mới");
       }
       setIsQuizModalOpen(false);
       fetchQuizzes();
     } catch (error) {
-      message.error("Lỗi khi lưu bài Quiz");
+      message.error("Lỗi khi lưu bài Đánh giá");
+    }
+  };
+
+  // --- NÚT BẤM NHANH THAY ĐỔI STATUS TRỰC TIẾP ---
+  const handleToggleStatus = async (quiz: QuizResponse) => {
+    try {
+      if (quiz.status === "PUBLISHED") {
+        await instructorService.draftQuiz(quiz.id);
+        message.success(`Đã chuyển "${quiz.title}" về Bản nháp`);
+      } else {
+        await instructorService.publishQuiz(quiz.id);
+        message.success(`Đã phát hành công khai "${quiz.title}"`);
+      }
+      fetchQuizzes();
+    } catch (error) {
+      message.error("Lỗi khi thay đổi trạng thái bài thi");
     }
   };
 
   const handleDeleteQuiz = async (id: string) => {
     try {
       await instructorService.deleteQuiz(id);
-      message.success("Đã xóa bài Quiz");
+      message.success("Đã xóa bài Đánh giá");
       fetchQuizzes();
     } catch (error) {
-      message.error("Lỗi khi xóa bài Quiz");
+      message.error("Lỗi khi xóa");
     }
   };
 
-  // --- XỬ LÝ CHI TIẾT CÂU HỎI (DETAIL DRAWER) ---
   const handleViewDetail = (quiz: QuizResponse) => {
     setCurrentQuiz(quiz);
     setIsDetailDrawerOpen(true);
@@ -164,7 +187,7 @@ const QuizList: React.FC = () => {
             questions: newQuestions,
             totalQuestions: newQuestions.length,
           };
-          setCurrentQuiz(updated); // Update drawer
+          setCurrentQuiz(updated);
           return updated;
         }
         return q;
@@ -175,7 +198,6 @@ const QuizList: React.FC = () => {
     }
   };
 
-  // --- XỬ LÝ THÊM CÂU HỎI (ADD MODAL) ---
   const handleAddQuestionToQuiz = async (questionId: string) => {
     if (!currentQuiz) return;
     setAddQuestionLoading(true);
@@ -184,10 +206,8 @@ const QuizList: React.FC = () => {
         quizId: currentQuiz.id,
         questionId,
       });
-      message.success("Đã thêm câu hỏi vào bài Quiz");
-      // Sau khi thêm, tải lại danh sách Quiz để đồng bộ Drawer
+      message.success("Đã thêm câu hỏi vào bài Đánh giá");
       fetchQuizzes().then(() => {
-        // Cập nhật currentQuiz cho Drawer từ mảng mới fetch về
         const updatedQuiz = quizzes.find((q) => q.id === currentQuiz.id);
         if (updatedQuiz) setCurrentQuiz(updatedQuiz);
       });
@@ -198,35 +218,65 @@ const QuizList: React.FC = () => {
     }
   };
 
-  // Cấu hình bảng Quiz
   const columns = [
     {
       title: "Tiêu đề bài kiểm tra",
       dataIndex: "title",
       key: "title",
-      render: (text: string) => <Text strong>{text}</Text>,
+      render: (text: string) => (
+        <Text strong className="text-gray-800">
+          {text}
+        </Text>
+      ),
+    },
+    {
+      title: "Loại bài thi",
+      dataIndex: "type",
+      key: "type",
+      width: 150,
+      render: (type: "TEST" | "EXAM") => {
+        if (type === "EXAM") {
+          return (
+            <Tag color="purple" icon={<FileDoneOutlined />}>
+              KẾT THÚC
+            </Tag>
+          );
+        }
+        return (
+          <Tag color="cyan" icon={<ClockCircleOutlined />}>
+            KIỂM TRA
+          </Tag>
+        );
+      },
     },
     {
       title: "Số câu hỏi",
       dataIndex: "totalQuestions",
       key: "totalQuestions",
       align: "center" as const,
-      render: (count: number) => <Tag color="blue">{count} câu</Tag>,
+      width: 120,
+      render: (count: number) => (
+        <Tag color="blue" className="rounded-full px-3">
+          {count} câu
+        </Tag>
+      ),
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      width: 150,
+      width: 140,
       render: (status: string) => {
-        const statusConfig: any = {
-          PUBLISHED: { color: "green", text: "Công khai" },
-          DRAFT: { color: "orange", text: "Bản nháp" },
-        };
-        const config = statusConfig[status] || { color: "blue", text: status };
+        if (status === "PUBLISHED") {
+          return (
+            <Tag color="success" className="font-medium">
+              CÔNG KHAI
+            </Tag>
+          );
+        }
         return (
-          <Tag color={config.color} className="font-medium">
-            {config.text.toUpperCase()}
+          <Tag color="warning" className="font-medium">
+            BẢN NHÁP
           </Tag>
         );
       },
@@ -235,13 +285,49 @@ const QuizList: React.FC = () => {
       title: "Thao tác",
       key: "action",
       align: "right" as const,
+      width: 380,
       render: (_: any, record: QuizResponse) => (
-        <Space size="middle">
+        <Space size="small">
+          {/* NÚT ĐỔI TRẠNG THÁI */}
+          <Popconfirm
+            title={
+              record.status === "PUBLISHED"
+                ? "Hủy công khai bài thi này?"
+                : "Phát hành bài thi này?"
+            }
+            description={
+              record.status === "PUBLISHED"
+                ? "Bài thi sẽ chuyển về dạng Nháp."
+                : "Học viên sẽ có thể làm bài thi này."
+            }
+            onConfirm={() => handleToggleStatus(record)}
+            okText="Đồng ý"
+            cancelText="Hủy"
+          >
+            <Button
+              type="text"
+              icon={
+                record.status === "PUBLISHED" ? (
+                  <EyeInvisibleOutlined />
+                ) : (
+                  <GlobalOutlined />
+                )
+              }
+              className={
+                record.status === "PUBLISHED"
+                  ? "text-gray-500 hover:bg-gray-100"
+                  : "text-green-600 hover:bg-green-50"
+              }
+            >
+              {record.status === "PUBLISHED" ? "Ẩn bài" : "Phát hành"}
+            </Button>
+          </Popconfirm>
+
           <Button
             type="text"
             icon={<EyeOutlined />}
             onClick={() => handleViewDetail(record)}
-            className="text-blue-600 font-medium"
+            className="text-blue-600 font-medium hover:bg-blue-50"
           >
             Chi tiết
           </Button>
@@ -249,7 +335,7 @@ const QuizList: React.FC = () => {
             type="text"
             icon={<EditOutlined />}
             onClick={() => handleOpenQuizModal(record)}
-            className="text-orange-500"
+            className="text-orange-500 hover:bg-orange-50"
           >
             Sửa
           </Button>
@@ -261,7 +347,12 @@ const QuizList: React.FC = () => {
             cancelText="Hủy"
             okButtonProps={{ danger: true }}
           >
-            <Button type="text" danger icon={<DeleteOutlined />}>
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              className="hover:bg-red-50"
+            >
               Xóa
             </Button>
           </Popconfirm>
@@ -273,19 +364,26 @@ const QuizList: React.FC = () => {
   return (
     <div className="animate-fade-in">
       <Card
+        className="rounded-2xl shadow-sm border-gray-100"
         title={
-          <Space>
-            <UnorderedListOutlined />
-            <span>Quản lý bài kiểm tra</span>
+          <Space className="py-2">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+              <UnorderedListOutlined />
+            </div>
+            <span className="text-lg font-bold text-gray-800">
+              Quản lý bài kiểm tra & Đánh giá
+            </span>
           </Space>
         }
         extra={
           <Button
             type="primary"
             icon={<PlusOutlined />}
+            size="large"
+            className="rounded-lg shadow-md hover:shadow-lg transition-shadow"
             onClick={() => handleOpenQuizModal()}
           >
-            Tạo bài Quiz mới
+            Tạo bài Đánh giá mới
           </Button>
         }
       >
@@ -298,17 +396,16 @@ const QuizList: React.FC = () => {
         />
       </Card>
 
-      {/* MODAL TẠO/SỬA QUIZ */}
       <Modal
         title={
           <Space>
             {currentQuiz ? (
-              <EditOutlined className="text-orange-500" />
+              <EditOutlined className="text-orange-500 text-xl" />
             ) : (
-              <PlusOutlined className="text-blue-500" />
+              <PlusOutlined className="text-blue-500 text-xl" />
             )}
-            <span className="text-lg font-bold">
-              {currentQuiz ? "Cập nhật bài Quiz" : "Tạo bài Quiz mới"}
+            <span className="text-xl font-bold">
+              {currentQuiz ? "Chỉnh sửa bài Đánh giá" : "Tạo bài Đánh giá mới"}
             </span>
           </Space>
         }
@@ -319,10 +416,10 @@ const QuizList: React.FC = () => {
         cancelText="Hủy"
         destroyOnClose
         centered
+        width={450}
       >
-        <div className="space-y-5 pt-4">
-          {/* Phần nhập Tiêu đề */}
-          <div>
+        <div className="pt-6 pb-2">
+          <div className="mb-5">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Tiêu đề bài kiểm tra <span className="text-red-500">*</span>
             </label>
@@ -335,125 +432,199 @@ const QuizList: React.FC = () => {
             />
           </div>
 
-          {/* Phần chọn Trạng thái (Chỉ hiển thị khi Sửa) */}
           {currentQuiz && (
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Trạng thái phát hành
+                Phân loại <span className="text-red-500">*</span>
               </label>
               <Select
                 className="w-full"
                 size="large"
-                value={quizStatus}
-                onChange={(val) => setQuizStatus(val)}
+                value={quizType}
+                onChange={(val) => setQuizType(val)}
               >
-                <Option value="DRAFT">
+                <Option value="TEST">
                   <Space>
-                    <Tag color="warning" className="m-0">
-                      DRAFT
-                    </Tag>
-                    <span className="text-gray-500 text-xs">
-                      - Chỉ giảng viên nhìn thấy
-                    </span>
+                    <ClockCircleOutlined className="text-cyan-600" />
+                    Kiểm tra
                   </Space>
                 </Option>
-                <Option value="PUBLISHED">
+                <Option value="EXAM">
                   <Space>
-                    <Tag color="success" className="m-0">
-                      PUBLISHED
-                    </Tag>
-                    <span className="text-gray-500 text-xs">
-                      - Công khai cho học viên làm bài
-                    </span>
+                    <FileDoneOutlined className="text-purple-600" />
+                    Kết thúc
                   </Space>
                 </Option>
               </Select>
             </div>
           )}
 
-          {/* Note nhỏ cho người dùng */}
           {!currentQuiz && (
             <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
               <Text type="secondary" className="text-xs">
-                💡 Lưu ý: Bài Quiz mới tạo sẽ được để ở trạng thái <b>DRAFT</b>{" "}
-                mặc định. Bạn có thể thay đổi trạng thái sau khi đã thêm đủ câu
-                hỏi.
+                💡 Lưu ý: Bài kiểm tra mới sẽ được lưu ở dạng <b>Bản Nháp</b> và
+                loại <b>TEST</b> mặc định. Hãy dùng nút <b>"Phát hành"</b> hoặc
+                chọn <b>"Sửa"</b> ở bên ngoài bảng sau khi bạn đã thiết lập
+                xong.
               </Text>
             </div>
           )}
         </div>
       </Modal>
 
-      {/* DRAWER CHI TIẾT CÂU HỎI (XUẤT HIỆN BÊN PHẢI) */}
+      {/* DRAWER CHI TIẾT CÂU HỎI */}
       <Drawer
         title={
-          <div className="flex justify-between items-center w-full pr-4">
-            <span>Chi tiết: {currentQuiz?.title}</span>
+          <div className="flex justify-between items-center w-full">
+            <div className="flex items-center gap-2 text-blue-700 pr-4">
+              <BookOutlined className="text-xl" />
+              <span
+                className="font-bold text-lg line-clamp-1"
+                title={currentQuiz?.title}
+              >
+                {currentQuiz?.title}
+              </span>
+            </div>
             <Button
               type="primary"
-              size="small"
               icon={<PlusOutlined />}
               onClick={() => setIsAddQuestionModalOpen(true)}
+              className="rounded-lg shadow-sm"
             >
               Thêm câu hỏi
             </Button>
           </div>
         }
         placement="right"
-        width={600}
+        width={650}
         onClose={() => setIsDetailDrawerOpen(false)}
         open={isDetailDrawerOpen}
         destroyOnClose
+        styles={{ body: { backgroundColor: "#f8fafc", padding: "20px" } }}
       >
         {!currentQuiz?.questions || currentQuiz.questions.length === 0 ? (
-          <Empty description="Chưa có câu hỏi nào trong bài thi này" />
+          <div className="flex flex-col items-center justify-center h-full mt-10">
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <span className="text-gray-500 font-medium">
+                  Chưa có câu hỏi nào trong bài thi này
+                </span>
+              }
+            />
+            <Button
+              type="dashed"
+              icon={<PlusOutlined />}
+              onClick={() => setIsAddQuestionModalOpen(true)}
+              className="mt-4 text-blue-500 border-blue-200 bg-blue-50 hover:bg-blue-100"
+            >
+              Thêm câu hỏi ngay
+            </Button>
+          </div>
         ) : (
-          <List
-            itemLayout="vertical"
-            dataSource={currentQuiz.questions}
-            renderItem={(item, index) => (
-              <List.Item
-                className="hover:bg-gray-50 transition-all p-4 rounded-lg mb-2 border"
-                extra={
+          <div className="space-y-4 pb-10">
+            {currentQuiz.questions.map((item, index) => (
+              <div
+                key={item.id}
+                className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex gap-2 items-center">
+                    <div className="bg-blue-600 text-white font-bold text-sm px-3 py-1 rounded-lg shadow-sm">
+                      Câu {index + 1}
+                    </div>
+                    <Tag
+                      color={item.type === "SINGLE_CHOICE" ? "cyan" : "purple"}
+                      className="rounded-md m-0 font-medium border-none"
+                    >
+                      {item.type === "SINGLE_CHOICE"
+                        ? "1 đáp án"
+                        : "Nhiều đáp án"}
+                    </Tag>
+                  </div>
                   <Popconfirm
                     title="Gỡ câu hỏi?"
+                    description="Xóa câu hỏi này khỏi bài thi?"
                     onConfirm={() => handleRemoveQuestionFromQuiz(item.id)}
+                    okText="Gỡ"
+                    cancelText="Hủy"
+                    okButtonProps={{ danger: true }}
+                    placement="left"
                   >
-                    <Button type="text" danger icon={<DeleteOutlined />} />
+                    <Button
+                      type="text"
+                      danger
+                      icon={<DeleteOutlined />}
+                      className="hover:bg-red-50 rounded-lg h-8 w-8 p-0"
+                    />
                   </Popconfirm>
-                }
-              >
-                <div className="mb-2">
-                  <Tag color="cyan">Câu {index + 1}</Tag>
-                  <Tag
-                    color={item.type === "SINGLE_CHOICE" ? "blue" : "purple"}
-                  >
-                    {item.type === "SINGLE_CHOICE"
-                      ? "1 đáp án"
-                      : "Nhiều đáp án"}
-                  </Tag>
                 </div>
-                <Text strong>{item.content}</Text>
-                <div className="mt-2 pl-4">
+
+                <div className="text-gray-800 font-semibold text-base mb-4 leading-relaxed">
+                  {item.content}
+                </div>
+
+                <div className="space-y-2.5">
                   {item.answers.map((ans, i) => (
                     <div
                       key={i}
-                      className={
+                      className={`flex items-start gap-3 p-3 rounded-xl border ${
                         ans.correct
-                          ? "text-green-600 font-medium"
-                          : "text-gray-500 text-sm"
-                      }
+                          ? "bg-green-50 border-green-200 text-green-800"
+                          : "bg-gray-50/50 border-gray-200 text-gray-600 hover:bg-gray-50"
+                      } transition-colors`}
                     >
-                      {ans.correct ? "● " : "○ "} {ans.answer}
+                      <div className="mt-0.5 shrink-0">
+                        {item.type === "SINGLE_CHOICE" ? (
+                          <div
+                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                              ans.correct
+                                ? "border-green-500 bg-green-500"
+                                : "border-gray-300"
+                            }`}
+                          >
+                            {ans.correct && (
+                              <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                            )}
+                          </div>
+                        ) : (
+                          <div
+                            className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center ${
+                              ans.correct
+                                ? "border-green-500 bg-green-500"
+                                : "border-gray-300"
+                            }`}
+                          >
+                            {ans.correct && (
+                              <CheckOutlined className="text-white text-[10px] font-bold" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <span
+                        className={`flex-1 text-sm ${
+                          ans.correct ? "font-semibold" : "font-medium"
+                        }`}
+                      >
+                        {ans.answer}
+                      </span>
+
+                      {ans.correct && (
+                        <div className="bg-green-100 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shrink-0">
+                          Đúng
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
-              </List.Item>
-            )}
-          />
+              </div>
+            ))}
+          </div>
         )}
       </Drawer>
 
+      {/* MODAL THÊM CÂU HỎI TỪ NGÂN HÀNG */}
       <Modal
         title={
           <Space>
@@ -464,18 +635,17 @@ const QuizList: React.FC = () => {
         open={isAddQuestionModalOpen}
         onCancel={() => setIsAddQuestionModalOpen(false)}
         footer={null}
-        width={850} // Tăng chiều rộng để hiển thị đáp án thoải mái hơn
+        width={850}
         centered
       >
         <div className="space-y-4">
-          {/* 1. Chọn Category */}
           <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
             <Text strong className="text-blue-700">
               Bước 1: Chọn danh mục câu hỏi
             </Text>
             <Select
               className="w-full mt-2"
-              placeholder="Chọn danh mục (VD: Java Core, Spring Boot...)"
+              placeholder="Chọn danh mục..."
               size="large"
               value={selectedCatId || undefined}
               onChange={(val) => setSelectedCatId(val)}
@@ -485,16 +655,13 @@ const QuizList: React.FC = () => {
               }))}
             />
           </div>
-
-          <Divider orientation="left" className="m-0">
+          <Divider orientation="horizontal" className="m-0">
             <Tag color="orange">Bước 2: Chọn câu hỏi để thêm</Tag>
           </Divider>
-
-          {/* 2. Danh sách kết quả có nội dung chi tiết */}
           <div className="max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
             {!selectedCatId ? (
               <div className="text-center py-16">
-                <Empty description="Vui lòng chọn danh mục ở trên để hiển thị ngân hàng câu hỏi" />
+                <Empty description="Vui lòng chọn danh mục ở trên" />
               </div>
             ) : bankQuestions.length === 0 ? (
               <Empty description="Danh mục này hiện chưa có câu hỏi nào." />
@@ -533,12 +700,9 @@ const QuizList: React.FC = () => {
                       </Button>
                     }
                   >
-                    {/* Nội dung câu hỏi */}
                     <div className="mb-3 px-2 py-1 bg-gray-50 rounded italic text-gray-800">
                       "{item.content}"
                     </div>
-
-                    {/* Danh sách đáp án của câu hỏi trong ngân hàng */}
                     <div className="pl-4 space-y-1.5 border-l-2 border-gray-100">
                       {item.options.map((opt) => (
                         <div
@@ -549,17 +713,23 @@ const QuizList: React.FC = () => {
                               : ""
                           }`}
                         >
-                          {/* Icon hiển thị đúng/sai */}
                           {item.type === "SINGLE_CHOICE" ? (
                             <div
-                              className={`w-3 h-3 rounded-full border ${opt.correct ? "bg-green-500 border-green-600" : "border-gray-300"}`}
+                              className={`w-3 h-3 rounded-full border ${
+                                opt.correct
+                                  ? "bg-green-500 border-green-600"
+                                  : "border-gray-300"
+                              }`}
                             />
                           ) : (
                             <div
-                              className={`w-3 h-3 border ${opt.correct ? "bg-green-500 border-green-600" : "border-gray-300"}`}
+                              className={`w-3 h-3 border ${
+                                opt.correct
+                                  ? "bg-green-500 border-green-600"
+                                  : "border-gray-300"
+                              }`}
                             />
                           )}
-
                           <span
                             className={
                               opt.correct
@@ -569,7 +739,6 @@ const QuizList: React.FC = () => {
                           >
                             {opt.answer}
                           </span>
-
                           {opt.correct && (
                             <Tag
                               color="success"

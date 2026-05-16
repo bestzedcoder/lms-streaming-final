@@ -203,7 +203,7 @@ const CourseResourcesManager: React.FC<Props> = ({ courseId, onRefresh }) => {
   ];
 
   return (
-    <div className="py-2">
+    <div className="py-2 animate-fade-in">
       <div className="mb-4 bg-gray-50 p-4 rounded-lg border border-dashed border-gray-300">
         <Text type="secondary">
           <LinkOutlined className="mr-2" />
@@ -225,7 +225,7 @@ const CourseResourcesManager: React.FC<Props> = ({ courseId, onRefresh }) => {
       <Drawer
         title={
           <div className="flex flex-col">
-            <span className="text-lg">
+            <span className="text-lg font-bold text-gray-800">
               Chọn {targetLesson?.lessonType} bài học
             </span>
             <Text type="secondary" className="text-xs font-normal">
@@ -244,20 +244,20 @@ const CourseResourcesManager: React.FC<Props> = ({ courseId, onRefresh }) => {
           dataSource={selectionList}
           locale={{ emptyText: <Empty description="Kho dữ liệu trống" /> }}
           renderItem={(item) => {
-            // Logic lấy ID và Title giữ nguyên như cũ
             const id = item.videoId || item.lectureId || item.quizId;
             const title = item.title;
+            const quizType = item.type; // Lấy trường type từ DTO nếu có
 
             return (
               <List.Item
                 key={id}
-                className="p-0 border-none mb-4 animate-fade-in" // Xóa padding mặc định của List.Item
+                className="p-0 border-none mb-4 animate-fade-in"
               >
                 <div
                   className="w-full flex items-center gap-4 bg-white hover:bg-blue-50/50 p-4 rounded-xl border border-gray-100 hover:border-blue-200 cursor-pointer transition-all duration-300 group shadow-sm hover:shadow-md"
                   onClick={() => handleAddResource(id)}
                 >
-                  {/* Phần 1: Icon đại diện cho loại tài nguyên (Được làm to và nổi bật hơn) */}
+                  {/* Icon đại diện */}
                   <div className="flex-shrink-0 w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-105 transition-transform">
                     {targetLesson?.lessonType === "VIDEO" ? (
                       <PlayCircleOutlined />
@@ -268,20 +268,32 @@ const CourseResourcesManager: React.FC<Props> = ({ courseId, onRefresh }) => {
                     )}
                   </div>
 
-                  {/* Phần 2: Nội dung văn bản (Nằm giữa) */}
-                  <div className="flex-grow min-w-0">
-                    <Text
-                      strong
-                      className="block text-gray-800 text-base mb-0.5 truncate group-hover:text-blue-700 transition-colors"
-                    >
-                      {title}
-                    </Text>
-                    <Text type="secondary" className="text-xs italic">
+                  {/* Nội dung văn bản */}
+                  <div className="flex-grow min-w-0 flex flex-col">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <Text
+                        strong
+                        className="block text-gray-800 text-base truncate group-hover:text-blue-700 transition-colors"
+                        title={title}
+                      >
+                        {title}
+                      </Text>
+                      {/* Hiển thị Tag Phân loại nếu là Quiz */}
+                      {targetLesson?.lessonType === "QUIZ" && quizType && (
+                        <Tag
+                          color={quizType === "EXAM" ? "purple" : "cyan"}
+                          className="m-0 border-none font-medium text-[10px] uppercase tracking-wider"
+                        >
+                          {quizType === "EXAM" ? "Exam" : "Test"}
+                        </Tag>
+                      )}
+                    </div>
+                    <Text type="secondary" className="text-xs italic truncate">
                       Gắn tài nguyên vào bài học: {targetLesson?.title}
                     </Text>
                   </div>
 
-                  {/* Phần 3: Nút hành động "Thêm" (Nổi bật khi hover) */}
+                  {/* Nút hành động */}
                   <div className="flex-shrink-0 ml-auto pl-2">
                     <Button
                       type="primary"

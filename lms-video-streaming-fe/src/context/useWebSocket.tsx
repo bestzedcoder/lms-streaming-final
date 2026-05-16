@@ -66,20 +66,20 @@ export const WebSocketProvider = ({
         }
 
         if (user.role === "STUDENT") {
-          const employeeSub = client.subscribe(
-            "/user/queue/employee-notifications",
+          const studentSub = client.subscribe(
+            "/user/queue/student-notifications",
             (message: IMessage) => {
-              console.log("Employee raw message:", message.body);
+              console.log("Student raw message:", message.body);
 
               const payload = JSON.parse(message.body) as Notification;
 
-              console.log("Employee notification:", payload);
+              console.log("Student notification:", payload);
 
               addStudentNotification(payload);
             },
           );
 
-          subscriptionsRef.current.push(employeeSub);
+          subscriptionsRef.current.push(studentSub);
         }
       },
 

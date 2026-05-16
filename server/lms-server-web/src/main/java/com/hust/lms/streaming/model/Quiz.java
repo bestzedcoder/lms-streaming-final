@@ -2,6 +2,7 @@ package com.hust.lms.streaming.model;
 
 
 import com.hust.lms.streaming.enums.QuizStatus;
+import com.hust.lms.streaming.enums.QuizType;
 import com.hust.lms.streaming.model.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,9 +33,18 @@ public class Quiz extends BaseEntity {
     @Builder.Default
     private QuizStatus status = QuizStatus.DRAFT;
 
+    @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private QuizType type = QuizType.TEST;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lesson_id", unique = true)
     private Lesson lesson;
+
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<QuizVersion> versions = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "owner_id", nullable = false, updatable = false)

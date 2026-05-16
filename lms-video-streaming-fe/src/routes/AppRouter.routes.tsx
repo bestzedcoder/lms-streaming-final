@@ -35,6 +35,7 @@ import CourseLearningWorkspace from "../pages/student/CourseLearningWorkspace";
 import StudentRequestsLayout from "../components/layout/StudentRequestsLayout";
 import ReportsPage from "../pages/student/ReportsPage";
 import RegistrationCoursePage from "../pages/student/RegistrationCoursePage";
+import CourseStatisticsPage from "../pages/instructor/CourseStatisticsPage";
 
 const AppRouter = () => {
   return (
@@ -112,6 +113,10 @@ const AppRouter = () => {
             <Route
               path="courses/:courseId/manage"
               element={<ManageCoursePage />}
+            />
+            <Route
+              path="courses/:courseId/statistics"
+              element={<CourseStatisticsPage />}
             />
             <Route path="resources/videos" element={<VideoResourcePage />} />
             <Route path="resources/quizzes" element={<QuizManagementPage />} />

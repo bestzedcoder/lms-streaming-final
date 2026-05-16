@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -647,6 +648,28 @@ public class InstructorController {
             .build());
   }
 
+  @PostMapping("quizzes/handle-publish/{id}")
+  public ResponseEntity<BaseResponse<?>> publishQuiz(@PathVariable("id") UUID quizId) {
+    this.quizService.publishQuiz(quizId);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  @PostMapping("quizzes/handle-draft/{id}")
+  public ResponseEntity<BaseResponse<?>> draftQuiz(@PathVariable("id") UUID quizId) {
+    this.quizService.draftQuiz(quizId);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
+  }
+
   @DeleteMapping("quizzes/handle-delete/{id}")
   public ResponseEntity<BaseResponse<?>> deleteQuiz(@PathVariable("id") UUID quizId) {
     this.quizService.deleteQuiz(quizId);
@@ -678,5 +701,48 @@ public class InstructorController {
             .success(true)
             .timestamp(LocalDateTime.now())
             .build());
+  }
+
+  // Statistics
+
+  @GetMapping("statistics/course/{id}/overview")
+  public ResponseEntity<BaseResponse<?>> overview(@PathVariable("id") UUID courseId) {
+    InstructorCourseStatisticsOverviewResponse res = this.instructorService.courseOverview(courseId);
+    return ResponseEntity.ok(BaseResponse.builder()
+            .code(200)
+            .message("Success")
+            .data(res)
+            .success(true)
+            .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  @GetMapping("statistics/course/{id}/quizzes")
+  public ResponseEntity<BaseListResponse<?>> getQuizzes(@PathVariable("id") UUID courseId) {
+    List<InstructorQuizStatisticsResponse> res = this.instructorService.getQuizzesInCourse(courseId);
+    return ResponseEntity.ok(BaseListResponse.<InstructorQuizStatisticsResponse>builder()
+                    .code(200)
+                    .message("Success")
+                    .data(res)
+                    .success(true)
+                    .timestamp(LocalDateTime.now())
+            .build());
+  }
+
+  @PostMapping("statistics/quiz/export")
+  public ResponseEntity<?> exportQuizSubmission(
+          @RequestBody ExportQuizSubmissionRequest request
+  ) {
+
+    byte[] excel = this.instructorService.exportData(UUID.fromString(request.getQuizId()), request.getVersionNumber());
+    return ResponseEntity.ok()
+            .header(
+                    HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=quiz-submissions.xlsx"
+            )
+            .contentType(
+                    MediaType.APPLICATION_OCTET_STREAM
+            )
+            .body(excel);
   }
 }

@@ -120,6 +120,10 @@ public class CourseServiceImpl implements CourseService {
     Course course = this.courseRepository.findByIdAndInstructorId(id, UUID.fromString(authId)).orElseThrow(
         ResourceAccessDeniedException::new);
 
+    if (CourseStatus.PUBLISHED.equals(course.getStatus())) {
+      throw new BadRequestException("Khóa học đang ở chế độ publish không thể chỉnh sửa");
+    }
+
     course.setDescriptionShort(request.getDescriptionShort());
     course.setRequirements(request.getRequirements());
     course.setDescription(request.getDescription());
@@ -167,6 +171,10 @@ public class CourseServiceImpl implements CourseService {
     String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
     UUID courseId = UUID.fromString(request.getCourseId());
     Course course = this.courseRepository.findByIdAndInstructorId(courseId, UUID.fromString(authId)).orElseThrow(ResourceAccessDeniedException::new);
+
+    if (CourseStatus.PUBLISHED.equals(course.getStatus())) {
+      throw new BadRequestException("Khóa học đang ở chế độ publish không thể chỉnh sửa");
+    }
 
     int countSection = course.getSections().size();
     int sectionIndex = countSection == 0 ? 1 : course.getSections().get(countSection - 1).getOrderIndex() + 1;

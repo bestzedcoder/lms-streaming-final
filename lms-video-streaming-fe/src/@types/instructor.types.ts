@@ -335,7 +335,7 @@ export interface QuizCreatingRequest {
 export interface QuizUpdatingRequest {
   id: string;
   title: string;
-  status: "PUBLISHED" | "DRAFT";
+  type: "TEST" | "EXAM";
 }
 
 export interface AddQuizQuestionRequest {
@@ -353,6 +353,7 @@ export interface QuizResponse {
   title: string;
   totalQuestions: number;
   status: "PUBLISHED" | "DRAFT";
+  type: "TEST" | "EXAM";
   questions: QuizQuestionResponse[];
 }
 
@@ -383,6 +384,7 @@ export interface SelectVideoResponse {
 export interface SelectQuizResponse {
   quizId: string;
   title: string;
+  type: "TEST" | "EXAM";
 }
 
 export interface AddResourceForLesson {
@@ -395,4 +397,38 @@ export interface AddResourceForLesson {
 export interface RemoveResourceForLesson {
   courseId: string;
   lessonId: string;
+}
+
+// statistics
+
+export interface InstructorCourseStatisticsOverviewResponse {
+  totalStudents: number;
+  totalVideos: number;
+  totalLectures: number;
+  totalTests: number;
+  totalExams: number;
+
+  totalReviews: number;
+  averageRating: number;
+
+  scoreTestDistribution: Record<number, number>;
+  scoreExamDistribution: Record<number, number>;
+}
+
+export interface InstructorQuizStatisticsResponse {
+  quiz: InstructorQuizResponse;
+  versions: number[];
+}
+
+export interface InstructorQuizResponse {
+  quizId: string;
+  title: string;
+  totalSubmissions: number;
+  type: "TEST" | "EXAM";
+  averageScore: number;
+}
+
+export interface ExportQuizSubmissionRequest {
+  quizId: string;
+  versionNumber: number;
 }

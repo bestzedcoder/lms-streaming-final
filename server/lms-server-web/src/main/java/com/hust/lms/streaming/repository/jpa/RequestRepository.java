@@ -47,7 +47,7 @@ public interface RequestRepository extends JpaRepository<Request, UUID> {
     SELECT EXISTS (
         SELECT 1
         FROM requests r 
-        WHERE r.request_type = :type AND r.user_id = :userId
+        WHERE r.request_type = :type AND r.user_id = :userId AND r.status = false
     )
 """, nativeQuery = true)
   boolean existsByUser(UUID userId, String type);

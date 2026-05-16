@@ -1,24 +1,21 @@
-package com.hust.lms.streaming.dto.response.quiz;
+package com.hust.lms.streaming.dto.response.instructor;
 
-import com.hust.lms.streaming.enums.QuizStatus;
 import com.hust.lms.streaming.enums.QuizType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 import java.util.UUID;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class QuizResponse {
-    private UUID id;
+public class InstructorQuizResponse {
+    private UUID quizId;
     private String title;
-    private int totalQuestions;
-    private QuizStatus status;
+    private int totalSubmissions;
     private QuizType type;
-    private List<QuizQuestionResponse> questions;
+    private double averageScore;
 }

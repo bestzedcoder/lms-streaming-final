@@ -46,7 +46,7 @@ import type {
 } from "../../@types/instructor.types";
 
 const { Title, Text } = Typography;
-const { TextArea } = Input; // Sử dụng TextArea cho phần nhập lý do
+const { TextArea } = Input; 
 
 const InstructorCourseDetailPage = () => {
   const { id } = useParams();
@@ -346,7 +346,6 @@ const InstructorCourseDetailPage = () => {
             render: (_: any, record: InstructorCourseParticipantResponse) => (
               <Space>
                 {record.status === "ACTIVE" ? (
-                  // Bấm khóa -> Mở Modal (không cần Popconfirm)
                   <Button
                     type="text"
                     size="small"
@@ -359,7 +358,6 @@ const InstructorCourseDetailPage = () => {
                     Khóa
                   </Button>
                 ) : (
-                  // Bấm mở khóa -> Hiện Popconfirm xác nhận nhanh
                   <Popconfirm
                     title="Mở khóa cho học viên này?"
                     description="Học viên sẽ có thể tiếp tục học."
@@ -584,7 +582,6 @@ const InstructorCourseDetailPage = () => {
         <Tabs defaultActiveKey="1" items={tabItems} size="large" />
       </Card>
 
-      {/* --- MODAL BAN HỌC VIÊN --- */}
       <Modal
         title={
           <div className="flex items-center gap-2">

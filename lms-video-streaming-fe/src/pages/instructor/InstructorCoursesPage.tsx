@@ -16,6 +16,7 @@ import {
   StarFilled,
   ReadOutlined,
   UserOutlined,
+  BarChartOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { instructorService } from "../../services/instructor.service";
@@ -172,12 +173,22 @@ const InstructorCoursesPage = () => {
               }
             />
           </Tooltip>
-          <Tooltip title="Xem thống kê chi tiết" color="purple">
+          <Tooltip title="Xem thông tin khóa học" color="purple">
             <Button
               type="text"
               className="text-purple-500 hover:text-purple-600 hover:bg-purple-50 w-10 h-10 rounded-full flex items-center justify-center"
               icon={<EyeOutlined className="text-lg" />}
               onClick={() => navigate(`/instructor/courses/${record.id}`)}
+            />
+          </Tooltip>
+          <Tooltip title="Thống kê & Báo cáo" color="green">
+            <Button
+              type="text"
+              className="text-green-500 hover:text-green-600 hover:bg-green-50 w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+              icon={<BarChartOutlined className="text-lg" />}
+              onClick={() =>
+                navigate(`/instructor/courses/${record.id}/statistics`)
+              }
             />
           </Tooltip>
         </Space>

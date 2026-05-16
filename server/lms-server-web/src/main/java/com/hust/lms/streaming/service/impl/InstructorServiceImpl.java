@@ -5,28 +5,37 @@ import com.hust.lms.streaming.dto.request.upload.ResourceCreatingRequest;
 import com.hust.lms.streaming.dto.request.upload.ResourceUpdatingRequest;
 import com.hust.lms.streaming.dto.request.upload.VideoCreatingRequest;
 import com.hust.lms.streaming.dto.request.upload.VideoUpdatingRequest;
+import com.hust.lms.streaming.dto.response.instructor.InstructorCourseStatisticsOverviewResponse;
 import com.hust.lms.streaming.dto.response.instructor.InstructorInfoResponse;
+import com.hust.lms.streaming.dto.response.instructor.InstructorQuizResponse;
+import com.hust.lms.streaming.dto.response.instructor.InstructorQuizStatisticsResponse;
+import com.hust.lms.streaming.enums.LessonType;
+import com.hust.lms.streaming.enums.QuizType;
 import com.hust.lms.streaming.enums.ResourceStatus;
 import com.hust.lms.streaming.enums.VideoStatus;
 import com.hust.lms.streaming.event.custom.ResourceValidationEvent;
 import com.hust.lms.streaming.event.enums.ResourceType;
 import com.hust.lms.streaming.exception.BadRequestException;
 import com.hust.lms.streaming.mapper.InstructorMapper;
-import com.hust.lms.streaming.model.Instructor;
-import com.hust.lms.streaming.model.Resource;
-import com.hust.lms.streaming.model.User;
-import com.hust.lms.streaming.model.Video;
-import com.hust.lms.streaming.repository.jpa.InstructorRepository;
-import com.hust.lms.streaming.repository.jpa.ResourceRepository;
-import com.hust.lms.streaming.repository.jpa.UserRepository;
-import com.hust.lms.streaming.repository.jpa.VideoRepository;
+import com.hust.lms.streaming.model.*;
+import com.hust.lms.streaming.model.Dto.QuizStatisticsProjection;
+import com.hust.lms.streaming.model.Dto.QuizSubmissionExportProjection;
+import com.hust.lms.streaming.model.Dto.ScoreDistributionProjection;
+import com.hust.lms.streaming.repository.jpa.*;
 import com.hust.lms.streaming.service.InstructorService;
-import java.util.UUID;
+
+import java.io.ByteArrayOutputStream;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.hust.lms.streaming.upload.CloudinaryService;
 import com.hust.lms.streaming.upload.CloudinaryUploadResult;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -37,6 +46,9 @@ import org.springframework.web.multipart.MultipartFile;
 public class InstructorServiceImpl implements InstructorService {
   private final InstructorRepository instructorRepository;
   private final UserRepository userRepository;
+  private final CourseRepository courseRepository;
+  private final QuizRepository quizRepository;
+  private final QuizSubmissionRepository quizSubmissionRepository;
   private final CloudinaryService cloudinaryService;
   private final ResourceRepository resourceRepository;
   private final VideoRepository videoRepository;
@@ -122,6 +134,216 @@ public class InstructorServiceImpl implements InstructorService {
     }
     video.setTitle(request.getTitle());
     this.videoRepository.save(video);
+  }
+
+  @Override
+  public InstructorCourseStatisticsOverviewResponse courseOverview(UUID courseId) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+
+    Course course = this.courseRepository.findCourseByIdAndInstructorId(courseId, UUID.fromString(authId)).orElse(null);
+
+    if (course == null) return null;
+
+    int totalStudents = course.getEnrollments().size();
+    int totalReviews = course.getReviews().size();
+    double averageRating = course.getAverageRating();
+    int totalVideos = 0;
+    int totalLectures = 0;
+    int totalTests = 0;
+    int totalExams = 0;
+
+    List<Lesson> lessons = this.courseRepository.findLessonsByCourseId(courseId);
+
+    for (Lesson lesson : lessons) {
+      if (LessonType.VIDEO.equals(lesson.getLessonType())) {
+        totalVideos++;
+      } else if (LessonType.TEXT.equals(lesson.getLessonType())) {
+        totalLectures++;
+      } else if (LessonType.QUIZ.equals(lesson.getLessonType())) {
+        Quiz quiz = this.quizRepository.findByLesson(lesson.getId()).orElse(null);
+        if (quiz == null) continue;
+
+        if (QuizType.TEST.equals(quiz.getType())) {
+          totalTests++;
+        } else {
+          totalExams++;
+        }
+      }
+    }
+
+    Map<Double, Integer> scoreTestDistribution = this.quizSubmissionRepository.getScoreDistributionLatestVersion(courseId, QuizType.TEST.toString()).stream()
+            .collect(Collectors.toMap(
+                    ScoreDistributionProjection::getScore,
+                    ScoreDistributionProjection::getTotal,
+                    (a, b) -> a,
+                    LinkedHashMap::new
+            ));
+
+    Map<Double, Integer> scoreExamDistribution = this.quizSubmissionRepository.getScoreDistributionLatestVersion(courseId, QuizType.EXAM.toString()).stream()
+            .collect(Collectors.toMap(
+                    ScoreDistributionProjection::getScore,
+                    ScoreDistributionProjection::getTotal,
+                    (a, b) -> a,
+                    LinkedHashMap::new
+            ));
+
+    return InstructorCourseStatisticsOverviewResponse.builder()
+            .totalStudents(totalStudents)
+            .totalVideos(totalVideos)
+            .totalLectures(totalLectures)
+            .totalTests(totalTests)
+            .totalExams(totalExams)
+            .totalReviews(totalReviews)
+            .averageRating(averageRating)
+            .scoreTestDistribution(scoreTestDistribution)
+            .scoreExamDistribution(scoreExamDistribution)
+            .build();
+  }
+
+  @Override
+  public List<InstructorQuizStatisticsResponse> getQuizzesInCourse(UUID courseId) {
+    String authId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+
+    Course course = this.courseRepository.findCourseByIdAndInstructorId(courseId, UUID.fromString(authId)).orElse(null);
+    if (course == null) return null;
+
+    List<Lesson> lessons = this.courseRepository.findLessonsByCourseId(courseId);
+    List<Lesson> lessonQuizzes = lessons.stream().filter(l -> LessonType.QUIZ.equals(l.getLessonType())).toList();
+
+    List<InstructorQuizStatisticsResponse> res = new ArrayList<>();
+
+    for (Lesson lesson : lessonQuizzes) {
+      QuizStatisticsProjection data = this.quizRepository.getQuizInLesson(lesson.getId()).orElse(null);
+      if (data == null) continue;
+
+      List<Integer> versions = this.quizRepository.findVersionsByQuiz(data.getId());
+
+      InstructorQuizResponse quiz = InstructorQuizResponse.builder()
+              .quizId(data.getId())
+              .type(data.getType())
+              .totalSubmissions(data.getTotalSubmissions())
+              .averageScore(data.getAverageScore())
+              .title(data.getTitle())
+              .build();
+      InstructorQuizStatisticsResponse ele = InstructorQuizStatisticsResponse.builder()
+              .quiz(quiz)
+              .versions(versions)
+              .build();
+      res.add(ele);
+    }
+
+    return res;
+  }
+
+  @Override
+  public byte[] exportData(UUID quizId, Integer versionNumber) {
+
+    List<QuizSubmissionExportProjection> data;
+
+    if (versionNumber == 0) {
+
+      data = this.quizSubmissionRepository
+              .findAllExportByQuiz(quizId);
+
+    } else {
+
+      data = this.quizSubmissionRepository
+              .findExportByQuizAndVersion(
+                      quizId,
+                      versionNumber
+              );
+    }
+
+    try (
+            Workbook workbook = new XSSFWorkbook();
+            ByteArrayOutputStream outputStream =
+                    new ByteArrayOutputStream()
+    ) {
+
+      Sheet sheet = workbook.createSheet(
+              "Quiz Submissions"
+      );
+
+      Row header = sheet.createRow(0);
+
+      header.createCell(0)
+              .setCellValue("Họ tên");
+
+      header.createCell(1)
+              .setCellValue("Email");
+
+      header.createCell(2)
+              .setCellValue("SĐT");
+
+      header.createCell(3)
+              .setCellValue("Bài thi");
+
+      header.createCell(4)
+              .setCellValue("Version");
+
+      header.createCell(5)
+              .setCellValue("Tổng câu");
+
+      header.createCell(6)
+              .setCellValue("Số đúng");
+
+      header.createCell(7)
+              .setCellValue("Điểm");
+
+      header.createCell(8)
+              .setCellValue("Nộp lúc");
+
+      int rowNum = 1;
+
+      for (QuizSubmissionExportProjection item : data) {
+
+        Row row = sheet.createRow(rowNum++);
+
+        row.createCell(0).setCellValue(
+                item.getLastName()
+                        + " "
+                        + item.getFirstName()
+        );
+
+        row.createCell(1)
+                .setCellValue(item.getEmail());
+
+        row.createCell(2)
+                .setCellValue(item.getPhoneNumber());
+
+        row.createCell(3)
+                .setCellValue(item.getQuizTitle());
+
+        row.createCell(4)
+                .setCellValue(item.getVersionNumber());
+
+        row.createCell(5)
+                .setCellValue(item.getTotalQuestions());
+
+        row.createCell(6)
+                .setCellValue(item.getCorrectAnswers());
+
+        row.createCell(7)
+                .setCellValue(item.getScore());
+
+        row.createCell(8).setCellValue(
+                item.getSubmittedAt().toString()
+        );
+      }
+
+      for (int i = 0; i < 9; i++) {
+        sheet.autoSizeColumn(i);
+      }
+
+      workbook.write(outputStream);
+
+      return outputStream.toByteArray();
+
+    } catch (Exception e) {
+      throw new BadRequestException(
+              "Xuất file thất bại"
+      );
+    }
   }
 
 }

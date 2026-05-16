@@ -5,6 +5,8 @@ import com.hust.lms.streaming.model.Course;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import com.hust.lms.streaming.model.Lesson;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -21,6 +23,15 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
     )
     """, nativeQuery = true)
   boolean notExistsByIdAndInstructorId(UUID id, UUID instructorId);
+
+  @Query(value = """
+    SELECT l.*
+    FROM lessons l INNER JOIN sections s ON l.section_id = s.id
+    WHERE s.course_id = :courseId
+""", nativeQuery = true)
+  List<Lesson> findLessonsByCourseId(UUID courseId);
+
+  Optional<Course> findCourseByIdAndInstructorId(UUID id, UUID instructorId);
 
   List<Course> findCoursesByStatus(CourseStatus status);
   List<Course> findByInstructorId(UUID instructorId);

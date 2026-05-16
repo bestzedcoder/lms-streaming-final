@@ -70,6 +70,7 @@ export interface CourseEnrollmentResponse {
 export interface QuizLearningResponse {
   quizId: string;
   title: string;
+  version: number;
   questions: QuestionLearningResponse[];
 }
 
@@ -87,6 +88,7 @@ export interface AnswerLearningResponse {
 
 export interface QuizSubmissionRequest {
   quizId: string;
+  version: number;
   questions: QuestionSubmissionRequest[];
 }
 
@@ -99,6 +101,8 @@ export interface QuizResultResponse {
   title: string;
   totalQuestions: number;
   correctAnswers: number;
+  score: number;
+  type: "TEST" | "EXAM";
   time: string;
 }
 

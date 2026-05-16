@@ -23,6 +23,7 @@ import {
   CheckCircleFilled,
   LockFilled,
   CaretRightOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import type {
   CourseEnrollmentDetailsResponse,
@@ -35,11 +36,14 @@ const { Header, Content, Sider } = Layout;
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
 
+// Hằng số thời gian làm bài (10 phút = 600 giây)
+const QUIZ_DURATION_SECONDS = 600;
+
 const CourseLearningWorkspace: React.FC = () => {
   const { slug, lessonId } = useParams<{ slug: string; lessonId: string }>();
   const navigate = useNavigate();
 
-  // --- States ---
+  // --- States Dữ liệu ---
   const [courseData, setCourseData] =
     useState<CourseEnrollmentDetailsResponse | null>(null);
   const [currentLessonType, setCurrentLessonType] = useState<string>("");
@@ -47,7 +51,9 @@ const CourseLearningWorkspace: React.FC = () => {
   const [quizData, setQuizData] = useState<QuizLearningResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Quiz logic state
+  // --- States Quiz ---
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(QUIZ_DURATION_SECONDS);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<string, any>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -56,7 +62,7 @@ const CourseLearningWorkspace: React.FC = () => {
     score: number;
   } | null>(null);
 
-  // 1. Fetch cấu trúc khóa học
+  // Fetch dữ liệu cấu trúc khóa học
   useEffect(() => {
     const fetchCourseStructure = async () => {
       if (slug) {
@@ -71,7 +77,6 @@ const CourseLearningWorkspace: React.FC = () => {
     fetchCourseStructure();
   }, [slug]);
 
-  // 2. Fetch nội dung bài học khi chuyển bài
   useEffect(() => {
     if (slug && lessonId && courseData) {
       const lesson = courseData.sections
@@ -80,9 +85,34 @@ const CourseLearningWorkspace: React.FC = () => {
       if (lesson && lesson.hasResource) {
         setCurrentLessonType(lesson.lessonType);
         fetchLessonContent(lesson.lessonType);
+
+        setQuizStarted(false);
+        setTimeLeft(QUIZ_DURATION_SECONDS);
+        setQuizResult(null);
+        setUserAnswers({});
+        setCurrentQuestionIndex(0);
       }
     }
   }, [lessonId, courseData]);
+
+  useEffect(() => {
+    let timerId: ReturnType<typeof setInterval>;
+
+    if (quizStarted && !quizResult && !submitting && timeLeft > 0) {
+      timerId = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(timerId);
+  }, [quizStarted, quizResult, submitting, timeLeft]);
+
+  useEffect(() => {
+    if (timeLeft === 0 && quizStarted && !quizResult && !submitting) {
+      message.warning("Đã hết thời gian làm bài! Hệ thống tự động nộp bài.");
+      handleQuizSubmit();
+    }
+  }, [timeLeft, quizStarted, quizResult, submitting]);
 
   const fetchLessonContent = async (type: string) => {
     setLoading(true);
@@ -96,7 +126,6 @@ const CourseLearningWorkspace: React.FC = () => {
       } else if (type === "QUIZ") {
         const res = await studentService.learnQuiz(slug!, lessonId!);
         setQuizData(res.data);
-        setCurrentQuestionIndex(0);
       }
     } catch (error) {
       message.error("Lỗi khi tải nội dung bài học");
@@ -110,34 +139,30 @@ const CourseLearningWorkspace: React.FC = () => {
 
     setSubmitting(true);
     try {
-      // Mapping dữ liệu từ userAnswers sang định dạng API yêu cầu
       const questionsSubmission = quizData.questions.map((q) => {
         const rawAnswer = userAnswers[q.questionId];
         let finalAnswers: string[] = [];
 
         if (Array.isArray(rawAnswer)) {
-          // Trường hợp MULTIPLE_CHOICE: rawAnswer đã là mảng các ID
           finalAnswers = rawAnswer.map(String);
         } else if (rawAnswer !== undefined && rawAnswer !== null) {
-          // Trường hợp SINGLE_CHOICE: rawAnswer là 1 ID đơn lẻ, bọc nó vào mảng
           finalAnswers = [String(rawAnswer)];
         }
 
         return {
           questionId: q.questionId,
-          answers: finalAnswers, // Luôn luôn là mảng string
+          answers: finalAnswers,
         };
       });
 
       const submissionData = {
         quizId: quizData.quizId,
+        version: quizData.version,
         questions: questionsSubmission,
       };
 
-      // Gọi API nộp bài
       const res = await studentService.submitQuiz(slug, submissionData);
 
-      // Xử lý kết quả trả về (số câu đúng) và tính điểm thang 100
       const correctCount = res.data;
       const totalQuestions = quizData.questions.length;
       const calculatedScore =
@@ -150,9 +175,7 @@ const CourseLearningWorkspace: React.FC = () => {
         score: calculatedScore,
       });
 
-      message.success(
-        `Hoàn thành! Bạn đúng ${correctCount}/${totalQuestions} câu. Điểm: ${calculatedScore}/100`,
-      );
+      message.success(`Hoàn thành! Điểm của bạn: ${calculatedScore}/100`);
     } catch (error) {
       console.error("Quiz submission error:", error);
       message.error("Đã xảy ra lỗi khi gửi bài làm, vui lòng thử lại.");
@@ -161,7 +184,12 @@ const CourseLearningWorkspace: React.FC = () => {
     }
   };
 
-  // --- RENDERERS ---
+  // Helper format giây thành MM:SS
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
 
   const renderContentManager = () => {
     if (loading)
@@ -201,7 +229,59 @@ const CourseLearningWorkspace: React.FC = () => {
       case "QUIZ":
         if (!quizData) return null;
 
-        // Hiển thị màn hình kết quả sau khi nộp bài
+        // 1. MÀN HÌNH CHỜ (TRƯỚC KHI LÀM BÀI)
+        if (!quizStarted) {
+          return (
+            <div className="h-full flex items-center justify-center bg-white p-6 animate-fade-in">
+              <div className="max-w-md w-full text-center p-10 border border-gray-100 rounded-3xl shadow-xl">
+                <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <QuestionCircleFilled style={{ fontSize: "36px" }} />
+                </div>
+                <Title level={2} className="!mb-2 text-gray-800">
+                  {courseData?.sections
+                    .flatMap((s) => s.lessons)
+                    .find((l) => l.lessonId === lessonId)?.title ||
+                    "Bài kiểm tra"}
+                </Title>
+                <Text type="secondary" className="block mb-6">
+                  Vui lòng chuẩn bị sẵn sàng trước khi bắt đầu. Bạn sẽ không thể
+                  tạm dừng đồng hồ sau khi đã bấm nút.
+                </Text>
+
+                <div className="flex justify-center gap-12 my-8 text-gray-600">
+                  <div className="flex flex-col items-center">
+                    <Text strong className="text-2xl text-blue-600">
+                      {quizData.questions.length}
+                    </Text>
+                    <Text className="text-xs font-bold uppercase tracking-wider mt-1 text-gray-400">
+                      Câu hỏi
+                    </Text>
+                  </div>
+                  <div className="w-px bg-gray-200"></div>
+                  <div className="flex flex-col items-center">
+                    <Text strong className="text-2xl text-blue-600">
+                      10
+                    </Text>
+                    <Text className="text-xs font-bold uppercase tracking-wider mt-1 text-gray-400">
+                      Phút
+                    </Text>
+                  </div>
+                </div>
+
+                <Button
+                  type="primary"
+                  size="large"
+                  className="w-full rounded-xl h-12 font-bold bg-[#303df2] border-none shadow-lg shadow-blue-100"
+                  onClick={() => setQuizStarted(true)}
+                >
+                  Bắt đầu làm bài
+                </Button>
+              </div>
+            </div>
+          );
+        }
+
+        // 2. MÀN HÌNH KẾT QUẢ (SAU KHI NỘP BÀI)
         if (quizResult) {
           return (
             <div className="h-full flex items-center justify-center bg-white p-6 animate-fade-in">
@@ -244,13 +324,16 @@ const CourseLearningWorkspace: React.FC = () => {
                       setQuizResult(null);
                       setCurrentQuestionIndex(0);
                       setUserAnswers({});
+                      // Reset Timer & Start State
+                      setQuizStarted(false);
+                      setTimeLeft(QUIZ_DURATION_SECONDS);
                     }}
                   >
                     Làm lại bài kiểm tra
                   </Button>
                   <Button
                     type="text"
-                    className="text-gray-400"
+                    className="text-gray-400 font-medium hover:text-gray-600"
                     onClick={() =>
                       navigate(`/student/courses/${slug}/learning`)
                     }
@@ -263,41 +346,52 @@ const CourseLearningWorkspace: React.FC = () => {
           );
         }
 
+        // 3. MÀN HÌNH LÀM BÀI (CÓ ĐỒNG HỒ ĐẾM NGƯỢC)
         const currentQ = quizData.questions[currentQuestionIndex];
         const isLast = currentQuestionIndex === quizData.questions.length - 1;
 
         return (
           <div className="h-full overflow-y-auto bg-white py-12 px-6">
-            <div className="max-w-3xl mx-auto border border-gray-100 rounded-3xl p-10 shadow-sm">
-              <div className="flex justify-between items-center mb-8">
-                <div>
+            <div className="max-w-3xl mx-auto border border-gray-100 rounded-3xl p-10 shadow-sm relative">
+              {/* Tiêu đề câu hỏi & Đồng hồ */}
+              <div className="flex justify-between items-start mb-8">
+                <div className="flex-1 pr-6">
                   <Tag
                     color="purple"
-                    className="px-3 py-1 rounded-lg font-medium border-none bg-purple-50 text-purple-600"
+                    className="px-3 py-1 rounded-lg font-medium border-none bg-purple-50 text-purple-600 mb-3"
                   >
                     {currentQ.type === "SINGLE_CHOICE"
                       ? "Chọn một đáp án"
                       : "Chọn nhiều đáp án"}
                   </Tag>
-                  <Title level={4} className="!mt-4 !mb-0">
+                  <Title
+                    level={4}
+                    className="!m-0 leading-relaxed text-gray-800"
+                  >
                     {currentQ.content}
                   </Title>
                 </div>
-                <div className="text-right">
+
+                <div className="text-right shrink-0 flex flex-col items-end">
+                  {/* TIMER */}
+                  <div
+                    className={`flex items-center gap-1.5 text-lg font-bold bg-gray-50 px-4 py-2 rounded-xl border ${timeLeft < 60 ? "text-red-500 border-red-200 bg-red-50 animate-pulse" : "text-blue-600 border-blue-100"}`}
+                  >
+                    <ClockCircleOutlined /> {formatTime(timeLeft)}
+                  </div>
                   <Text
                     type="secondary"
-                    className="block text-xs uppercase tracking-widest mb-1"
+                    className="block text-xs uppercase tracking-widest mt-3 font-semibold"
                   >
-                    Tiến trình
-                  </Text>
-                  <Text strong className="text-lg text-blue-600">
-                    {currentQuestionIndex + 1} / {quizData.questions.length}
+                    Tiến trình {currentQuestionIndex + 1} /{" "}
+                    {quizData.questions.length}
                   </Text>
                 </div>
               </div>
 
-              <Divider className="my-8" />
+              <Divider className="my-6 border-gray-100" />
 
+              {/* Phần Option Đáp Án */}
               <div className="space-y-4 mb-12">
                 {currentQ.type === "SINGLE_CHOICE" ? (
                   <Radio.Group
@@ -314,9 +408,11 @@ const CourseLearningWorkspace: React.FC = () => {
                       <Radio
                         key={ans.answerId}
                         value={ans.answerId}
-                        className="learning-quiz-item p-5 border border-gray-100 rounded-2xl hover:border-blue-200 hover:bg-blue-50/30 transition-all m-0 shadow-sm"
+                        className="learning-quiz-item p-5 border border-gray-100 rounded-2xl hover:border-blue-200 hover:bg-blue-50/50 transition-all m-0 shadow-sm"
                       >
-                        <span className="ml-2 text-gray-700">{ans.answer}</span>
+                        <span className="ml-2 text-gray-700 text-base">
+                          {ans.answer}
+                        </span>
                       </Radio>
                     ))}
                   </Radio.Group>
@@ -335,20 +431,23 @@ const CourseLearningWorkspace: React.FC = () => {
                       <Checkbox
                         key={ans.answerId}
                         value={ans.answerId}
-                        className="learning-quiz-item p-5 border border-gray-100 rounded-2xl hover:border-blue-200 hover:bg-blue-50/30 transition-all m-0 shadow-sm"
+                        className="learning-quiz-item p-5 border border-gray-100 rounded-2xl hover:border-blue-200 hover:bg-blue-50/50 transition-all m-0 shadow-sm"
                       >
-                        <span className="ml-2 text-gray-700">{ans.answer}</span>
+                        <span className="ml-2 text-gray-700 text-base">
+                          {ans.answer}
+                        </span>
                       </Checkbox>
                     ))}
                   </Checkbox.Group>
                 )}
               </div>
 
-              <div className="flex justify-between pt-8 border-t border-gray-50">
+              {/* Nút Điều Hướng */}
+              <div className="flex justify-between pt-6 border-t border-gray-50">
                 <Button
                   size="large"
                   disabled={currentQuestionIndex === 0}
-                  className="rounded-xl px-8"
+                  className="rounded-xl px-8 hover:bg-gray-50"
                   onClick={() => setCurrentQuestionIndex((prev) => prev - 1)}
                 >
                   Câu trước
@@ -361,16 +460,16 @@ const CourseLearningWorkspace: React.FC = () => {
                     icon={<CheckCircleFilled />}
                     loading={submitting}
                     onClick={handleQuizSubmit}
-                    className="bg-green-600 border-none px-12 rounded-xl h-12 font-bold shadow-lg shadow-green-100"
+                    className="bg-green-600 hover:bg-green-500 border-none px-12 rounded-xl h-12 font-bold shadow-lg shadow-green-100"
                   >
-                    Nộp bài Quiz
+                    Nộp bài
                   </Button>
                 ) : (
                   <Button
                     type="primary"
                     size="large"
                     onClick={() => setCurrentQuestionIndex((prev) => prev + 1)}
-                    className="px-12 rounded-xl h-12 font-bold bg-[#303df2] border-none shadow-lg shadow-blue-100"
+                    className="px-12 rounded-xl h-12 font-bold bg-[#303df2] hover:bg-blue-600 border-none shadow-lg shadow-blue-100"
                   >
                     Câu tiếp theo
                   </Button>
@@ -390,7 +489,6 @@ const CourseLearningWorkspace: React.FC = () => {
 
   return (
     <Layout className="h-screen bg-white overflow-hidden">
-      {/* Header tối giản chuyên nghiệp */}
       <Header className="bg-[#1c1d1f] flex items-center justify-between px-4 h-14 border-b border-gray-800">
         <div className="flex items-center gap-4">
           <Button
@@ -427,41 +525,47 @@ const CourseLearningWorkspace: React.FC = () => {
           {renderContentManager()}
         </Content>
 
-        {/* Sidebar Sidebar được thiết kế lại */}
+        {/* SIDEBAR - NÂNG CẤP UI ĐẸP MẮT */}
         <Sider
           width={400}
           theme="light"
-          className="learning-sidebar border-l overflow-y-auto"
+          className="learning-sidebar border-l border-gray-200 overflow-y-auto bg-gray-50"
         >
-          <div className="p-4 border-b bg-white flex justify-between items-center sticky top-0 z-10">
-            <span className="font-bold text-base">Nội dung khóa học</span>
+          <div className="p-5 border-b border-gray-200 bg-white sticky top-0 z-10 shadow-sm">
+            <span className="font-bold text-lg text-gray-800">
+              Nội dung khóa học
+            </span>
           </div>
 
           <Collapse
             ghost
             expandIcon={({ isActive }) => (
-              <CaretRightOutlined rotate={isActive ? 90 : 0} />
+              <CaretRightOutlined
+                rotate={isActive ? 90 : 0}
+                className="text-gray-400 text-xs"
+              />
             )}
             defaultActiveKey={[courseData?.sections[0]?.title || ""]}
-            className="bg-white"
+            className="bg-gray-50"
           >
             {courseData?.sections.map((section, sIndex) => (
               <Panel
                 key={section.title}
                 header={
-                  <div className="flex flex-col">
-                    <Text strong className="text-gray-800">
+                  <div className="flex flex-col py-1">
+                    <Text strong className="text-gray-800 text-sm mb-0.5">
                       Phần {sIndex + 1}: {section.title}
                     </Text>
-                    <Text className="text-[11px] text-gray-500">
-                      0/{section.lessons.length} bài học
+                    <Text className="text-[11px] font-medium text-gray-400 uppercase tracking-widest">
+                      0/{section.lessons.length} Bài học
                     </Text>
                   </div>
                 }
-                className="border-b"
+                className="border-b border-gray-200 bg-white shadow-sm mb-2"
               >
                 <List
                   dataSource={section.lessons}
+                  className="bg-white"
                   renderItem={(item, lIndex) => {
                     const isActive = lessonId === item.lessonId;
                     const isLocked = !item.hasResource;
@@ -469,8 +573,8 @@ const CourseLearningWorkspace: React.FC = () => {
                     return (
                       <List.Item
                         className={`
-                          group px-4 py-3 border-none transition-all relative
-                          ${isActive ? "bg-[#d1d7dc] border-l-4 border-blue-600" : "hover:bg-[#f7f9fa]"}
+                          group px-6 py-4 border-b border-gray-50 transition-all relative
+                          ${isActive ? "bg-blue-50/40" : "hover:bg-gray-50"}
                           ${isLocked ? "opacity-50 cursor-not-allowed pointer-events-none" : "cursor-pointer"}
                         `}
                         onClick={() =>
@@ -480,28 +584,48 @@ const CourseLearningWorkspace: React.FC = () => {
                           )
                         }
                       >
-                        <div className="flex items-start gap-3 w-full">
+                        {/* Thanh highlight bên trái nếu Active */}
+                        {isActive && (
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
+                        )}
+
+                        <div className="flex items-start gap-4 w-full">
                           <div
-                            className={`mt-0.5 ${isActive ? "text-blue-600" : "text-gray-400"}`}
+                            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                              isActive
+                                ? "bg-blue-100 text-blue-600"
+                                : "bg-gray-100 text-gray-500 group-hover:bg-gray-200"
+                            }`}
                           >
                             {isLocked ? (
-                              <LockFilled />
+                              <LockFilled className="text-xs" />
                             ) : item.lessonType === "VIDEO" ? (
-                              <PlayCircleFilled />
+                              <PlayCircleFilled className="text-sm" />
                             ) : item.lessonType === "QUIZ" ? (
-                              <QuestionCircleFilled />
+                              <QuestionCircleFilled className="text-sm" />
                             ) : (
-                              <FileTextFilled />
+                              <FileTextFilled className="text-sm" />
                             )}
                           </div>
+
                           <div className="flex flex-col flex-grow">
                             <Text
-                              className={`text-sm ${isActive ? "font-bold" : "font-normal"}`}
+                              className={`text-sm leading-snug transition-colors ${
+                                isActive
+                                  ? "font-bold text-blue-700"
+                                  : "font-medium text-gray-700 group-hover:text-blue-600"
+                              }`}
                             >
                               {lIndex + 1}. {item.title}
                             </Text>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Tag className="m-0 text-[10px] py-0 px-1 border-none bg-gray-200">
+                            <div className="mt-1.5">
+                              <Tag
+                                className={`m-0 text-[10px] py-0 px-2 font-semibold border-none uppercase tracking-wider ${
+                                  isActive
+                                    ? "bg-blue-100 text-blue-600"
+                                    : "bg-gray-100 text-gray-500"
+                                }`}
+                              >
                                 {item.lessonType}
                               </Tag>
                             </div>

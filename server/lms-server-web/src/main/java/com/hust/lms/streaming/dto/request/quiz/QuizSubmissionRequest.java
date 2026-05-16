@@ -8,5 +8,6 @@ import java.util.UUID;
 @Getter
 public class QuizSubmissionRequest {
     private String quizId;
+    private int version;
     private List<QuestionSubmissionRequest> questions;
 }

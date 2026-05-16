@@ -48,6 +48,9 @@ import type {
   SelectQuizResponse,
   AddResourceForLesson,
   RemoveResourceForLesson,
+  InstructorCourseStatisticsOverviewResponse,
+  InstructorQuizStatisticsResponse,
+  ExportQuizSubmissionRequest,
 } from "../@types/instructor.types";
 
 const createFormData = (data: any, file?: File | null) => {
@@ -331,6 +334,14 @@ export const instructorService = {
     return axiosClient.post("instructor/quizzes/handle-update", data);
   },
 
+  publishQuiz: async (id: string): Promise<ResponseData> => {
+    return axiosClient.post(`instructor/quizzes/handle-publish/${id}`);
+  },
+
+  draftQuiz: async (id: string): Promise<ResponseData> => {
+    return axiosClient.post(`instructor/quizzes/handle-draft/${id}`);
+  },
+
   deleteQuiz: async (id: string): Promise<ResponseData> => {
     return axiosClient.delete(`instructor/quizzes/handle-delete/${id}`);
   },
@@ -373,5 +384,31 @@ export const instructorService = {
     data: RemoveResourceForLesson,
   ): Promise<ResponseData> => {
     return axiosClient.post("instructor/lesson/remove-resource", data);
+  },
+
+  // statistics
+
+  overviewCourse: async (
+    id: string,
+  ): Promise<ResponseData<InstructorCourseStatisticsOverviewResponse>> => {
+    return axiosClient.get(`instructor/statistics/course/${id}/overview`);
+  },
+
+  getQuizStatistics: async (
+    id: string,
+  ): Promise<ResponseData<InstructorQuizStatisticsResponse[]>> => {
+    return axiosClient.get(`instructor/statistics/course/${id}/quizzes`);
+  },
+
+  exportData: async (data: ExportQuizSubmissionRequest): Promise<Blob> => {
+    const response = await axiosClient.post(
+      "instructor/statistics/quiz/export",
+      data,
+      {
+        responseType: "blob",
+      },
+    );
+
+    return response.data;
   },
 };

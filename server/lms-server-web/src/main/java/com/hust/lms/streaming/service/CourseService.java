@@ -51,4 +51,9 @@ public interface CourseService {
   List<CourseEnrollmentResponse> getCoursesByStudent();
   CourseEnrollmentDetailsResponse getCourseByStudent(String slug);
   LessonLearningResponse learningStart(String slug, UUID lessonId);
+
+
+  // Statistics
+
+
 }

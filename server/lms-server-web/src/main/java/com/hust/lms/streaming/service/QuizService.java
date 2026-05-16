@@ -18,6 +18,8 @@ public interface QuizService {
     void addQuizQuestion(AddQuizQuestionRequest request);
     void removeQuizQuestion(RemoveQuizQuestionRequest request);
     void deleteQuiz(UUID quizId);
+    void publishQuiz(UUID quizId);
+    void draftQuiz(UUID quizId);
 
     Integer submitQuiz(QuizSubmissionRequest request, String slug);
     List<QuizResultResponse> getQuizSubmission(String slug);
